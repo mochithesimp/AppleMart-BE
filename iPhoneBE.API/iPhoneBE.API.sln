@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35303.130
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iPhoneBE.API", "iPhoneBE.API\iPhoneBE.API.csproj", "{0C8FCB0B-B916-4FA0-9E56-A61C84406363}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "iPhoneBE.API", "iPhoneBE.API\iPhoneBE.API.csproj", "{0C8FCB0B-B916-4FA0-9E56-A61C84406363}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iPhoneBE.Data", "iPhoneBE.Data\iPhoneBE.Data.csproj", "{0DA8BBD0-4B10-4838-8872-B13BAD2E46D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iPhoneBE.Service", "iPhoneBE.Service\iPhoneBE.Service.csproj", "{4CE49A97-2324-4B8A-939A-EDB39EC71601}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{0C8FCB0B-B916-4FA0-9E56-A61C84406363}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C8FCB0B-B916-4FA0-9E56-A61C84406363}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C8FCB0B-B916-4FA0-9E56-A61C84406363}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DA8BBD0-4B10-4838-8872-B13BAD2E46D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DA8BBD0-4B10-4838-8872-B13BAD2E46D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DA8BBD0-4B10-4838-8872-B13BAD2E46D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DA8BBD0-4B10-4838-8872-B13BAD2E46D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CE49A97-2324-4B8A-939A-EDB39EC71601}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CE49A97-2324-4B8A-939A-EDB39EC71601}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CE49A97-2324-4B8A-939A-EDB39EC71601}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CE49A97-2324-4B8A-939A-EDB39EC71601}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
