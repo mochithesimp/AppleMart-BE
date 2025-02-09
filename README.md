@@ -33,4 +33,3 @@
 ###### **Click Tool -> Nuget Package Manager -> Package Manager Console -> Add-Migration InitialCreate -> Choose Project have Migration-> Update-Database**
 ### **InitialCreate: This is the name of the migration. You can change this name as you wish (e.g. AddCourseTable, UpdateSchema, etc.)**
 ***
-#### ** Step 7 Open SqlServer run file script.sql ** 
