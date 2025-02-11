@@ -1,6 +1,6 @@
-# iPhone Shop
+# Apple Mart 
 
-## Getting started With Project iPhone Shop , My team used the first code to code this project, I have some guidelines
+## Getting started With Project Apple Mart, My team used the first code to code this project, I have some guidelines
 ### 1.**Code First Approach Guide**
 ###### **Code First** is a method of developing databases using source code rather than starting from a direct database design.
 ***
