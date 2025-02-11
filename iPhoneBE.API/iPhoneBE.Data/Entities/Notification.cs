@@ -29,8 +29,6 @@ namespace iPhoneBE.Data.Model
         public bool IsRemoved { get; set; }
 
         public DateTime CreatedDate { get; set; }
-
-        // Navigation property for User
         public virtual User User { get; set; }
     }
 }

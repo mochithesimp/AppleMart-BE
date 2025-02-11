@@ -15,8 +15,6 @@ namespace iPhoneBE.Data.Model
         [MaxLength(250)]
         public string Name { get; set; }
         public float ShippingPrice { get; set; }
-
-        // Navigation property for Order
         public ICollection<Order> Orders { get; set; }
     }
 }

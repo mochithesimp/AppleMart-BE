@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using iPhoneBE.Data.Entities;
 
 namespace iPhoneBE.Data.Model
 {
@@ -14,7 +15,10 @@ namespace iPhoneBE.Data.Model
         public int OrderID { get; set; } 
 
         [ForeignKey("User")]
-        public int UserID { get; set; } 
+        public int UserID { get; set; }
+
+        [ForeignKey("User")]
+        public int? ShipperID { get; set; }
 
         public DateTime OrderDate { get; set; } 
 
@@ -35,10 +39,11 @@ namespace iPhoneBE.Data.Model
         [ForeignKey("Voucher")]
         public int? VoucherID { get; set; } 
 
-        // Navigation properties
-        public User User { get; set; } // Liên kết với User
+        public User User { get; set; }
+        public User Shipper { get; set; }
         public ShippingMethod ShippingMethod { get; set; }
         public Voucher Voucher { get; set; }
         public ICollection<OrderDetail> OrderDetails { get; set; }
+        public ICollection<PaypalTransaction> PaypalTransactions { get; set; }
     }
 }

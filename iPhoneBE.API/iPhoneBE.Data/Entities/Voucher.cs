@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace iPhoneBE.Data.Model
 {
@@ -36,10 +37,14 @@ namespace iPhoneBE.Data.Model
         public bool IsActive { get; set; }
 
 
-        [ForeignKey("ProductItem")]
+        [ForeignKey("ProductItemID")]
         public int ProductItemID { get; set; }
 
-        // Navigation property for ProductItem
+        [ForeignKey("ProductID")]
+        public int ProductID { get; set; }
+
         public virtual ProductItem ProductItem { get; set; }
+        public virtual Product Product { get; set; }
+        public virtual ICollection<Order> Orders { get; set; }
     }
 }

@@ -10,7 +10,6 @@ namespace iPhoneBE.Data.Model
 {
     public class ProductImg
     {
-        {
         [Key]
         public int ProductImgID { get; set; }
 
@@ -23,8 +22,7 @@ namespace iPhoneBE.Data.Model
 
         public bool IsDeleted { get; set; }
 
-        // Navigation property for ProductItem
         public virtual ProductItem ProductItem { get; set; }
     }
 }
-}
+

@@ -21,7 +21,6 @@ namespace iPhoneBE.Data.Model
 
         public bool IsDeleted { get; set; }
 
-        // Navigation property for related Products
         public virtual ICollection<Product> Products { get; set; }
     }
 }

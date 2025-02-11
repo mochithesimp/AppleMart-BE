@@ -5,12 +5,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using iPhoneBE.Data.Entities;
 
 namespace iPhoneBE.Data.Model
 {
     public class Product
     {
-        {
         [Key]
         public int ProductID { get; set; }
 
@@ -26,11 +26,10 @@ namespace iPhoneBE.Data.Model
 
         public bool IsDeleted { get; set; }
 
-        // Navigation property for Category
         public virtual Category Category { get; set; }
 
-        // Navigation property for related ProductItems
         public virtual ICollection<ProductItem> ProductItems { get; set; }
+        public virtual ICollection<Blog> Blogs { get; set; }
+        public virtual ICollection<Voucher> Vouchers { get; set; }
     }
-}
 }

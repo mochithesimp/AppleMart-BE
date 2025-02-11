@@ -16,7 +16,6 @@ namespace iPhoneBE.Data.Model
         [MaxLength(255)]
         public string RoleName { get; set; }
 
-        // Navigation property for related Users
         public virtual ICollection<User> Users { get; set; }
     }
 }
