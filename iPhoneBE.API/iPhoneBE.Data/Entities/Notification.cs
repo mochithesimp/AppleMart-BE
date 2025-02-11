@@ -16,12 +16,12 @@ namespace iPhoneBE.Data.Model
         [ForeignKey("User")]
         public int UserId { get; set; }
 
-        [Required]
-        [MaxLength(255)]
+        [Required(ErrorMessage = "Header is required.")]
+        [MaxLength(255, ErrorMessage = "Header cannot exceed 255 characters.")]
         public string Header { get; set; }
 
-        [Required]
-        [MaxLength(1000)]
+        [Required(ErrorMessage = "Content is required.")]
+        [MaxLength(1000, ErrorMessage = "Content cannot exceed 1000 characters.")]
         public string Content { get; set; }
 
         public bool IsRead { get; set; }

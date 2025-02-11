@@ -12,36 +12,43 @@ namespace iPhoneBE.Data.Model
     public class Order
     {
         [Key]
-        public int OrderID { get; set; } 
+        public int OrderID { get; set; }
 
+        [ForeignKey("User")]
+        [Required(ErrorMessage = "User ID is required.")]
         public int UserID { get; set; }
 
+        [ForeignKey("Shipper")]
         public int? ShipperID { get; set; }
 
-        public DateTime OrderDate { get; set; } 
+        [Required(ErrorMessage = "Order date is required.")]
+        public DateTime OrderDate { get; set; }
 
-        [MaxLength(500)]
-        public string Address { get; set; } 
+        [MaxLength(500, ErrorMessage = "Address cannot exceed 500 characters.")]
+        public string Address { get; set; }
 
-        [MaxLength(500)]
-        public string PaymentMethod { get; set; } 
+        [MaxLength(500, ErrorMessage = "Payment method cannot exceed 500 characters.")]
+        public string PaymentMethod { get; set; }
 
         [ForeignKey("ShippingMethod")]
-        public int ShippingMethodID { get; set; } 
+        [Required(ErrorMessage = "Shipping method is required.")]
+        public int ShippingMethodID { get; set; }
 
-        public double Total { get; set; } 
+        [Required(ErrorMessage = "Total amount is required.")]
+        [Range(0, double.MaxValue, ErrorMessage = "Total must be a positive value.")]
+        public double Total { get; set; }
 
-        [MaxLength(250)]
-        public string OrderStatus { get; set; } 
+        [MaxLength(250, ErrorMessage = "Order status cannot exceed 250 characters.")]
+        public string OrderStatus { get; set; }
 
         [ForeignKey("Voucher")]
-        public int? VoucherID { get; set; } 
+        public int? VoucherID { get; set; }
 
-        public User User { get; set; }
-        public User Shipper { get; set; }
-        public ShippingMethod ShippingMethod { get; set; }
-        public Voucher Voucher { get; set; }
-        public ICollection<OrderDetail> OrderDetails { get; set; }
-        public ICollection<PaypalTransaction> PaypalTransactions { get; set; }
+        public virtual User User { get; set; }
+        public virtual User Shipper { get; set; }
+        public virtual ShippingMethod ShippingMethod { get; set; }
+        public virtual Voucher Voucher { get; set; }
+        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
+        public virtual ICollection<PaypalTransaction> PaypalTransactions { get; set; }
     }
 }

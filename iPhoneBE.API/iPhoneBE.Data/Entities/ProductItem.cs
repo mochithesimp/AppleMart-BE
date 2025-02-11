@@ -15,23 +15,26 @@ namespace iPhoneBE.Data.Model
         public int ProductItemID { get; set; }
 
         [ForeignKey("Product")]
+        [Required(ErrorMessage = "Product ID is required.")]
         public int ProductID { get; set; }
 
-        [Required]
-        [MaxLength(255)]
+        [Required(ErrorMessage = "Product item name is required.")]
+        [MaxLength(255, ErrorMessage = "Product item name cannot exceed 255 characters.")]
         public string Name { get; set; }
 
-        [MaxLength(1000)]
+        [MaxLength(1000, ErrorMessage = "Description cannot exceed 1000 characters.")]
         public string Description { get; set; }
 
-        [MaxLength(100)]
+        [MaxLength(100, ErrorMessage = "Color cannot exceed 100 characters.")]
         public string Color { get; set; }
 
+        [Required(ErrorMessage = "Quantity is required.")]
+        [Range(0, int.MaxValue, ErrorMessage = "Quantity must be at least 0.")]
         public int Quantity { get; set; }
 
         public double Price { get; set; }
 
-        [MaxLength(1000)]
+        [MaxLength(1000, ErrorMessage = "Image URL cannot exceed 1000 characters.")]
         public string ImageUrl { get; set; }
 
         public bool IsDeleted { get; set; }

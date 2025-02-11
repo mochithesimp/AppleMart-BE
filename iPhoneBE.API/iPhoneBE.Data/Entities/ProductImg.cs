@@ -14,10 +14,11 @@ namespace iPhoneBE.Data.Model
         public int ProductImgID { get; set; }
 
         [ForeignKey("ProductItem")]
+        [Required(ErrorMessage = "Product Item ID is required.")]
         public int ProductItemID { get; set; }
 
-        [Required]
-        [MaxLength(1000)]
+        [Required(ErrorMessage = "Image URL is required.")]
+        [MaxLength(1000, ErrorMessage = "Image URL cannot exceed 1000 characters.")]
         public string ImageUrl { get; set; }
 
         public bool IsDeleted { get; set; }

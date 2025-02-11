@@ -12,8 +12,10 @@ namespace iPhoneBE.Data.Model
         [Key]
         public int ShippingMethodID { get; set; }
 
-        [MaxLength(250)]
+        [MaxLength(250, ErrorMessage = "Shipping method name cannot exceed 250 characters.")]
         public string Name { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "Shipping price must be at least 0.")]
         public float ShippingPrice { get; set; }
         public ICollection<Order> Orders { get; set; }
     }
