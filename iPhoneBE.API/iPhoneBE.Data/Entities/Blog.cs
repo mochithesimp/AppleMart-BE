@@ -23,7 +23,7 @@ namespace iPhoneBE.Data.Entities
         [Required]
         public string Author { get; set; }
 
-        [ForeignKey("ProductId")]
+        [ForeignKey("Product")]
         public int ProductId { get; set; }
 
         public DateTime UploadDate { get; set; }

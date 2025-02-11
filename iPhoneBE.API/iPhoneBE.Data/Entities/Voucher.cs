@@ -12,7 +12,7 @@ namespace iPhoneBE.Data.Model
     public class Voucher
     {
         [Key]
-        public int PKVoucherID { get; set; }
+        public int VoucherID { get; set; }
 
         [Required]
         [MaxLength(255)]
@@ -37,10 +37,10 @@ namespace iPhoneBE.Data.Model
         public bool IsActive { get; set; }
 
 
-        [ForeignKey("ProductItemID")]
+        [ForeignKey("ProductItem")]
         public int ProductItemID { get; set; }
 
-        [ForeignKey("ProductID")]
+        [ForeignKey("Product")]
         public int ProductID { get; set; }
 
         public virtual ProductItem ProductItem { get; set; }

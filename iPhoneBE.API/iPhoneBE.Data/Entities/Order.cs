@@ -14,10 +14,8 @@ namespace iPhoneBE.Data.Model
         [Key]
         public int OrderID { get; set; } 
 
-        [ForeignKey("User")]
         public int UserID { get; set; }
 
-        [ForeignKey("User")]
         public int? ShipperID { get; set; }
 
         public DateTime OrderDate { get; set; } 
@@ -31,7 +29,7 @@ namespace iPhoneBE.Data.Model
         [ForeignKey("ShippingMethod")]
         public int ShippingMethodID { get; set; } 
 
-        public decimal Total { get; set; } 
+        public double Total { get; set; } 
 
         [MaxLength(250)]
         public string OrderStatus { get; set; } 

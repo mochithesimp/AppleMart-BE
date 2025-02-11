@@ -21,7 +21,7 @@ namespace iPhoneBE.Data.Model
         public int OrderID { get; set; }
 
         public int Quantity { get; set; }
-        public decimal Price { get; set; }
+        public double Price { get; set; }
 
         public ProductItem ProductItem { get; set; }
         public Order Order { get; set; }

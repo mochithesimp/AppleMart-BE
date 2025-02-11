@@ -12,9 +12,11 @@ namespace iPhoneBE.Data.Entities
     public class ChatParticipant
     {
         [Key]
+        [Column(Order = 1)]
         public int ChatRoomID { get; set; }
 
-        [ForeignKey("UserID")]
+        [Key]
+        [Column(Order = 2)]
         public int UserID { get; set; }
 
         public bool IsAdmin { get; set; }
