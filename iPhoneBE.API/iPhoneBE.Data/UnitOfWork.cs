@@ -1,4 +1,6 @@
-﻿using System;
+﻿using iPhoneBE.Data.Data;
+using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,29 +10,47 @@ namespace iPhoneBE.Data
 {
     public class UnitOfWork : IUnitOfWork, IDisposable
     {
+
+        private readonly AppleMartDBContext _dbContext;
+        private IDbContextTransaction? _transaction = null;
+
+        public UnitOfWork(AppleMartDBContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
         public void BeginTransaction()
         {
-            throw new NotImplementedException();
+            _transaction = _dbContext.Database.BeginTransaction();
         }
 
         public void CommitTransaction()
         {
-            throw new NotImplementedException();
+            if (_transaction != null)
+            {
+                _transaction.Commit();
+                _transaction.Dispose();
+            }
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _dbContext.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         public void RollbackTransaction()
         {
-            throw new NotImplementedException();
+            if (_transaction != null)
+            {
+                _transaction.Rollback();
+                _transaction.Dispose();
+            }
         }
 
         public int SaveChanges()
         {
-            throw new NotImplementedException();
+            return _dbContext.SaveChanges();
         }
     }
 }

@@ -1,5 +1,7 @@
 
+using iPhoneBE.Data;
 using iPhoneBE.Data.Data;
+using iPhoneBE.Service;
 using Microsoft.EntityFrameworkCore;
 
 namespace iPhoneBE.API
@@ -14,6 +16,11 @@ namespace iPhoneBE.API
 
             builder.Services.AddDbContext<AppleMartDBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            builder.Services
+                .AddRepository()
+                .AddServices();
+
 
 
             builder.Services.AddControllers();
@@ -30,8 +37,14 @@ namespace iPhoneBE.API
                 app.UseSwaggerUI();
             }
 
+            app.UseCors(opt =>
+            {
+                opt.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+            });
+
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
