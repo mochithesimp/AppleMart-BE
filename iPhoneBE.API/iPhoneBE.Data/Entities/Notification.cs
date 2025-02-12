@@ -14,7 +14,7 @@ namespace iPhoneBE.Data.Model
         public int NotificationId { get; set; }
 
         [ForeignKey("User")]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
 
         [Required(ErrorMessage = "Header is required.")]
         [MaxLength(255, ErrorMessage = "Header cannot exceed 255 characters.")]

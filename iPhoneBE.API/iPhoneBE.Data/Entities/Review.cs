@@ -15,7 +15,7 @@ namespace iPhoneBE.Data.Entities
 
         [ForeignKey("User")]
         [Required(ErrorMessage = "User ID is required.")]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
 
         [ForeignKey("OrderDetail")]
         [Required(ErrorMessage = "Order Detail ID is required.")]
@@ -26,7 +26,7 @@ namespace iPhoneBE.Data.Entities
         public int ProductItemID { get; set; }
 
         [ForeignKey("Shipper")]
-        public int? ShipperID { get; set; }
+        public string? ShipperID { get; set; }
         public DateTime Date { get; set; }
 
         [Required(ErrorMessage = "Rating is required.")]

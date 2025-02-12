@@ -12,18 +12,19 @@ namespace iPhoneBE.Data.Entities
     public class ChatParticipant
     {
         [Key]
-        [Column(Order = 1)]
+        public int Id { get; set; } // ✅ Thêm khóa chính mới
+
+        [ForeignKey("ChatRoom")]
         public int ChatRoomID { get; set; }
 
-        [Key]
-        [Column(Order = 2)]
-        public int UserID { get; set; }
+        [ForeignKey("User")]
+        public string UserID { get; set; } // ✅ IdentityUser.Id thường là string
 
         public bool IsAdmin { get; set; }
-
         public DateTime CreatedDate { get; set; }
 
-        public User User { get; set; }
-        public ChatRoom ChatRoom { get; set; }
+        public virtual User User { get; set; }
+        public virtual ChatRoom ChatRoom { get; set; }
     }
+
 }

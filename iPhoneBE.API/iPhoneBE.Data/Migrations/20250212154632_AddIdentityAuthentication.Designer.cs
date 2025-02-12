@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iPhoneBE.Data.Data;
 
@@ -11,9 +12,11 @@ using iPhoneBE.Data.Data;
 namespace iPhoneBE.Data.Migrations
 {
     [DbContext(typeof(AppleMartDBContext))]
-    partial class AppleMartDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250212154632_AddIdentityAuthentication")]
+    partial class AddIdentityAuthentication
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -197,7 +200,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Blogs", (string)null);
+                    b.ToTable("Blogs");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Entities.BlogImage", b =>
@@ -222,7 +225,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("BlogId");
 
-                    b.ToTable("BlogImages", (string)null);
+                    b.ToTable("BlogImages");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Entities.ChatMessage", b =>
@@ -261,7 +264,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ChatMessages", (string)null);
+                    b.ToTable("ChatMessages");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Entities.ChatParticipant", b =>
@@ -291,7 +294,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("ChatParticipants", (string)null);
+                    b.ToTable("ChatParticipants");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Entities.ChatRoom", b =>
@@ -314,7 +317,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasKey("ChatRoomID");
 
-                    b.ToTable("ChatRooms", (string)null);
+                    b.ToTable("ChatRooms");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Entities.PaypalTransaction", b =>
@@ -350,7 +353,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("PaypalTransactions", (string)null);
+                    b.ToTable("PaypalTransactions");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Entities.Review", b =>
@@ -395,7 +398,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("Reviews", (string)null);
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Entities.UserBlogView", b =>
@@ -424,7 +427,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("UserId1");
 
-                    b.ToTable("UserBlogViews", (string)null);
+                    b.ToTable("UserBlogViews");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Model.Category", b =>
@@ -450,7 +453,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasKey("CategoryID");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Model.Notification", b =>
@@ -488,7 +491,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Model.Order", b =>
@@ -543,7 +546,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("VoucherID");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Model.OrderDetail", b =>
@@ -572,7 +575,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("ProductItemID");
 
-                    b.ToTable("OrderDetails", (string)null);
+                    b.ToTable("OrderDetails");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Model.Product", b =>
@@ -603,7 +606,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("CategoryID");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Model.ProductImg", b =>
@@ -629,7 +632,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("ProductItemID");
 
-                    b.ToTable("ProductImgs", (string)null);
+                    b.ToTable("ProductImgs");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Model.ProductItem", b =>
@@ -676,7 +679,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("ProductID");
 
-                    b.ToTable("ProductItems", (string)null);
+                    b.ToTable("ProductItems");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Model.ProductSpecification", b =>
@@ -707,7 +710,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("ProductItemID");
 
-                    b.ToTable("ProductSpecifications", (string)null);
+                    b.ToTable("ProductSpecifications");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Model.ShippingMethod", b =>
@@ -728,7 +731,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasKey("ShippingMethodID");
 
-                    b.ToTable("ShippingMethods", (string)null);
+                    b.ToTable("ShippingMethods");
                 });
 
             modelBuilder.Entity("iPhoneBE.Data.Model.User", b =>
@@ -864,7 +867,7 @@ namespace iPhoneBE.Data.Migrations
 
                     b.HasIndex("ProductItemID");
 
-                    b.ToTable("Vouchers", (string)null);
+                    b.ToTable("Vouchers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
