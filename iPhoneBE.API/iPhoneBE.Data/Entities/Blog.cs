@@ -14,13 +14,13 @@ namespace iPhoneBE.Data.Entities
         [Key]
         public int BlogId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Title is required.")]
         public string Title { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Content is required.")]
         public string Content { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Author name is required.")]
         public string Author { get; set; }
 
         [ForeignKey("Product")]
