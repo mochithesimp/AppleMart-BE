@@ -1,5 +1,7 @@
-﻿using iPhoneBE.Data.Entities;
+﻿using iPhoneBE.Data.Configurations;
+using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Model;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,15 +11,15 @@ using System.Threading.Tasks;
 
 namespace iPhoneBE.Data.Data
 {
-    public class AppleMartDBContext : DbContext
+    public class AppleMartDBContext : IdentityDbContext<User>
     {
         public AppleMartDBContext()
         {
 
         }
 
-        public AppleMartDBContext(DbContextOptions<AppleMartDBContext> dbContextOptions) : base(dbContextOptions) 
-        { 
+        public AppleMartDBContext(DbContextOptions<AppleMartDBContext> dbContextOptions) : base(dbContextOptions)
+        {
 
         }
 
@@ -36,7 +38,7 @@ namespace iPhoneBE.Data.Data
         public DbSet<ProductItem> ProductItems { get; set; }
         public DbSet<ProductSpecification> ProductSpecifications { get; set; }
         public DbSet<Review> Reviews { get; set; }
-        public DbSet<Role> Roles { get; set; }
+        //public DbSet<Role> Roles { get; set; }
         public DbSet<ShippingMethod> ShippingMethods { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<UserBlogView> UserBlogViews { get; set; }
@@ -45,6 +47,8 @@ namespace iPhoneBE.Data.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            //insert role
+            //modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppleMartDBContext).Assembly);
 
             // Configure composite key for ChatParticipant
             modelBuilder.Entity<ChatParticipant>()
@@ -91,7 +95,19 @@ namespace iPhoneBE.Data.Data
 
             // Configure ChatParticipant composite key
             modelBuilder.Entity<ChatParticipant>()
-                .HasKey(cp => new { cp.ChatRoomID, cp.UserID });
+                .HasKey(cp => cp.Id); // ✅ Khóa chính là Id
+
+            modelBuilder.Entity<ChatParticipant>()
+                .HasOne(cp => cp.ChatRoom)
+                .WithMany(c => c.ChatParticipants)
+                .HasForeignKey(cp => cp.ChatRoomID)
+                .OnDelete(DeleteBehavior.Cascade); // ✅ Khi xóa ChatRoom thì xóa ChatParticipant
+
+            modelBuilder.Entity<ChatParticipant>()
+                .HasOne(cp => cp.User)
+                .WithMany(u => u.ChatParticipants)
+                .HasForeignKey(cp => cp.UserID)
+                .OnDelete(DeleteBehavior.Cascade); // ✅ Khi xóa User thì xóa ChatParticipant
 
             // Configure Voucher relationships
             modelBuilder.Entity<Voucher>()
