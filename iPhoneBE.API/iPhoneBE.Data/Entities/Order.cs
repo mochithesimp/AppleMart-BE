@@ -16,10 +16,10 @@ namespace iPhoneBE.Data.Model
 
         [ForeignKey("User")]
         [Required(ErrorMessage = "User ID is required.")]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
 
         [ForeignKey("Shipper")]
-        public int? ShipperID { get; set; }
+        public string? ShipperID { get; set; }
 
         [Required(ErrorMessage = "Order date is required.")]
         public DateTime OrderDate { get; set; }
