@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.CategoryModel;
+using iPhoneBE.Data.Models.ProductModel;
 using iPhoneBE.Data.ViewModels.CategoryDTO;
+using iPhoneBE.Data.ViewModels.ProductDTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +20,9 @@ namespace iPhoneBE.Data.Mapping
             CreateMap<Category, CreateCategoryModel>().ReverseMap();
             CreateMap<Category, UpdateCategoryModel>().ReverseMap();
 
+            CreateMap<Product, ProductViewModel>().ReverseMap();
+            CreateMap<Product, CreateProductModel>().ReverseMap();
+            CreateMap<Product, UpdateProductModel>().ReverseMap();
 
         }
     }

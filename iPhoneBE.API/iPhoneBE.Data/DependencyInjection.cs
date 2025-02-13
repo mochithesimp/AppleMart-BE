@@ -18,6 +18,8 @@ namespace iPhoneBE.Data
             service.AddTransient(typeof(IRepository<>), typeof(Repository<>));
 
             service.AddTransient<ICategoryRepository, CategoryRepository>();
+            service.AddTransient<IProductRepository, ProductRepository>();
+
 
             return service;
         }
