@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 
 namespace iPhoneBE.Data
 {
-    public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEntity
+    public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, IBaseEntity
     {
         private readonly AppleMartDBContext _dbContext;
 
@@ -64,7 +64,7 @@ namespace iPhoneBE.Data
             return await query.ToListAsync();
         }
 
-        public async Task<TEntity?> GetByIdAsync(Guid id, params Expression<Func<TEntity, object>>[] includes)
+        public async Task<TEntity?> GetByIdAsync(int id, params Expression<Func<TEntity, object>>[] includes)
         {
             IQueryable<TEntity> query = _dbContext.Set<TEntity>();
 

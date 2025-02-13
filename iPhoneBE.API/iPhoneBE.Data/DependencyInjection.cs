@@ -1,6 +1,4 @@
-﻿using iPhoneBE.Data.Interfaces;
-using iPhoneBE.Data.Repository;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +14,6 @@ namespace iPhoneBE.Data
         {
             service.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             service.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
-            service.AddTransient<ICategoryRepository, CategoryRepository>();
-            service.AddTransient<IProductRepository, ProductRepository>();
-            service.AddTransient<IProductItemRepository, ProductItemRepository>();
 
             return service;
         }

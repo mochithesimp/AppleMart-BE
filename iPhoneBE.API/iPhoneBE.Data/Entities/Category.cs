@@ -1,4 +1,5 @@
-﻿using System;
+﻿using iPhoneBE.Data.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace iPhoneBE.Data.Model
 {
-    public class Category
+    public class Category : IBaseEntity
     {
         [Key]
         public int CategoryID { get; set; }

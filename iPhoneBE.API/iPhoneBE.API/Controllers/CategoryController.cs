@@ -69,11 +69,6 @@ namespace iPhoneBE.API.Controllers
 
                 return Ok(mapper.Map<CategoryViewModel>(category));
             }
-            catch (KeyNotFoundException ex)
-            {
-                _unitOfWork.RollbackTransaction();
-                return NotFound(new { message = ex.Message });
-            }
             catch (Exception ex)
             {
                 _unitOfWork.RollbackTransaction();
@@ -95,15 +90,14 @@ namespace iPhoneBE.API.Controllers
             _unitOfWork.BeginTransaction();
             try
             {
-                var existingCategory = await _categoryServices.GetByIdAsync(id);
-                if (existingCategory == null)
-                {
-                    return NotFound($"Category with ID {id} not found.");
-                }
 
                 var category = mapper.Map<Category>(updateCategory);
-                category = await _categoryServices.UpdateAsync(id, category);
-
+                bool result = await _categoryServices.UpdateAsync(id, category);
+                if (!result)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    return NotFound();
+                }
                 _unitOfWork.SaveChanges();
                 _unitOfWork.CommitTransaction();
 
@@ -137,6 +131,13 @@ namespace iPhoneBE.API.Controllers
                 if (existingCategory == null)
                 {
                     return NotFound($"Category with ID {id} not found.");
+                }
+
+                bool result = await _categoryServices.DeleteAsync(id);
+                if (!result)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    return NotFound();
                 }
 
                 await _categoryServices.DeleteAsync(id);
