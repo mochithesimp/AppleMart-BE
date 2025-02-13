@@ -1,50 +1,54 @@
 ﻿using AutoMapper;
 using iPhoneBE.Data;
 using iPhoneBE.Data.Model;
+using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Data.Models.ProductModel;
 using iPhoneBE.Data.ViewModels.ProductDTO;
+using iPhoneBE.Data.ViewModels.ProductItemDTO;
 using iPhoneBE.Service.Interfaces;
+using iPhoneBE.Service.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iPhoneBE.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductItemController : ControllerBase
     {
-        private readonly IProductServices _productServices;
+        private readonly IProductItemServices _productItemServices;
         private readonly IMapper mapper;
         private readonly IUnitOfWork _unitOfWork;
 
-        public ProductController(IProductServices productServices, IMapper mapper, IUnitOfWork unitOfWork)
+        public ProductItemController(IProductItemServices productItemServices, IMapper mapper, IUnitOfWork unitOfWork)
         {
-            _productServices = productServices;
+            _productItemServices = productItemServices;
             this.mapper = mapper;
             _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
         //[Authorize(Roles = "Admin, Staff, Customer")]
-        public async Task<ActionResult<IEnumerable<ProductViewModel>>> GetAll(string? productName = null)
+        public async Task<ActionResult<IEnumerable<ProductItemViewModel>>> GetAll(string? productItemName = null)
         {
-            var products = await _productServices.GetAllAsync(productName);
-            return Ok(mapper.Map<List<ProductViewModel>>(products));
+            var productItems = await _productItemServices.GetAllAsync(productItemName);
+            return Ok(mapper.Map<List<ProductItemViewModel>>(productItems));
         }
 
         [HttpGet("{id}")]
         //[Authorize(Roles = "Admin, Staff, Customer")]
-        public async Task<ActionResult<Product>> GetById(int id)
+        public async Task<ActionResult<ProductItem>> GetById(int id)
         {
-            var product = await _productServices.GetByIdAsync(id);
-            if (product == null)
+            var productItem = await _productItemServices.GetByIdAsync(id);
+            if (productItem == null)
                 return NotFound();
 
-            return Ok(mapper.Map<ProductViewModel>(product));
+            return Ok(mapper.Map<ProductItemViewModel>(productItem));
         }
 
         [HttpPost("create-product")]
         //[Authorize(Roles = "Admin, Staff")]
-        public async Task<ActionResult<Product>> Add([FromBody] CreateProductModel CreateProduct)
+        public async Task<ActionResult<ProductItem>> Add([FromBody] CreateProductItemModel CreateProductItem)
         {
             if (!ModelState.IsValid)
             {
@@ -54,17 +58,27 @@ namespace iPhoneBE.API.Controllers
             _unitOfWork.BeginTransaction();
             try
             {
-                var product = mapper.Map<Product>(CreateProduct);
+                var product = mapper.Map<ProductItem>(CreateProductItem);
                 if (product == null)
                 {
                     return BadRequest("Invalid product data!");
                 }
-                product = await _productServices.AddAsync(product);
+                product = await _productItemServices.AddAsync(product);
 
                 _unitOfWork.SaveChanges();
                 _unitOfWork.CommitTransaction();
 
-                return Ok(mapper.Map<ProductViewModel>(product));
+                return Ok(mapper.Map<ProductItemViewModel>(product));
+            }
+            catch (ArgumentNullException ex)
+            {
+                _unitOfWork.RollbackTransaction();
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                _unitOfWork.RollbackTransaction();
+                return BadRequest(new { message = ex.Message });
             }
             catch (KeyNotFoundException ex)
             {
@@ -81,7 +95,7 @@ namespace iPhoneBE.API.Controllers
 
         [HttpPut("{id}")]
         //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateProductModel updateProduct)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateProductItemModel updateProduct)
         {
             if (!ModelState.IsValid)
             {
@@ -91,19 +105,19 @@ namespace iPhoneBE.API.Controllers
             _unitOfWork.BeginTransaction();
             try
             {
-                var existingProduct = await _productServices.GetByIdAsync(id);
-                if (existingProduct == null)
+                var existingProductItem = await _productItemServices.GetByIdAsync(id);
+                if (existingProductItem == null)
                 {
-                    return NotFound($"Product with ID {id} not found.");
+                    return NotFound($"Product Item with ID {id} not found.");
                 }
 
-                var product = mapper.Map<Product>(updateProduct);
-                product = await _productServices.UpdateAsync(id, product);
+                var product = mapper.Map<ProductItem>(updateProduct);
+                product = await _productItemServices.UpdateAsync(id, product);
 
                 _unitOfWork.SaveChanges();
                 _unitOfWork.CommitTransaction();
 
-                return Ok(mapper.Map<ProductViewModel>(product));
+                return Ok(mapper.Map<ProductItemViewModel>(product));
             }
             catch (ArgumentNullException ex)
             {
@@ -129,18 +143,18 @@ namespace iPhoneBE.API.Controllers
             _unitOfWork.BeginTransaction();
             try
             {
-                var existingProduct = await _productServices.GetByIdAsync(id);
-                if (existingProduct == null)
+                var existingProductItem = await _productItemServices.GetByIdAsync(id);
+                if (existingProductItem == null)
                 {
-                    return NotFound($"Product with ID {id} not found.");
+                    return NotFound($"Product Item with ID {id} not found.");
                 }
 
-                await _productServices.DeleteAsync(id);
+                await _productItemServices.DeleteAsync(id);
 
                 _unitOfWork.SaveChanges();
                 _unitOfWork.CommitTransaction();
 
-                return Ok(mapper.Map<ProductViewModel>(existingProduct));
+                return Ok(mapper.Map<ProductItemViewModel>(existingProductItem));
             }
             catch (KeyNotFoundException ex)
             {

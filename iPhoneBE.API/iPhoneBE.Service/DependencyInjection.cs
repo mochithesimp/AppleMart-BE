@@ -15,7 +15,7 @@ namespace iPhoneBE.Service
         {
             service.AddTransient<ICategoryServices, CategoryServices>();
             service.AddTransient<IProductServices, ProductServices>();
-
+            service.AddTransient<IProductItemServices, ProductItemServices>();
 
             return service;
         }
