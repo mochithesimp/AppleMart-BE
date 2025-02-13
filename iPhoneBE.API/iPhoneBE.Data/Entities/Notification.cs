@@ -11,7 +11,7 @@ namespace iPhoneBE.Data.Model
     public class Notification
     {
         [Key]
-        public int NotificationId { get; set; }
+        public int NotificationID { get; set; }
 
         [ForeignKey("User")]
         public string UserId { get; set; }
@@ -26,7 +26,7 @@ namespace iPhoneBE.Data.Model
 
         public bool IsRead { get; set; }
 
-        public bool IsRemoved { get; set; }
+        public bool IsDeleted { get; set; }
 
         public DateTime CreatedDate { get; set; }
         public virtual User User { get; set; }

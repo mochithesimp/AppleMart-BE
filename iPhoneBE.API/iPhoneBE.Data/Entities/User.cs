@@ -22,7 +22,7 @@ namespace iPhoneBE.Data.Model
 
         [MaxLength(500, ErrorMessage = "Avatar URL cannot exceed 500 characters.")]
         public string Avatar { get; set; }
-        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
 
         public ICollection<Order> Orders { get; set; }
         public ICollection<Order> ShippedOrders { get; set; } //Shipper

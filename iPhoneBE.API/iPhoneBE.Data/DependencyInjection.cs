@@ -14,8 +14,8 @@ namespace iPhoneBE.Data
 
         public static IServiceCollection AddRepository(this IServiceCollection service)
         {
-            service.AddTransient(typeof(IUnitOfWork), typeof(UnitOfWork));
-            service.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+            service.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
+            service.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
             service.AddTransient<ICategoryRepository, CategoryRepository>();
             service.AddTransient<IProductRepository, ProductRepository>();

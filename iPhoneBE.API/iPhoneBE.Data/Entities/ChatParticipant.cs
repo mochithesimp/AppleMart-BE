@@ -12,7 +12,7 @@ namespace iPhoneBE.Data.Entities
     public class ChatParticipant
     {
         [Key]
-        public int Id { get; set; } // ✅ Thêm khóa chính mới
+        public int ID { get; set; } // ✅ Thêm khóa chính mới
 
         [ForeignKey("ChatRoom")]
         public int ChatRoomID { get; set; }

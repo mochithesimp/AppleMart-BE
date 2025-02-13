@@ -95,19 +95,19 @@ namespace iPhoneBE.Data.Data
 
             // Configure ChatParticipant composite key
             modelBuilder.Entity<ChatParticipant>()
-                .HasKey(cp => cp.Id); // ✅ Khóa chính là Id
+                .HasKey(cp => cp.ID);
 
             modelBuilder.Entity<ChatParticipant>()
                 .HasOne(cp => cp.ChatRoom)
                 .WithMany(c => c.ChatParticipants)
                 .HasForeignKey(cp => cp.ChatRoomID)
-                .OnDelete(DeleteBehavior.Cascade); // ✅ Khi xóa ChatRoom thì xóa ChatParticipant
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<ChatParticipant>()
                 .HasOne(cp => cp.User)
                 .WithMany(u => u.ChatParticipants)
                 .HasForeignKey(cp => cp.UserID)
-                .OnDelete(DeleteBehavior.Cascade); // ✅ Khi xóa User thì xóa ChatParticipant
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Configure Voucher relationships
             modelBuilder.Entity<Voucher>()

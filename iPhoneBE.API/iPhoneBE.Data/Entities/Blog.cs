@@ -12,7 +12,7 @@ namespace iPhoneBE.Data.Entities
     public class Blog
     {
         [Key]
-        public int BlogId { get; set; }
+        public int BlogID { get; set; }
 
         [Required(ErrorMessage = "Title is required.")]
         public string Title { get; set; }
@@ -34,7 +34,7 @@ namespace iPhoneBE.Data.Entities
 
         public int Like { get; set; }
 
-        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
 
         public Product Product { get; set; }
         public virtual ICollection<UserBlogView> UserBlogViews { get; set; }

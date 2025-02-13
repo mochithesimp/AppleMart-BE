@@ -1,179 +1,184 @@
 ﻿using iPhoneBE.Data.Data;
+using iPhoneBE.Data.Entities;
+using iPhoneBE.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace iPhoneBE.Data
 {
-    public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
+    public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEntity
     {
         private readonly AppleMartDBContext _dbContext;
-
-        public DbSet<TEntity> Entities { get; }
 
         public Repository(AppleMartDBContext dbContext)
         {
             _dbContext = dbContext;
-            Entities = _dbContext.Set<TEntity>();
         }
 
-        public async Task Add(TEntity entity)
+        public async Task<TEntity> AddAsync(TEntity entity)
         {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
+            try
+            {
+                var result = await _dbContext.Set<TEntity>().AddAsync(entity);
+                return result.Entity;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
-            Entities.Add(entity);
+        public async Task AddRangeAsync(List<TEntity> entities)
+        {
+            try
+            {
+                await _dbContext.Set<TEntity>().AddRangeAsync(entities);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null, params Expression<Func<TEntity, object>>[] includes)
+        {
+            IQueryable<TEntity> query = _dbContext.Set<TEntity>();
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<TEntity?> GetByIdAsync(Guid id, params Expression<Func<TEntity, object>>[] includes)
+        {
+            IQueryable<TEntity> query = _dbContext.Set<TEntity>();
+
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            // Tìm thuộc tính chứa "Id" (ví dụ: Id, ProductId, UserId, ...)
+            var keyProperty = typeof(TEntity)
+                .GetProperties()
+                .FirstOrDefault(p => p.Name.EndsWith("ID", StringComparison.OrdinalIgnoreCase));
+
+            if (keyProperty == null)
+            {
+                throw new InvalidOperationException($"Entity {typeof(TEntity).Name} không có khóa chính hợp lệ.");
+            }
+
+            // Tạo biểu thức động: x => x.{KeyProperty} == id
+            var parameter = Expression.Parameter(typeof(TEntity), "x");
+            var propertyAccess = Expression.Property(parameter, keyProperty);
+            var constant = Expression.Constant(id);
+            var equalExpression = Expression.Equal(propertyAccess, constant);
+            var lambda = Expression.Lambda<Func<TEntity, bool>>(equalExpression, parameter);
+
+            return await query.FirstOrDefaultAsync(lambda);
+        }
+
+        public async Task<TEntity> GetSingleByConditionAsynce(Expression<Func<TEntity, bool>> predicate = null, params Expression<Func<TEntity, object>>[] includes)
+        {
+            IQueryable<TEntity> query = _dbContext.Set<TEntity>();
+
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            return await query.FirstOrDefaultAsync(predicate);
+        }
+
+        public async Task<bool> HardRemove(Expression<Func<TEntity, bool>> predicate)
+        {
+            try
+            {
+                var entities = await _dbContext.Set<TEntity>().Where(predicate).ToListAsync();
+                if (entities.Any())
+                {
+                    _dbContext.Set<TEntity>().RemoveRange(entities);
+                    return true;
+                }
+                return false; // Không có gì để xóa
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error while performing hard remove: {ex.Message}");
+            }
+        }
+
+        public async Task<bool> HardRemoveRange(List<TEntity> entities)
+        {
+            try
+            {
+                if (entities.Any())
+                {
+                    _dbContext.Set<TEntity>().RemoveRange(entities);
+                    return true;
+                }
+                return false; // Không có gì để xóa
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error while performing hard remove range: {ex.Message}");
+            }
+        }
+
+        public async Task<bool> SoftDelete(TEntity entity)
+        {
+            entity.IsDeleted = true;
+            _dbContext.Set<TEntity>().Update(entity);
+            return true;
+        }
+
+        public async Task<bool> SoftDeleteRange(List<TEntity> entities)
+        {
+            foreach (var entity in entities)
+            {
+                entity.IsDeleted = true;
+            }
+            _dbContext.Set<TEntity>().UpdateRange(entities);
+            //  await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> Update(TEntity entity)
+        {
+            _dbContext.Set<TEntity>().Update(entity);
+            return true;
+        }
+
+        public async Task<bool> UpdateRange(List<TEntity> entities)
+        {
+            _dbContext.Set<TEntity>().UpdateRange(entities);
+            return true;
+        }
+
+        public async Task CommitAsync()
+        {
             await _dbContext.SaveChangesAsync();
-        }
-
-        public async Task Add(IEnumerable<TEntity> entities)
-        {
-            if (entities == null)
-                throw new ArgumentNullException(nameof(entities));
-
-            Entities.AddRange(entities);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        public IQueryable<TEntity> GetAll()
-        {
-            return Entities;
-        }
-
-        public TEntity GetById(object id)
-        {
-            if (id == null)
-                throw new ArgumentNullException(nameof(id));
-
-            return Entities.Find(id);
-
-        }
-
-        public void Remove(int id)
-        {
-            var entity = GetById(id);
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
-
-            Entities.Remove(entity);
-        }
-
-        public void Remove(TEntity entity)
-        {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
-
-            Entities.Remove(entity);
-        }
-
-        public void Remove(params TEntity[] entities)
-        {
-            if (entities == null)
-                throw new ArgumentNullException(nameof(entities));
-
-            Entities.RemoveRange(entities);
-        }
-
-        public void Remove(IEnumerable<TEntity> entities)
-        {
-            if (entities == null)
-                throw new ArgumentNullException(nameof(entities));
-
-            Entities.RemoveRange(entities);
-        }
-
-        public async Task Update(TEntity entity)
-        {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
-
-            Entities.Update(entity);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        public async Task Update(IEnumerable<TEntity> entities)
-        {
-            if (entities == null)
-                throw new ArgumentNullException(nameof(entities));
-
-            Entities.UpdateRange(entities);
-            await _dbContext.SaveChangesAsync();
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        public Task<TEntity> AddAsync(TEntity entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task AddRangeAsync(List<TEntity> entities)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null, params Expression<Func<TEntity, object>>[] includes)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TEntity?> GetByIdAsync(Guid id, params Expression<Func<TEntity, object>>[] includes)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<TEntity> GetSingleByConditionAsynce(Expression<Func<TEntity, bool>> predicate = null, params Expression<Func<TEntity, object>>[] includes)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HardRemove(Expression<Func<TEntity, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HardRemoveRange(List<TEntity> entities)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SoftDelete(TEntity entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SoftDeleteRange(List<TEntity> entities)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> Update1(TEntity entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> UpdateRange(List<TEntity> entities)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task CommitAsync()
-        {
-            throw new NotImplementedException();
         }
     }
 }
