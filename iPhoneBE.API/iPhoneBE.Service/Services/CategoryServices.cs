@@ -1,4 +1,4 @@
-﻿using iPhoneBE.Data.Interfaces;
+﻿using iPhoneBE.Data;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Service.Interfaces;
 using System;
@@ -11,36 +11,59 @@ namespace iPhoneBE.Service.Services
 {
     public class CategoryServices : ICategoryServices
     {
-        private readonly ICategoryRepository categoryRepository;
+        private readonly IRepository<Category> _repository;
 
-        public CategoryServices(ICategoryRepository categoryRepository)
+        public CategoryServices(IRepository<Category> repository)
         {
-            this.categoryRepository = categoryRepository;
+            _repository = repository;
         }
 
-        public Task<Category> AddAsync(Category category)
+        public async Task<Category> AddAsync(Category category)
         {
-            return categoryRepository.AddAsync(category);
+            var result = await _repository.AddAsync(category);
+
+            return result;
         }
 
-        public Task<Category> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            return categoryRepository.DeleteAsync(id);
+            bool result = false;
+
+            Category category = await _repository.GetByIdAsync(id);
+
+            if (category == null)
+            {
+                throw new KeyNotFoundException("404 - Product not found.");
+            }
+
+            result = await _repository.SoftDelete(category);
+            await _repository.CommitAsync();
+
+            return result;
         }
 
-        public Task<IEnumerable<Category>> GetAllAsync(string? categoryName)
+        public async Task<IEnumerable<Category>> GetAllAsync(string? categoryName)
         {
-            return categoryRepository.GetAllAsync(categoryName);
+            var result = await _repository.GetAllAsync(categoryName == null ? null : c => c.Name == categoryName);
+            result = result.Where(r => r.IsDeleted == false);
+            return result;
         }
 
         public Task<Category> GetByIdAsync(int id)
         {
-            return categoryRepository.GetByIdAsync(id);
+            return _repository.GetByIdAsync(id);
         }
 
-        public Task<Category> UpdateAsync(int id, Category category)
+        public async Task<bool> UpdateAsync(int id, Category category)
         {
-            return categoryRepository.UpdateAsync(id, category);
+            var newCategory = await _repository.GetByIdAsync(id);
+            var result = false;
+            if (newCategory == null)
+            {
+                throw new KeyNotFoundException("404 - Product not found.");
+            }
+            result = await _repository.Update(newCategory);
+            return result;
         }
     }
 }
