@@ -37,7 +37,7 @@ namespace iPhoneBE.Data.Model
         [Compare("CreatedDate", ErrorMessage = "Expiration date must be later than the created date.")]
         public DateTime ExpiredDate { get; set; }
 
-        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
 
 
         [ForeignKey("ProductItem")]

@@ -1,6 +1,8 @@
 ﻿using iPhoneBE.Data.Data;
+using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,66 +12,175 @@ using System.Threading.Tasks;
 
 namespace iPhoneBE.Data
 {
-    public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
+    public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEntity
     {
-        public Task<TEntity> AddAsync(TEntity entity)
+        private readonly AppleMartDBContext _dbContext;
+
+        public Repository(AppleMartDBContext dbContext)
         {
-            throw new NotImplementedException();
+            _dbContext = dbContext;
         }
 
-        public Task AddRangeAsync(List<TEntity> entities)
+        public async Task<TEntity> AddAsync(TEntity entity)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var result = await _dbContext.Set<TEntity>().AddAsync(entity);
+                return result.Entity;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
-        public Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null, params Expression<Func<TEntity, object>>[] includes)
+        public async Task AddRangeAsync(List<TEntity> entities)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await _dbContext.Set<TEntity>().AddRangeAsync(entities);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
-        public Task<TEntity?> GetByIdAsync(Guid id, params Expression<Func<TEntity, object>>[] includes)
+        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null, params Expression<Func<TEntity, object>>[] includes)
         {
-            throw new NotImplementedException();
+            IQueryable<TEntity> query = _dbContext.Set<TEntity>();
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            return await query.ToListAsync();
         }
 
-        public Task<TEntity> GetSingleByConditionAsynce(Expression<Func<TEntity, bool>> predicate = null, params Expression<Func<TEntity, object>>[] includes)
+        public async Task<TEntity?> GetByIdAsync(Guid id, params Expression<Func<TEntity, object>>[] includes)
         {
-            throw new NotImplementedException();
+            IQueryable<TEntity> query = _dbContext.Set<TEntity>();
+
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            // Tìm thuộc tính chứa "Id" (ví dụ: Id, ProductId, UserId, ...)
+            var keyProperty = typeof(TEntity)
+                .GetProperties()
+                .FirstOrDefault(p => p.Name.EndsWith("ID", StringComparison.OrdinalIgnoreCase));
+
+            if (keyProperty == null)
+            {
+                throw new InvalidOperationException($"Entity {typeof(TEntity).Name} không có khóa chính hợp lệ.");
+            }
+
+            // Tạo biểu thức động: x => x.{KeyProperty} == id
+            var parameter = Expression.Parameter(typeof(TEntity), "x");
+            var propertyAccess = Expression.Property(parameter, keyProperty);
+            var constant = Expression.Constant(id);
+            var equalExpression = Expression.Equal(propertyAccess, constant);
+            var lambda = Expression.Lambda<Func<TEntity, bool>>(equalExpression, parameter);
+
+            return await query.FirstOrDefaultAsync(lambda);
         }
 
-        public Task<bool> HardRemove(Expression<Func<TEntity, bool>> predicate)
+        public async Task<TEntity> GetSingleByConditionAsynce(Expression<Func<TEntity, bool>> predicate = null, params Expression<Func<TEntity, object>>[] includes)
         {
-            throw new NotImplementedException();
+            IQueryable<TEntity> query = _dbContext.Set<TEntity>();
+
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            return await query.FirstOrDefaultAsync(predicate);
         }
 
-        public Task<bool> HardRemoveRange(List<TEntity> entities)
+        public async Task<bool> HardRemove(Expression<Func<TEntity, bool>> predicate)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var entities = await _dbContext.Set<TEntity>().Where(predicate).ToListAsync();
+                if (entities.Any())
+                {
+                    _dbContext.Set<TEntity>().RemoveRange(entities);
+                    return true;
+                }
+                return false; // Không có gì để xóa
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error while performing hard remove: {ex.Message}");
+            }
         }
 
-        public Task<bool> SoftDelete(TEntity entity)
+        public async Task<bool> HardRemoveRange(List<TEntity> entities)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (entities.Any())
+                {
+                    _dbContext.Set<TEntity>().RemoveRange(entities);
+                    return true;
+                }
+                return false; // Không có gì để xóa
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error while performing hard remove range: {ex.Message}");
+            }
         }
 
-        public Task<bool> SoftDeleteRange(List<TEntity> entities)
+        public async Task<bool> SoftDelete(TEntity entity)
         {
-            throw new NotImplementedException();
+            entity.IsDeleted = true;
+            _dbContext.Set<TEntity>().Update(entity);
+            return true;
         }
 
-        public Task<bool> Update(TEntity entity)
+        public async Task<bool> SoftDeleteRange(List<TEntity> entities)
         {
-            throw new NotImplementedException();
+            foreach (var entity in entities)
+            {
+                entity.IsDeleted = true;
+            }
+            _dbContext.Set<TEntity>().UpdateRange(entities);
+            //  await _dbContext.SaveChangesAsync();
+            return true;
         }
 
-        public Task<bool> UpdateRange(List<TEntity> entities)
+        public async Task<bool> Update(TEntity entity)
         {
-            throw new NotImplementedException();
+            _dbContext.Set<TEntity>().Update(entity);
+            return true;
         }
 
-        public Task CommitAsync()
+        public async Task<bool> UpdateRange(List<TEntity> entities)
         {
-            throw new NotImplementedException();
+            _dbContext.Set<TEntity>().UpdateRange(entities);
+            return true;
+        }
+
+        public async Task CommitAsync()
+        {
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

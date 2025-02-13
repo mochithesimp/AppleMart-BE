@@ -13,7 +13,7 @@ namespace iPhoneBE.Data.Entities
     public class UserBlogView
     {
         [Key]
-        public int UserBlogViewId { get; set; }
+        public int UserBlogViewID { get; set; }
 
         [ForeignKey("UserId")]
         public int UserId { get; set; }
