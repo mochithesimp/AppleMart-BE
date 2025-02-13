@@ -1,4 +1,7 @@
 ﻿using AutoMapper;
+using iPhoneBE.Data.Model;
+using iPhoneBE.Data.Models.CategoryModel;
+using iPhoneBE.Data.ViewModels.CategoryDTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +14,10 @@ namespace iPhoneBE.Data.Mapping
     {
         public AutoMapperProfile()
         {
+            CreateMap<Category, CategoryViewModel>().ReverseMap();
+            CreateMap<Category, CreateCategoryModel>().ReverseMap();
+            CreateMap<Category, UpdateCategoryModel>().ReverseMap();
+
 
         }
     }

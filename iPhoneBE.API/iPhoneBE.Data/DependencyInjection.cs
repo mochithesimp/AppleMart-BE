@@ -1,4 +1,5 @@
 ﻿using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Data.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,8 @@ namespace iPhoneBE.Data
         {
             service.AddTransient(typeof(IUnitOfWork), typeof(UnitOfWork));
             service.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+
+            service.AddTransient<ICategoryRepository, CategoryRepository>();
 
             return service;
         }

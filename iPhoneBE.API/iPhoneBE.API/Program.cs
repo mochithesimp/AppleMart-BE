@@ -1,6 +1,7 @@
 
 using iPhoneBE.Data;
 using iPhoneBE.Data.Data;
+using iPhoneBE.Data.Mapping;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -56,6 +57,7 @@ namespace iPhoneBE.API
                 .AddRepository()
                 .AddServices();
 
+            builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 
             builder.Services.AddControllers();
