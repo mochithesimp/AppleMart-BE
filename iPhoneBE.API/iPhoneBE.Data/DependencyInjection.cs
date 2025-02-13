@@ -19,7 +19,7 @@ namespace iPhoneBE.Data
 
             service.AddTransient<ICategoryRepository, CategoryRepository>();
             service.AddTransient<IProductRepository, ProductRepository>();
-
+            service.AddTransient<IProductItemRepository, ProductItemRepository>();
 
             return service;
         }
