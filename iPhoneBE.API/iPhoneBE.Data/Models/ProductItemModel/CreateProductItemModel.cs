@@ -1,20 +1,15 @@
-﻿using System;
+﻿using iPhoneBE.Data.Model;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using iPhoneBE.Data.Entities;
 
-namespace iPhoneBE.Data.Model
+namespace iPhoneBE.Data.Models.ProductItemModel
 {
-    public class ProductItem
+    public class CreateProductItemModel
     {
-        [Key]
-        public int ProductItemID { get; set; }
-
-        [ForeignKey("Product")]
         [Required(ErrorMessage = "Product ID is required.")]
         public int ProductID { get; set; }
 
@@ -29,19 +24,11 @@ namespace iPhoneBE.Data.Model
         public string Color { get; set; }
 
         [Required(ErrorMessage = "Quantity is required.")]
-        [Range(0, int.MaxValue, ErrorMessage = "Quantity must be at least 0.")]
         public int Quantity { get; set; }
 
         public double Price { get; set; }
 
-        public bool IsDeleted { get; set; }
+        public bool IsDeleted = false;
 
-        public virtual Product Product { get; set; }
-
-        public virtual ICollection<ProductImg> ProductImgs { get; set; }
-        public virtual ICollection<Review> Reviews { get; set; }
-        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
-        public virtual ICollection<ProductSpecification> ProductSpecifications { get; set; }
-        public virtual ICollection<Voucher> Vouchers { get; set; }
     }
 }

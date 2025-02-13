@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iPhoneBE.Data.Data;
 
@@ -11,9 +12,11 @@ using iPhoneBE.Data.Data;
 namespace iPhoneBE.Data.Migrations
 {
     [DbContext(typeof(AppleMartDBContext))]
-    partial class AppleMartDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250213033713_RemoveImgUrlInProductItem")]
+    partial class RemoveImgUrlInProductItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -157,11 +160,11 @@ namespace iPhoneBE.Data.Migrations
 
             modelBuilder.Entity("iPhoneBE.Data.Entities.Blog", b =>
                 {
-                    b.Property<int>("BlogID")
+                    b.Property<int>("BlogId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BlogID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BlogId"));
 
                     b.Property<string>("Author")
                         .IsRequired()
@@ -171,7 +174,7 @@ namespace iPhoneBE.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsDeleted")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<int>("Like")
@@ -193,7 +196,7 @@ namespace iPhoneBE.Data.Migrations
                     b.Property<int>("View")
                         .HasColumnType("int");
 
-                    b.HasKey("BlogID");
+                    b.HasKey("BlogId");
 
                     b.HasIndex("ProductId");
 
@@ -266,11 +269,11 @@ namespace iPhoneBE.Data.Migrations
 
             modelBuilder.Entity("iPhoneBE.Data.Entities.ChatParticipant", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ChatRoomID")
                         .HasColumnType("int");
@@ -285,7 +288,7 @@ namespace iPhoneBE.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
                     b.HasIndex("ChatRoomID");
 
@@ -400,11 +403,11 @@ namespace iPhoneBE.Data.Migrations
 
             modelBuilder.Entity("iPhoneBE.Data.Entities.UserBlogView", b =>
                 {
-                    b.Property<int>("UserBlogViewID")
+                    b.Property<int>("UserBlogViewId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserBlogViewID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserBlogViewId"));
 
                     b.Property<int>("BlogId")
                         .HasColumnType("int");
@@ -418,7 +421,7 @@ namespace iPhoneBE.Data.Migrations
                     b.Property<string>("UserId1")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("UserBlogViewID");
+                    b.HasKey("UserBlogViewId");
 
                     b.HasIndex("BlogId");
 
@@ -455,11 +458,11 @@ namespace iPhoneBE.Data.Migrations
 
             modelBuilder.Entity("iPhoneBE.Data.Model.Notification", b =>
                 {
-                    b.Property<int>("NotificationID")
+                    b.Property<int>("NotificationId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -474,17 +477,17 @@ namespace iPhoneBE.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<bool>("IsDeleted")
+                    b.Property<bool>("IsRead")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsRead")
+                    b.Property<bool>("IsRemoved")
                         .HasColumnType("bit");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("NotificationID");
+                    b.HasKey("NotificationId");
 
                     b.HasIndex("UserId");
 
@@ -755,7 +758,7 @@ namespace iPhoneBE.Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsDeleted")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
@@ -836,7 +839,7 @@ namespace iPhoneBE.Data.Migrations
                     b.Property<DateTime>("ExpiredDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsDeleted")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<double>("MinimumTotal")

@@ -1,6 +1,7 @@
 
 using iPhoneBE.Data;
 using iPhoneBE.Data.Data;
+using iPhoneBE.Data.Mapping;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -56,9 +57,13 @@ namespace iPhoneBE.API
                 .AddRepository()
                 .AddServices();
 
+            builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+            });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using iPhoneBE.Service.Interfaces;
+using iPhoneBE.Service.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +13,10 @@ namespace iPhoneBE.Service
     {
         public static IServiceCollection AddServices(this IServiceCollection service)
         {
+            service.AddTransient<ICategoryServices, CategoryServices>();
+            service.AddTransient<IProductServices, ProductServices>();
+            service.AddTransient<IProductItemServices, ProductItemServices>();
+
             return service;
         }
     }
