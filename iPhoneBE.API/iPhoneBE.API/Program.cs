@@ -46,9 +46,18 @@ namespace iPhoneBE.API
             );
 
             //add database
+            var server = builder.Configuration["server"] ?? "localhost";
+            var database = builder.Configuration["database"] ?? "AppleMartDB";
+            var port = builder.Configuration["port"] ?? "1433";
+            var password = builder.Configuration["password"] ?? "12345";
+            var user = builder.Configuration["dbuser"] ?? "sa";
+
+            var connectionString = $"Server={server},{port};Database={database};User Id={user};Password={password};TrustServerCertificate=True;";
+
             Console.WriteLine("Connection String: " + builder.Configuration.GetConnectionString("DefaultConnection"));
             builder.Services.AddDbContext<AppleMartDBContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(connectionString)
+                );
 
             builder.Services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<AppleMartDBContext>().AddDefaultTokenProviders();
@@ -86,6 +95,21 @@ namespace iPhoneBE.API
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            //check db init
+            var scope = app.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppleMartDBContext>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                context.Database.Migrate();
+                //DbInitializer.Initialize(context);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "A problem occurred during migration");
+            }
 
 
             app.MapControllers();
