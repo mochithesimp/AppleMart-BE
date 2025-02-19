@@ -1,4 +1,4 @@
-﻿using iPhoneBE.Data;
+﻿using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Service.Interfaces;
 using System;

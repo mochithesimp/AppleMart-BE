@@ -18,10 +18,10 @@ namespace iPhoneBE.Data.Model
         public string Name { get; set; }
 
         [MaxLength(500, ErrorMessage = "Address cannot exceed 500 characters.")]
-        public string Address { get; set; }
+        public string? Address { get; set; }
 
         [MaxLength(500, ErrorMessage = "Avatar URL cannot exceed 500 characters.")]
-        public string Avatar { get; set; }
+        public string? Avatar { get; set; }
         public bool IsDeleted { get; set; }
 
         public ICollection<Order> Orders { get; set; }

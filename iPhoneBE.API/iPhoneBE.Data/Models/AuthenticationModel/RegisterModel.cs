@@ -16,7 +16,7 @@ namespace iPhoneBE.Data.Models.AuthenticationModel
         [Required]
         public string Password { get; set; }
         [Required]
-        [Compare("Password", ErrorMessage = "Mật khẩu và xác nhận mật khẩu không khớp.")]
+        [Compare("Password", ErrorMessage = "Password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
     }
 }

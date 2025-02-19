@@ -1,4 +1,4 @@
-
+﻿
 using iPhoneBE.Data;
 using iPhoneBE.Data.Data;
 using iPhoneBE.Data.Mapping;
@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 namespace iPhoneBE.API
@@ -20,30 +21,95 @@ namespace iPhoneBE.API
 
             // Add services to the container.
 
-            //add jwt
-            builder.Services.AddAuthentication(options =>
+            // Swagger Configuration
+            builder.Services.AddSwaggerGen(option =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.TokenValidationParameters = new TokenValidationParameters()
+                option.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
+                option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    ValidateIssuer = false,
-                    ValidIssuer = builder.Configuration["JWT:ValidateIssuer"],
-                    ValidateAudience = false,
-                    ValidAudience = builder.Configuration["JWT:ValidateAudience"],
+                    In = ParameterLocation.Header,
+                    Description = "Please enter a valid token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "Bearer"
+                });
+                option.AddSecurityRequirement(new OpenApiSecurityRequirement
+                 {
+                     {
+                         new OpenApiSecurityScheme
+                         {
+                             Reference = new OpenApiReference
+                             {
+                                 Type = ReferenceType.SecurityScheme,
+                                 Id = "Bearer"
+                             }
+                         },
+                         new string[]{}
+                     }
+                 });
+            });
 
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ClockSkew = TimeSpan.Zero,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
-                };
-            }
-            );
+            //identity
+            builder.Services.AddIdentity<User, IdentityRole>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+            })
+                .AddEntityFrameworkStores<AppleMartDBContext>().AddDefaultTokenProviders();
+
+            //add jwt
+            builder.Services
+                .AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(x =>
+                {
+                    x.SaveToken = true;
+                    x.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ValidIssuer = builder.Configuration["JWT:Issuer"],
+                        ValidAudience = builder.Configuration["JWT:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
+                    };
+
+                    // Thêm logging
+                    x.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            Console.WriteLine($"OnAuthenticationFailed: {context.Exception.Message}");
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = context =>
+                        {
+                            Console.WriteLine("OnTokenValidated: Token is valid");
+                            var claims = context.Principal.Claims;
+                            foreach (var claim in claims)
+                            {
+                                Console.WriteLine($"Claim: {claim.Type}: {claim.Value}");
+                            }
+                            return Task.CompletedTask;
+                        },
+                        OnMessageReceived = context =>
+                        {
+                            var token = context.Token;
+                            Console.WriteLine($"OnMessageReceived: Token = {token ?? "null"}");
+                            return Task.CompletedTask;
+                        },
+                        OnChallenge = context =>
+                        {
+                            Console.WriteLine($"OnChallenge: {context.Error}, {context.ErrorDescription}");
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
+            builder.Services.AddAuthorization();
 
             //add database
             var server = builder.Configuration["server"] ?? "localhost";
@@ -59,12 +125,9 @@ namespace iPhoneBE.API
                 options.UseSqlServer(connectionString)
                 );
 
-            builder.Services.AddIdentity<User, IdentityRole>()
-                .AddEntityFrameworkStores<AppleMartDBContext>().AddDefaultTokenProviders();
-
             builder.Services
                 .AddRepository()
-                .AddServices();
+                        .AddServices();
 
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
@@ -76,6 +139,7 @@ namespace iPhoneBE.API
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddCors();
 
             var app = builder.Build();
 
@@ -84,17 +148,17 @@ namespace iPhoneBE.API
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+                // Không dùng HTTPS redirect trong môi trường dev
+            }
+            else
+            {
+                app.UseHttpsRedirection();  // Chỉ dùng trong production
             }
 
             app.UseCors(opt =>
             {
                 opt.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
             });
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
 
             //check db init
             var scope = app.Services.CreateScope();
@@ -111,6 +175,8 @@ namespace iPhoneBE.API
                 logger.LogError(ex, "A problem occurred during migration");
             }
 
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapControllers();
 

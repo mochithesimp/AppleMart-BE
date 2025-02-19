@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using iPhoneBE.Data.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace iPhoneBE.Data
         {
             service.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             service.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            service.AddScoped<IAccountRepository, AccountRepository>();
 
             return service;
         }
