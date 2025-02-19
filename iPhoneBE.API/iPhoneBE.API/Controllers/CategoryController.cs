@@ -5,10 +5,12 @@ using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.CategoryModel;
 using iPhoneBE.Data.ViewModels.CategoryDTO;
 using iPhoneBE.Service.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 
 namespace iPhoneBE.API.Controllers
 {
@@ -28,6 +30,7 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpGet]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [Authorize(Roles = "Customer")]
         //[Authorize(Roles = "Admin, Staff, Customer")]
         public async Task<ActionResult<IEnumerable<CategoryViewModel>>> GetAll(string? categoryName = null)

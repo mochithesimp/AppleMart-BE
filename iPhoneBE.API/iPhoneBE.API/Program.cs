@@ -50,48 +50,66 @@ namespace iPhoneBE.API
                  });
             });
 
-            //add jwt
-            builder.Services.AddAuthentication(options =>
+            //identity
+            builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.User.RequireUniqueEmail = true;
             })
-            .AddJwtBearer(options =>
-            {
-                options.RequireHttpsMetadata = false;
-                options.SaveToken = true;
-                options.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidateIssuer = false,
-                    ValidIssuer = builder.Configuration["JWT:Issuer"],
-                    ValidateAudience = false,
-                    ValidAudience = builder.Configuration["JWT:Audience"],
+                .AddEntityFrameworkStores<AppleMartDBContext>().AddDefaultTokenProviders();
 
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ClockSkew = TimeSpan.Zero,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"])),
-                };
-                options.Events = new JwtBearerEvents
+            //add jwt
+            builder.Services
+                .AddAuthentication(options =>
                 {
-                    OnAuthenticationFailed = context =>
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(x =>
+                {
+                    x.SaveToken = true;
+                    x.TokenValidationParameters = new TokenValidationParameters
                     {
-                        Console.WriteLine($"Authentication failed: {context.Exception.Message}");
-                        return Task.CompletedTask;
-                    },
-                    OnTokenValidated = context =>
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ValidIssuer = builder.Configuration["JWT:Issuer"],
+                        ValidAudience = builder.Configuration["JWT:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
+                    };
+
+                    // Thêm logging
+                    x.Events = new JwtBearerEvents
                     {
-                        Console.WriteLine("Token validated successfully");
-                        var claims = context.Principal.Claims;
-                        foreach (var claim in claims)
+                        OnAuthenticationFailed = context =>
                         {
-                            Console.WriteLine($"Claim: {claim.Type}: {claim.Value}");
+                            Console.WriteLine($"OnAuthenticationFailed: {context.Exception.Message}");
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = context =>
+                        {
+                            Console.WriteLine("OnTokenValidated: Token is valid");
+                            var claims = context.Principal.Claims;
+                            foreach (var claim in claims)
+                            {
+                                Console.WriteLine($"Claim: {claim.Type}: {claim.Value}");
+                            }
+                            return Task.CompletedTask;
+                        },
+                        OnMessageReceived = context =>
+                        {
+                            var token = context.Token;
+                            Console.WriteLine($"OnMessageReceived: Token = {token ?? "null"}");
+                            return Task.CompletedTask;
+                        },
+                        OnChallenge = context =>
+                        {
+                            Console.WriteLine($"OnChallenge: {context.Error}, {context.ErrorDescription}");
+                            return Task.CompletedTask;
                         }
-                        return Task.CompletedTask;
-                    }
-                };
-            });
+                    };
+                });
+            builder.Services.AddAuthorization();
 
             //add database
             var server = builder.Configuration["server"] ?? "localhost";
@@ -107,15 +125,9 @@ namespace iPhoneBE.API
                 options.UseSqlServer(connectionString)
                 );
 
-            builder.Services.AddIdentity<User, IdentityRole>(options =>
-            {
-                options.User.RequireUniqueEmail = true;
-            })
-                .AddEntityFrameworkStores<AppleMartDBContext>().AddDefaultTokenProviders();
-
             builder.Services
                 .AddRepository()
-                .AddServices();
+                        .AddServices();
 
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
@@ -136,17 +148,17 @@ namespace iPhoneBE.API
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+                // Không dùng HTTPS redirect trong môi trường dev
+            }
+            else
+            {
+                app.UseHttpsRedirection();  // Chỉ dùng trong production
             }
 
             app.UseCors(opt =>
             {
                 opt.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
             });
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
 
             //check db init
             var scope = app.Services.CreateScope();
@@ -163,6 +175,8 @@ namespace iPhoneBE.API
                 logger.LogError(ex, "A problem occurred during migration");
             }
 
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapControllers();
 
