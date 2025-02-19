@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace iPhoneBE.Data
+namespace iPhoneBE.Data.Interfaces
 {
     public interface IRepository<TEntity> where TEntity : class
     {

@@ -1,4 +1,5 @@
-﻿using iPhoneBE.Service.Interfaces;
+﻿using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Service.Interfaces;
 using iPhoneBE.Service.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -14,6 +15,7 @@ namespace iPhoneBE.Service
         public static IServiceCollection AddServices(this IServiceCollection service)
         {
             service.AddScoped<ICategoryServices, CategoryServices>();
+            service.AddScoped<IAccountServices, AccountServices>();
 
             return service;
         }

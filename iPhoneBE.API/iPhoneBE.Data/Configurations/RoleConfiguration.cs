@@ -15,9 +15,24 @@ namespace iPhoneBE.Data.Configurations
         {
             // Tạo các Role mặc định
             builder.HasData(
-                new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" },
-                new IdentityRole { Name = "Staff", NormalizedName = "STAFF" },
-                new IdentityRole { Name = "Customer", NormalizedName = "CUSTOMER" }
+                new IdentityRole
+                {
+                    Id = "e5df0673-2801-41c1-924c-8a84ee3aaa70",
+                    Name = "Admin",
+                    NormalizedName = "ADMIN"
+                },
+            new IdentityRole
+            {
+                Id = "b1a290ef-4467-4339-9931-218d8aeb46c0",
+                Name = "Staff",
+                NormalizedName = "STAFF"
+            },
+            new IdentityRole
+            {
+                Id = "e450c7fa-cb9b-40b0-b5f2-7ad083eefd63",
+                Name = "Customer",
+                NormalizedName = "CUSTOMER"
+            }
             );
         }
     }

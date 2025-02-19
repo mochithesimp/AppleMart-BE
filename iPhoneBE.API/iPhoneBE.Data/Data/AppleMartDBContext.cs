@@ -48,7 +48,7 @@ namespace iPhoneBE.Data.Data
         {
             base.OnModelCreating(modelBuilder);
             //insert role
-            //modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppleMartDBContext).Assembly);
+            modelBuilder.ApplyConfiguration( new RoleConfiguration());
 
             // Configure composite key for ChatParticipant
             modelBuilder.Entity<ChatParticipant>()

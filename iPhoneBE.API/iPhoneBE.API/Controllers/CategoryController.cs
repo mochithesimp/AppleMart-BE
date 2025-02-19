@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
-using iPhoneBE.Data;
+using iPhoneBE.Data.Helper;
+using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.CategoryModel;
 using iPhoneBE.Data.ViewModels.CategoryDTO;
@@ -27,6 +28,7 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Customer")]
         //[Authorize(Roles = "Admin, Staff, Customer")]
         public async Task<ActionResult<IEnumerable<CategoryViewModel>>> GetAll(string? categoryName = null)
         {
@@ -45,7 +47,7 @@ namespace iPhoneBE.API.Controllers
             return Ok(mapper.Map<CategoryViewModel>(category));
         }
 
-        [HttpPost("create-category")]
+        [HttpPost()]
         //[Authorize(Roles = "Admin, Staff")]
         public async Task<ActionResult<Category>> Add([FromBody] CreateCategoryModel Createcategory)
         {
@@ -103,20 +105,20 @@ namespace iPhoneBE.API.Controllers
 
                 return Ok(mapper.Map<CategoryViewModel>(category));
             }
-            catch (ArgumentNullException ex)
-            {
-                _unitOfWork.RollbackTransaction();
-                return NoContent();
-            }
             catch (KeyNotFoundException ex)
             {
                 _unitOfWork.RollbackTransaction();
                 return NotFound(new { message = ex.Message });
             }
+            catch (InvalidOperationException ex)
+            {
+                _unitOfWork.RollbackTransaction();
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 _unitOfWork.RollbackTransaction();
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message, stackTrace = ex.StackTrace });
             }
         }
 
@@ -140,22 +142,15 @@ namespace iPhoneBE.API.Controllers
                     return NotFound();
                 }
 
-                await _categoryServices.DeleteAsync(id);
-
                 _unitOfWork.SaveChanges();
                 _unitOfWork.CommitTransaction();
 
                 return Ok(mapper.Map<CategoryViewModel>(existingCategory));
             }
-            catch (KeyNotFoundException ex)
-            {
-                _unitOfWork.RollbackTransaction();
-                return NotFound(new { message = ex.Message });
-            }
             catch (Exception ex)
             {
                 _unitOfWork.RollbackTransaction();
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message, stackTrace = ex.StackTrace });
             }
         }
     }

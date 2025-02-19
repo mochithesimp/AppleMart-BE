@@ -23,7 +23,7 @@ namespace iPhoneBE.Data.Model
         public string Name { get; set; }
 
         [MaxLength(1000, ErrorMessage = "Description cannot exceed 1000 characters.")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         public bool IsDeleted { get; set; }
 

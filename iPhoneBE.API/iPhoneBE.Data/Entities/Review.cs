@@ -34,7 +34,7 @@ namespace iPhoneBE.Data.Entities
         public int Rating { get; set; }
 
         [MaxLength(1000, ErrorMessage = "Comment cannot exceed 1000 characters.")]
-        public string Comment { get; set; }
+        public string? Comment { get; set; }
         public User User { get; set; }
         public User Shipper { get; set; }
         public OrderDetail OrderDetail { get; set; }
