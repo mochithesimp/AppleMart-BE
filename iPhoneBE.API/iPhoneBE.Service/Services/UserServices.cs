@@ -1,4 +1,5 @@
 ﻿using iPhoneBE.Data.Model;
+using iPhoneBE.Data.ViewModels.UserDTO;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -18,6 +19,37 @@ namespace iPhoneBE.Service.Services
         {
             _userManager = userManager;
             _roleManager = roleManager;
+        }
+
+        public async Task<UserViewModel> GetUserByID(string id)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                if (user == null || user.IsDeleted == true)
+                {
+                    return null; // not found user
+                }
+                var roles = await _userManager.GetRolesAsync(user) ?? new List<string>();
+
+                return new UserViewModel
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name,
+                    PhoneNumber = user.PhoneNumber,
+                    Address = user.Address,
+                    Avatar = user.Avatar,
+                    Roles = roles.Select(role => new RoleViewModel
+                    {
+                        Role = role
+                    }).ToList()
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task<User> FindByEmail(string email)

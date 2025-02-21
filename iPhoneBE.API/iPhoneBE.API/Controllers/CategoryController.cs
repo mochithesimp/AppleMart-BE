@@ -31,8 +31,7 @@ namespace iPhoneBE.API.Controllers
 
         [HttpGet]
         //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [Authorize(Roles = "Customer")]
-        //[Authorize(Roles = "Admin, Staff, Customer")]
+        [Authorize(Roles = RolesHelper.Customer)]
         public async Task<ActionResult<IEnumerable<CategoryViewModel>>> GetAll(string? categoryName = null)
         {
             var categories = await _categoryServices.GetAllAsync(categoryName);
