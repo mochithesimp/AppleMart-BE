@@ -20,7 +20,6 @@ namespace iPhoneBE.Data
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-
         public AccountRepository(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
@@ -53,6 +52,9 @@ namespace iPhoneBE.Data
 
             if (result.Succeeded)
             {
+                
+
+                //add role
                 if(!await _roleManager.RoleExistsAsync(RolesHelper.Customer))
                 {
                     await _roleManager.CreateAsync(new IdentityRole(RolesHelper.Customer));
