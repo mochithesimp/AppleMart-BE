@@ -1,9 +1,11 @@
 ﻿
+using iPhoneBE.API.Middlewares;
 using iPhoneBE.Data;
 using iPhoneBE.Data.Data;
 using iPhoneBE.Data.Mapping;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Service;
+using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -55,7 +57,9 @@ namespace iPhoneBE.API
             {
                 options.User.RequireUniqueEmail = true;
             })
-                .AddEntityFrameworkStores<AppleMartDBContext>().AddDefaultTokenProviders();
+                .AddEntityFrameworkStores<AppleMartDBContext>()
+                .AddDefaultTokenProviders()
+                .AddTokenProvider<DataProtectorTokenProvider<User>>("REFRESHTOKENPROVIDER");
 
             //add jwt
             builder.Services
@@ -88,18 +92,12 @@ namespace iPhoneBE.API
                         },
                         OnTokenValidated = context =>
                         {
-                            Console.WriteLine("OnTokenValidated: Token is valid");
-                            var claims = context.Principal.Claims;
-                            foreach (var claim in claims)
-                            {
-                                Console.WriteLine($"Claim: {claim.Type}: {claim.Value}");
-                            }
-                            return Task.CompletedTask;
+                            var accountService = context.HttpContext.RequestServices.GetRequiredService<IAccountServices>();
+                            return accountService.ValidateToken(context);
                         },
                         OnMessageReceived = context =>
                         {
-                            var token = context.Token;
-                            Console.WriteLine($"OnMessageReceived: Token = {token ?? "null"}");
+
                             return Task.CompletedTask;
                         },
                         OnChallenge = context =>
@@ -126,8 +124,8 @@ namespace iPhoneBE.API
                 );
 
             builder.Services
-                .AddRepository()
-                        .AddServices();
+                .AddRepository(builder.Configuration)
+                .AddServices();
 
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
@@ -152,8 +150,10 @@ namespace iPhoneBE.API
             }
             else
             {
-                app.UseHttpsRedirection();  // Chỉ dùng trong production
+                app.UseHttpsRedirection();  //production
             }
+
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseCors(opt =>
             {

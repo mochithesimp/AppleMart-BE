@@ -13,10 +13,6 @@ namespace iPhoneBE.Data.Data
 {
     public class AppleMartDBContext : IdentityDbContext<User>
     {
-        public AppleMartDBContext()
-        {
-
-        }
 
         public AppleMartDBContext(DbContextOptions<AppleMartDBContext> dbContextOptions) : base(dbContextOptions)
         {

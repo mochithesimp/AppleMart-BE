@@ -3,9 +3,11 @@ using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.CategoryModel;
 using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Data.Models.ProductModel;
+using iPhoneBE.Data.Models.UserModel;
 using iPhoneBE.Data.ViewModels.CategoryDTO;
 using iPhoneBE.Data.ViewModels.ProductDTO;
 using iPhoneBE.Data.ViewModels.ProductItemDTO;
+using iPhoneBE.Data.ViewModels.UserDTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +32,13 @@ namespace iPhoneBE.Data.Mapping
             CreateMap<ProductItem, CreateProductItemModel>().ReverseMap();
             CreateMap<ProductItem, UpdateProductItemModel>().ReverseMap();
 
-
+            CreateMap<User, UserViewModel>()
+                .ForMember(dest => dest.Role, opt => opt.Ignore())
+                .ReverseMap(); // Role cần xử lý riêng
+            CreateMap<UserModel, User>()
+                .ForMember(dest => dest.UserName, opt => opt.Ignore())
+                .ForMember(dest => dest.Email, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

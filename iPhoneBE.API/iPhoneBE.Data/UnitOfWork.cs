@@ -1,5 +1,7 @@
 ﻿using iPhoneBE.Data.Data;
+using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Data.Model;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
@@ -11,15 +13,29 @@ namespace iPhoneBE.Data
 {
     public class UnitOfWork : IUnitOfWork, IDisposable
     {
-
         private readonly AppleMartDBContext _dbContext;
         private IDbContextTransaction? _transaction = null;
 
-        public UnitOfWork(AppleMartDBContext dbContext)
+        IRepository<Category> _categoryRepository;
+        IRepository<Blog> _blogRepository;
+
+
+        public UnitOfWork(
+            AppleMartDBContext dbContext,
+            IRepository<Category> categoryRepository,
+            IRepository<Blog> blogRepository
+            )
         {
             _dbContext = dbContext;
+            _categoryRepository = categoryRepository;
+            _blogRepository = blogRepository;
         }
 
+        //repository
+        public IRepository<Category> CategoryRepository => _categoryRepository;
+        public IRepository<Blog> BlogRepository => _blogRepository;
+
+        //transaction
         public void BeginTransaction()
         {
             _transaction = _dbContext.Database.BeginTransaction();

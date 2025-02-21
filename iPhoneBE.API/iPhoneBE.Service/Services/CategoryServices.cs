@@ -1,5 +1,8 @@
-﻿using iPhoneBE.Data.Interfaces;
+﻿using AutoMapper;
+using iPhoneBE.Data;
+using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
+using iPhoneBE.Data.Models.CategoryModel;
 using iPhoneBE.Service.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -11,59 +14,113 @@ namespace iPhoneBE.Service.Services
 {
     public class CategoryServices : ICategoryServices
     {
-        private readonly IRepository<Category> _repository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public CategoryServices(IRepository<Category> repository)
+        public CategoryServices(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _repository = repository;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        //get all
+        public async Task<IEnumerable<Category>> GetAllAsync(string? categoryName)
+        {
+            var result = await _unitOfWork.CategoryRepository.GetAllAsync(categoryName == null ? null : c => c.Name == categoryName);
+
+            result = result?.Where(r => r.IsDeleted == false) ?? new List<Category>();
+
+            return result;
+        }
+
+        //get by id
+        public async Task<Category> GetByIdAsync(int id)
+        {
+            var category = await _unitOfWork.CategoryRepository.GetByIdAsync(id);
+            if (category == null)
+                throw new KeyNotFoundException("Category not found");
+
+            return category;
         }
 
         public async Task<Category> AddAsync(Category category)
         {
-            var result = await _repository.AddAsync(category);
+            _unitOfWork.BeginTransaction();
 
-            return result;
-        }
-
-        public async Task<bool> DeleteAsync(int id)
-        {
-            bool result = false;
-
-            Category category = await _repository.GetByIdAsync(id);
-
-            if (category == null)
+            try
             {
-                throw new KeyNotFoundException("404 - Product not found.");
+                var result = await _unitOfWork.CategoryRepository.AddAsync(category);
+
+                _unitOfWork.SaveChanges();
+                _unitOfWork.CommitTransaction();
+
+                return result;
             }
-
-            result = await _repository.SoftDelete(category);
-            await _repository.CommitAsync();
-
-            return result;
-        }
-
-        public async Task<IEnumerable<Category>> GetAllAsync(string? categoryName)
-        {
-            var result = await _repository.GetAllAsync(categoryName == null ? null : c => c.Name == categoryName);
-            result = result.Where(r => r.IsDeleted == false);
-            return result;
-        }
-
-        public Task<Category> GetByIdAsync(int id)
-        {
-            return _repository.GetByIdAsync(id);
-        }
-
-        public async Task<bool> UpdateAsync(int id, Category category)
-        {
-            var newCategory = await _repository.GetByIdAsync(id);
-            var result = false;
-            if (newCategory == null)
+            catch (Exception ex)
             {
-                throw new KeyNotFoundException("404 - Product not found.");
+                _unitOfWork.RollbackTransaction();
+                throw;
             }
-            result = await _repository.Update(newCategory);
-            return result;
         }
+
+        //update
+        public async Task<Category> UpdateAsync(int id, UpdateCategoryModel newCategory)
+        {
+            _unitOfWork.BeginTransaction();
+            try
+            {
+                var category = await _unitOfWork.CategoryRepository.GetByIdAsync(id);
+                if (category == null)
+                    throw new KeyNotFoundException($"Category with ID {id} not found.");
+
+                _mapper.Map(newCategory, category);
+                var result = await _unitOfWork.CategoryRepository.Update(category);
+
+                if (!result)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    throw new InvalidOperationException("Failed to update category.");
+                }
+
+                _unitOfWork.SaveChanges();
+                _unitOfWork.CommitTransaction();
+                return category;
+            }
+            catch (Exception)
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            }
+        }
+
+
+        //soft delete
+        public async Task<Category> DeleteAsync(int id)
+        {
+            _unitOfWork.BeginTransaction();
+            try
+            {
+                var category = await _unitOfWork.CategoryRepository.GetByIdAsync(id);
+                if (category == null)
+                    throw new KeyNotFoundException($"Category with ID {id} not found.");
+
+                var result = await _unitOfWork.CategoryRepository.SoftDelete(category);
+                if (!result)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    throw new InvalidOperationException("Failed to delete category.");
+                }
+
+                _unitOfWork.SaveChanges();
+                _unitOfWork.CommitTransaction();
+                return category;
+            }
+            catch (Exception)
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            }
+        }
+
     }
 }

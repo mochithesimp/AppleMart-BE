@@ -31,27 +31,5 @@ namespace iPhoneBE.Data.Model
         public ICollection<Notification>? Notifications { get; set; }
         public ICollection<UserBlogView> UserBlogViews { get; set; }
         public ICollection<ChatParticipant> ChatParticipants { get; set; }
-
-        //[Key]
-        //public int UserID { get; set; }
-
-        //[ForeignKey("Role")]
-        //[Required(ErrorMessage = "Role ID is required.")]
-        //public int RoleID { get; set; }
-
-        //public virtual Role Role { get; set; }
-
-        //[Required(ErrorMessage = "Email is required.")]
-        //[MaxLength(255, ErrorMessage = "Email cannot exceed 255 characters.")]
-        //[EmailAddress(ErrorMessage = "Invalid email format.")]
-        //public string Email { get; set; }
-
-        //[Required(ErrorMessage = "Password is required.")]
-        //[MaxLength(255, ErrorMessage = "Password cannot exceed 255 characters.")]
-        //public string Password { get; set; }
-
-        //[MaxLength(20, ErrorMessage = "Phone number cannot exceed 20 characters.")]
-        //[Phone(ErrorMessage = "Invalid phone number format.")]
-        //public string PhoneNumber { get; set; }
     }
 }

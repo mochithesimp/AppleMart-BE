@@ -2,7 +2,9 @@
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AuthenticationModel;
+using iPhoneBE.Data.ViewModels.AuthenticationDTO;
 using iPhoneBE.Service.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -18,48 +20,71 @@ namespace iPhoneBE.Service.Services
 {
     public class AccountServices : IAccountServices
     {
-        private readonly IAccountRepository _accountRepository;
         private readonly IConfiguration _configuration;
+        private readonly IUserServices _userServices;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<User> _userManager;
 
-        public AccountServices(IAccountRepository accountRepository, IConfiguration configuration, UserManager<User> userManager)
+        public AccountServices(IConfiguration configuration, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IUserServices userServices)
         {
-            _accountRepository = accountRepository;
             _configuration = configuration;
             _userManager = userManager;
+            _roleManager = roleManager;
+            _userServices = userServices;
         }
 
-        public async Task<string> LoginAsync(LoginModel model)
+        public async Task<JwtViewModel> LoginAsync(LoginModel model)
         {
-            var existingUser = await _accountRepository.LoginAsync(model);
 
-            if (existingUser == null)
+            var existingUser = await _userManager.FindByEmailAsync(model.Email);
+            var isCorrect = await _userManager.CheckPasswordAsync(existingUser, model.Password);
+
+            if (existingUser == null || !isCorrect)
             {
                 return null;
             }
 
             var accessToken = await CreateAccessToken(existingUser);
+            var refreshToken = await CreateRefreshToken(existingUser);
 
-            // Add this in LoginAsync after getting the token
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(accessToken);
-            // Log or debug the claims
-            foreach (var claim in jwtToken.Claims)
+
+
+            return new JwtViewModel
             {
-                Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
-            }
-
-            return accessToken;
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                UserName = existingUser.UserName,
+                Name = existingUser.Name,
+            };
         }
 
         public async Task<IdentityResult> RegisterAsync(RegisterModel model)
         {
-            return await _accountRepository.RegisterAsync(model);
+            var newUser = new User
+            {
+                Name = model.name,
+                Email = model.Email,
+                UserName = model.Email,
+            };
+
+            var result = await _userManager.CreateAsync(newUser, model.Password);
+
+            if (result.Succeeded)
+            {
+                // Kiểm tra role có tồn tại không, nếu chưa thì tạo mới
+                if (!await _roleManager.RoleExistsAsync("Customer"))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole("Customer"));
+                }
+                await _userManager.AddToRoleAsync(newUser, "Customer");
+            }
+
+            return result;
         }
 
         private async Task<string> CreateAccessToken(User user)
         {
-            DateTime expiredDate = DateTime.UtcNow.AddMinutes(15);
+            DateTime expiredDate = DateTime.UtcNow.AddMinutes(int.Parse(_configuration["JWT:AccessTokenExpiredByMinutes"]));
             var userRoles = await _userManager.GetRolesAsync(user);
 
             var claims = new List<Claim>
@@ -91,6 +116,152 @@ namespace iPhoneBE.Service.Services
             string token = new JwtSecurityTokenHandler().WriteToken(tokenInfo);
 
             return token;
+        }
+
+        private async Task<string> CreateRefreshToken(User user)
+        {
+            var code = Guid.NewGuid().ToString();
+            var expiredDate = DateTime.UtcNow.AddHours(int.Parse(_configuration["JWT:RefreshTokenExpiredByHours"]));
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Jti, code), // Unique ID của token
+                new Claim(JwtRegisteredClaimNames.Exp, ((DateTimeOffset)expiredDate).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64), // Thời gian hết hạn
+                new Claim(JwtRegisteredClaimNames.Email, user.Email)
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:SecretKey"]));
+            var credential = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var tokenInfo = new JwtSecurityToken(
+                    issuer: _configuration["JWT:Issuer"],
+                    audience: _configuration["JWT:Audience"],
+                    claims: claims,
+                    notBefore: DateTime.UtcNow,
+                    expires: expiredDate,
+                    signingCredentials: credential
+                );
+
+            string token = new JwtSecurityTokenHandler().WriteToken(tokenInfo);
+
+            await _userManager.SetAuthenticationTokenAsync(user, "REFRESHTOKENPROVIDER", "RefreshToken", code);
+
+            return token;
+        }
+
+        public async Task ValidateToken(TokenValidatedContext context)
+        {
+            var claims = context.Principal.Claims.ToList();
+
+            //check claims in token
+            if (claims.Count() == 0)
+            {
+                context.Fail("This token contains no information");
+                return;
+            }
+
+            var identity = context.Principal.Identity as ClaimsIdentity;
+
+            //check issuer
+            //if (identity.FindFirst(JwtRegisteredClaimNames.Iss) == null)
+            //{
+            //    context.Fail("This token is not issued by point entry");
+            //    return;
+            //}
+
+            //check email
+            var emailClaim = identity.FindFirst(JwtRegisteredClaimNames.Email) ?? identity.FindFirst(ClaimTypes.Email);
+            if (emailClaim != null)
+            {
+                string email = emailClaim.Value;
+                var user = await _userServices.FindByEmail(email);
+                if (user == null)
+                {
+                    context.Fail($"Invalid email: {email}");
+                    return;
+                }
+            }
+            else
+            {
+                context.Fail("Email claim is missing.");
+                return;
+            }
+
+            if (identity.FindFirst(JwtRegisteredClaimNames.Exp) != null)
+            {
+                var dateExp = identity.FindFirst(JwtRegisteredClaimNames.Exp).Value;
+
+                long ticks = long.Parse(dateExp);
+                var expirationDate = DateTimeOffset.FromUnixTimeSeconds(ticks).UtcDateTime;
+
+                if (DateTime.UtcNow > expirationDate)
+                {
+                    context.Fail("This token is expired.");
+                    return;
+                }
+            }
+            else
+            {
+                context.Fail("Exp claim is missing.");
+                return;
+            }
+        }
+
+        public async Task<JwtViewModel> ValidateRefreshToken(RefreshTokenModel model)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.UTF8.GetBytes(_configuration["JWT:SecretKey"]);
+
+                var claimPriciple = tokenHandler.ValidateToken(model.RefreshToken, new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true, 
+                    ClockSkew = TimeSpan.Zero
+                }, out _);
+
+                if (claimPriciple == null) return null;
+
+                var identity = claimPriciple.Identity as ClaimsIdentity;
+                var emailClaim = identity.FindFirst(JwtRegisteredClaimNames.Email) ?? identity.FindFirst(ClaimTypes.Email);
+                string email = emailClaim?.Value;
+                string jti = claimPriciple.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Jti)?.Value;
+
+                if (email == null || jti == null) return null;
+
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null) return null;
+
+                var storedJti = await _userManager.GetAuthenticationTokenAsync(user, "REFRESHTOKENPROVIDER", "RefreshToken");
+
+                if (string.IsNullOrEmpty(storedJti))
+                {
+                    return null; // Token đã bị xóa hoặc ng dùng đăng xuất
+                }
+
+                if (storedJti != jti)
+                {
+                    return null;
+                }
+
+                var newAccessToken = await CreateAccessToken(user);
+                var newRefreshToken = await CreateRefreshToken(user);
+
+                return new JwtViewModel
+                {
+                    AccessToken = newAccessToken,
+                    RefreshToken = newRefreshToken,
+                    UserName = user.UserName,
+                    Name = user.Name
+                };
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
     }
 }

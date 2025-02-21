@@ -6,10 +6,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using iPhoneBE.Data.Interfaces;
 
 namespace iPhoneBE.Data.Entities
 {
-    public class Blog
+    public class Blog : IBaseEntity
     {
         [Key]
         public int BlogID { get; set; }
