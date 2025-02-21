@@ -2,6 +2,7 @@
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.Net;
 
 namespace iPhoneBE.API.Controllers
@@ -27,7 +28,7 @@ namespace iPhoneBE.API.Controllers
 
             var result = await _accountServices.LoginAsync(model);
 
-            if(result == null)
+            if (result == null)
             {
                 return Unauthorized();
             }
@@ -50,6 +51,32 @@ namespace iPhoneBE.API.Controllers
             }
 
             return BadRequest(result.Errors);
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken(RefreshTokenModel refreshTokenModel)
+        {
+            try
+            {
+                if(!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                if (refreshTokenModel == null) return BadRequest("Could not get refresh token");
+
+                var result = await _accountServices.ValidateRefreshToken(refreshTokenModel);
+                if (result != null)
+                {
+                    return Ok(result);
+                }
+                
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
         }
     }
 }
