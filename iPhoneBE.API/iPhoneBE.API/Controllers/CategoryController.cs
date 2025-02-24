@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using iPhoneBE.Data.Helper;
+using iPhoneBE.Data.Helper.EmailHelper;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.CategoryModel;
+using iPhoneBE.Data.Models.EmailModel;
 using iPhoneBE.Data.ViewModels.CategoryDTO;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,12 +23,14 @@ namespace iPhoneBE.API.Controllers
         private readonly ICategoryServices _categoryServices;
         private readonly IMapper mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IEmailHelper _emailHelper;
 
-        public CategoryController(ICategoryServices categoryServices, IMapper mapper, IUnitOfWork unitOfWork)
+        public CategoryController(ICategoryServices categoryServices, IMapper mapper, IUnitOfWork unitOfWork, IEmailHelper emailHelper)
         {
             _categoryServices = categoryServices;
             this.mapper = mapper;
             _unitOfWork = unitOfWork;
+            _emailHelper = emailHelper;
         }
 
         [HttpGet]
@@ -36,11 +40,12 @@ namespace iPhoneBE.API.Controllers
         public async Task<ActionResult<IEnumerable<CategoryViewModel>>> GetAll(string? categoryName = null)
         {
             var categories = await _categoryServices.GetAllAsync(categoryName);
+
             return Ok(mapper.Map<List<CategoryViewModel>>(categories));
         }
 
         [HttpGet("{id}")]
-        //[Authorize(Roles = "Admin, Staff, Customer")]
+        [Authorize(Roles = RolesHelper.Customer)]
         public async Task<ActionResult<Category>> GetById(int id)
         {
             var category = await _categoryServices.GetByIdAsync(id);

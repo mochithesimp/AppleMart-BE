@@ -20,7 +20,6 @@ namespace iPhoneBE.Data
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-
         public AccountRepository(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
@@ -40,7 +39,7 @@ namespace iPhoneBE.Data
             return existingUser;
         }
 
-        public async Task<IdentityResult> RegisterAsync(RegisterModel model)
+        public async Task<(IdentityResult, string)> RegisterAsync(RegisterModel model)
         {
             var newUser = new User
             {
@@ -53,6 +52,9 @@ namespace iPhoneBE.Data
 
             if (result.Succeeded)
             {
+                
+
+                //add role
                 if(!await _roleManager.RoleExistsAsync(RolesHelper.Customer))
                 {
                     await _roleManager.CreateAsync(new IdentityRole(RolesHelper.Customer));
@@ -60,7 +62,7 @@ namespace iPhoneBE.Data
                 await _userManager.AddToRoleAsync(newUser, RolesHelper.Customer);
             }
 
-            return result;
+            return await Task.FromResult((result, newUser.Email));
         }
     }
 }

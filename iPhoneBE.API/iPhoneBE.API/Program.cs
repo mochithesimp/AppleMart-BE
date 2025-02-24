@@ -123,8 +123,8 @@ namespace iPhoneBE.API
                 );
 
             builder.Services
-                .AddRepository()
-                        .AddServices();
+                .AddRepository(builder.Configuration)
+                .AddServices();
 
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 

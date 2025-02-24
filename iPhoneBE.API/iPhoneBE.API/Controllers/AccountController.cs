@@ -1,4 +1,6 @@
-﻿using iPhoneBE.Data.Models.AuthenticationModel;
+﻿using iPhoneBE.Data.Helper.EmailHelper;
+using iPhoneBE.Data.Models.AuthenticationModel;
+using iPhoneBE.Data.Models.EmailModel;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +14,12 @@ namespace iPhoneBE.API.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountServices _accountServices;
+        private readonly IEmailHelper _emailHelper;
 
-        public AccountController(IAccountServices accountServices)
+        public AccountController(IAccountServices accountServices, IEmailHelper emailHelper)
         {
             _accountServices = accountServices;
+            _emailHelper = emailHelper;
         }
 
         [HttpPost("Login")]
@@ -37,7 +41,7 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpPost("Register")]
-        public async Task<IActionResult> Register(RegisterModel model)
+        public async Task<IActionResult> Register(CancellationToken cancellationToken, RegisterModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -47,6 +51,11 @@ namespace iPhoneBE.API.Controllers
             var result = await _accountServices.RegisterAsync(model);
             if (result.Succeeded)
             {
+                //await _emailHelper.SendMailAsync(cancellationToken, new EmailRequestModel
+                //{
+                //    To = result.
+                //})
+
                 return Ok(result);
             }
 
@@ -58,7 +67,7 @@ namespace iPhoneBE.API.Controllers
         {
             try
             {
-                if(!ModelState.IsValid)
+                if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
@@ -70,7 +79,7 @@ namespace iPhoneBE.API.Controllers
                 {
                     return Ok(result);
                 }
-                
+
                 return BadRequest();
             }
             catch (Exception ex)
