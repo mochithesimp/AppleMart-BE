@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
 using iPhoneBE.Data.Helper;
-using iPhoneBE.Data.Helper.EmailHelper;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.CategoryModel;
-using iPhoneBE.Data.Models.EmailModel;
 using iPhoneBE.Data.ViewModels.CategoryDTO;
 using iPhoneBE.Service.Interfaces;
 using iPhoneBE.Service.Services;

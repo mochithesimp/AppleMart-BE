@@ -1,6 +1,4 @@
-﻿using iPhoneBE.Data.Helper.EmailHelper;
-using iPhoneBE.Data.Models.AuthenticationModel;
-using iPhoneBE.Data.Models.EmailModel;
+﻿using iPhoneBE.Data.Models.AuthenticationModel;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,12 +12,12 @@ namespace iPhoneBE.API.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountServices _accountServices;
-        private readonly IEmailHelper _emailHelper;
+        //private readonly IEmailHelper _emailHelper;
 
-        public AccountController(IAccountServices accountServices, IEmailHelper emailHelper)
+        public AccountController(IAccountServices accountServices/*, IEmailHelper emailHelper*/)
         {
             _accountServices = accountServices;
-            _emailHelper = emailHelper;
+            //_emailHelper = emailHelper;
         }
 
         [HttpPost("Login")]

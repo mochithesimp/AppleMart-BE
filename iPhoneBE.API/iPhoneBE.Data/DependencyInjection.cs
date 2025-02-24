@@ -1,5 +1,4 @@
-﻿using iPhoneBE.Data.Helper.EmailHelper;
-using iPhoneBE.Data.Interfaces;
+﻿using iPhoneBE.Data.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -18,9 +17,9 @@ namespace iPhoneBE.Data
             service.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             service.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-            service.Configure<EmailConfiguration>(configuration.GetSection("MailSettings"));
+            //service.Configure<EmailConfiguration>(configuration.GetSection("MailSettings"));
             //service.Configure<EmailConfiguration>(options => configuration.GetSection("MailSettings").Bind(options));
-            service.AddScoped<IEmailHelper, EmailHelper>();
+            //service.AddScoped<IEmailHelper, EmailHelper>();
 
             return service;
         }
