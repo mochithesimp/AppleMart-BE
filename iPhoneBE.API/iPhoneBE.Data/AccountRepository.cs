@@ -39,7 +39,7 @@ namespace iPhoneBE.Data
             return existingUser;
         }
 
-        public async Task<IdentityResult> RegisterAsync(RegisterModel model)
+        public async Task<(IdentityResult, string)> RegisterAsync(RegisterModel model)
         {
             var newUser = new User
             {
@@ -62,7 +62,7 @@ namespace iPhoneBE.Data
                 await _userManager.AddToRoleAsync(newUser, RolesHelper.Customer);
             }
 
-            return result;
+            return await Task.FromResult((result, newUser.Email));
         }
     }
 }
