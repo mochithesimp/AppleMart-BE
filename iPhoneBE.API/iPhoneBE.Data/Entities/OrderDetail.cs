@@ -33,6 +33,6 @@ namespace iPhoneBE.Data.Model
         public bool IsDeleted { get; set; }
         public ProductItem ProductItem { get; set; }
         public Order Order { get; set; }
-        public virtual ICollection<Review> Reviews { get; set;}
+        public virtual ICollection<Review> Reviews { get; set; }
     }
 }
