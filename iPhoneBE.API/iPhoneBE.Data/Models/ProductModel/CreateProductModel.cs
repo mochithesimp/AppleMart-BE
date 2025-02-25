@@ -14,11 +14,11 @@ namespace iPhoneBE.Data.Models.ProductModel
 
         [Required(ErrorMessage = "Product name is required.")]
         [MaxLength(255, ErrorMessage = "Product name cannot exceed 255 characters.")]
-        public string? Name { get; set; }
+        public string Name { get; set; }
 
         [MaxLength(1000, ErrorMessage = "Description cannot exceed 1000 characters.")]
         public string? Description { get; set; }
 
-        public bool IsDeleted = false;
+        public int DisplayIndex { get; set; }
     }
 }

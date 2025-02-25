@@ -13,7 +13,8 @@ namespace iPhoneBE.Data.ViewModels.ProductDTO
         public int ProductID { get; set; }
         public int CategoryID { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
+        public string? Description { get; set; }
         public bool IsDeleted { get; set; }
+        public int DisplayIndex { get; set; }
     }
 }
