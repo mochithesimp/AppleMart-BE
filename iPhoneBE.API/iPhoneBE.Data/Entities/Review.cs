@@ -1,4 +1,5 @@
-﻿using iPhoneBE.Data.Model;
+﻿using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Data.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace iPhoneBE.Data.Entities
 {
-    public class Review
+    public class Review : IBaseEntity
     {
         public int ReviewID { get; set; }
 
@@ -35,6 +36,7 @@ namespace iPhoneBE.Data.Entities
 
         [MaxLength(1000, ErrorMessage = "Comment cannot exceed 1000 characters.")]
         public string? Comment { get; set; }
+        public bool IsDeleted { get; set; }
         public User User { get; set; }
         public User Shipper { get; set; }
         public OrderDetail OrderDetail { get; set; }

@@ -18,6 +18,7 @@ namespace iPhoneBE.Service
             service.AddScoped<IAccountServices, AccountServices>();
             service.AddScoped<IUserServices, UserServices>();
             service.AddScoped<IBlogServices, BlogServices>();
+            service.AddScoped<IAttributeServices, AttributeServices>();
 
             return service;
         }

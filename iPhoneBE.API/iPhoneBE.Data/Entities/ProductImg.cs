@@ -5,10 +5,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using iPhoneBE.Data.Interfaces;
 
 namespace iPhoneBE.Data.Model
 {
-    public class ProductImg
+    public class ProductImg : IBaseEntity
     {
         [Key]
         public int ProductImgID { get; set; }

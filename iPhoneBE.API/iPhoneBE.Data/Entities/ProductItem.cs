@@ -6,10 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using iPhoneBE.Data.Entities;
+using iPhoneBE.Data.Interfaces;
 
 namespace iPhoneBE.Data.Model
 {
-    public class ProductItem
+    public class ProductItem : IBaseEntity
     {
         [Key]
         public int ProductItemID { get; set; }

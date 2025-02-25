@@ -16,22 +16,26 @@ namespace iPhoneBE.Data
         private readonly AppleMartDBContext _dbContext;
         private IDbContextTransaction? _transaction = null;
 
+        IRepository<Entities.Attribute> _attributeRepository;
         IRepository<Category> _categoryRepository;
         IRepository<Blog> _blogRepository;
-
+        
 
         public UnitOfWork(
             AppleMartDBContext dbContext,
             IRepository<Category> categoryRepository,
-            IRepository<Blog> blogRepository
+            IRepository<Blog> blogRepository,
+            IRepository<Entities.Attribute> attributeRepository
             )
         {
             _dbContext = dbContext;
             _categoryRepository = categoryRepository;
             _blogRepository = blogRepository;
+            _attributeRepository = attributeRepository;
         }
 
         //repository
+        public IRepository<Entities.Attribute> AttributeRepository => _attributeRepository;
         public IRepository<Category> CategoryRepository => _categoryRepository;
         public IRepository<Blog> BlogRepository => _blogRepository;
 

@@ -1,4 +1,5 @@
-﻿using iPhoneBE.Data.Model;
+﻿using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Data.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -6,9 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace iPhoneBE.Data.Entities
 {
-    public class Attribute
+    public class Attribute : IBaseEntity
     {
         [Key]
         public int AttributeID { get; set; }
@@ -24,5 +26,7 @@ namespace iPhoneBE.Data.Entities
 
         public virtual Category Category { get; set; }
         public virtual ICollection<ProductItemAttribute> ProductItemAttributes { get; set; }
+
+        public bool IsDeleted { get; set; }
     }
 }

@@ -6,10 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using iPhoneBE.Data.Entities;
+using iPhoneBE.Data.Interfaces;
 
 namespace iPhoneBE.Data.Model
 {
-    public class Order
+    public class Order : IBaseEntity
     {
         [Key]
         public int OrderID { get; set; }
@@ -43,6 +44,7 @@ namespace iPhoneBE.Data.Model
 
         [ForeignKey("Voucher")]
         public int? VoucherID { get; set; }
+        public bool IsDeleted { get; set; }
 
         public virtual User User { get; set; }
         public virtual User Shipper { get; set; }

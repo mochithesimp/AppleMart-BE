@@ -1,4 +1,5 @@
-﻿using System;
+﻿using iPhoneBE.Data.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace iPhoneBE.Data.Model
 {
-    public class ShippingMethod
+    public class ShippingMethod : IBaseEntity
     {
         [Key]
         public int ShippingMethodID { get; set; }
@@ -17,6 +18,7 @@ namespace iPhoneBE.Data.Model
 
         [Range(0, double.MaxValue, ErrorMessage = "Shipping price must be at least 0.")]
         public float ShippingPrice { get; set; }
+        public bool IsDeleted { get; set; }
         public ICollection<Order> Orders { get; set; }
     }
 }

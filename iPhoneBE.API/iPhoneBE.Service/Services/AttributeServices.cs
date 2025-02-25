@@ -1,0 +1,121 @@
+using AutoMapper;
+using iPhoneBE.Data;
+using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Data.Model;
+using iPhoneBE.Data.Models.AttributeModel;
+using iPhoneBE.Service.Interfaces;
+
+namespace iPhoneBE.Service.Services
+{
+    public class AttributeServices : IAttributeServices
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public AttributeServices(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<IEnumerable<Data.Entities.Attribute>> GetAllAsync()
+        {
+            var result = await _unitOfWork.AttributeRepository.GetAllAsync();
+
+            result = result?.Where(r => r.IsDeleted == false) ?? new List<Data.Entities.Attribute>();
+
+            return result;
+        }
+
+        public async Task<Data.Entities.Attribute> GetByIdAsync(int id)
+        {
+            var attribute = await _unitOfWork.AttributeRepository.GetByIdAsync(id);
+            if (attribute == null)
+                throw new KeyNotFoundException("Attribute not found");
+
+            return attribute;
+        }
+
+        public async Task<Data.Entities.Attribute> AddAsync(Data.Entities.Attribute attribute)
+        {
+            _unitOfWork.BeginTransaction();
+
+            try
+            {
+                var result = await _unitOfWork.AttributeRepository.AddAsync(attribute);
+
+                _unitOfWork.SaveChanges();
+                _unitOfWork.CommitTransaction();
+
+                return result;
+            }
+            catch (Exception)
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            }
+        }
+
+        public async Task<Data.Entities.Attribute> UpdateAsync(int id, UpdateAttributeModel newAttribute)
+        {
+            _unitOfWork.BeginTransaction();
+            try
+            {
+                var attribute = await _unitOfWork.AttributeRepository.GetByIdAsync(id);
+                if (attribute == null)
+                    throw new KeyNotFoundException($"Attribute with ID {id} not found.");
+
+                bool IsInvalid(string value) => string.IsNullOrWhiteSpace(value) || value == "string";
+
+                attribute.AttributeName = !IsInvalid(newAttribute.AttributeName) ? newAttribute.AttributeName : attribute.AttributeName;
+                attribute.DataType = !IsInvalid(newAttribute.DataType) ? newAttribute.DataType : attribute.DataType;
+
+                var result = await _unitOfWork.AttributeRepository.Update(attribute);
+
+                if (!result)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    throw new InvalidOperationException("Failed to update attribute.");
+                }
+
+                _unitOfWork.SaveChanges();
+                _unitOfWork.CommitTransaction();
+                return attribute;
+            }
+            catch (Exception)
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            }
+        }
+
+
+
+        public async Task<Data.Entities.Attribute> DeleteAsync(int id)
+        {
+            _unitOfWork.BeginTransaction();
+            try
+            {
+                var attribute = await _unitOfWork.AttributeRepository.GetByIdAsync(id);
+                if (attribute == null)
+                    throw new KeyNotFoundException($"Attribute with ID {id} not found.");
+
+                var result = await _unitOfWork.AttributeRepository.SoftDelete(attribute);
+                if (!result)
+                {
+                    _unitOfWork.RollbackTransaction();
+                    throw new InvalidOperationException("Failed to delete attribute.");
+                }
+
+                _unitOfWork.SaveChanges();
+                _unitOfWork.CommitTransaction();
+                return attribute;
+            }
+            catch (Exception)
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            }
+        }
+    }
+}
