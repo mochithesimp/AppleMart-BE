@@ -20,6 +20,7 @@ namespace iPhoneBE.Data
         IRepository<Category> _categoryRepository;
         IRepository<Blog> _blogRepository;
         IRepository<ProductItemAttribute> _productItemAttributeRepository;
+        IRepository<Product> _productRepository;
         IRepository<ProductItem> _productItemRepository;
 
 
@@ -29,7 +30,9 @@ namespace iPhoneBE.Data
             IRepository<Blog> blogRepository,
             IRepository<Entities.Attribute> attributeRepository,
             IRepository<ProductItemAttribute> productItemAttributeRepository,
-            IRepository<ProductItem> productItemRepository
+            IRepository<ProductItem> productItemRepository,
+            IRepository<Product> productRepository
+
             )
         {
             _dbContext = dbContext;
@@ -38,6 +41,7 @@ namespace iPhoneBE.Data
             _attributeRepository = attributeRepository;
             _productItemAttributeRepository = productItemAttributeRepository;
             _productItemRepository = productItemRepository;
+            _productRepository = productRepository;
         }
 
         //repository
@@ -46,7 +50,7 @@ namespace iPhoneBE.Data
         public IRepository<Blog> BlogRepository => _blogRepository;
         public IRepository<ProductItemAttribute> ProductItemAttributeRepository => _productItemAttributeRepository;
         public IRepository<ProductItem> ProductItemRepository => _productItemRepository;
-
+        public IRepository<Product> ProductRepository => _productRepository;
         //transaction
         public void BeginTransaction()
         {
