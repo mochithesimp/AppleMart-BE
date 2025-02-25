@@ -31,6 +31,9 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpGet]
+
+
+
         public async Task<ActionResult<IEnumerable<CategoryViewModel>>> GetAll(string? categoryName = null)
         {
             try
@@ -47,9 +50,11 @@ namespace iPhoneBE.API.Controllers
 
         [HttpGet("{id}")]
         public async Task<ActionResult<CategoryViewModel>> GetById(int id)
+
         {
             var category = await _categoryServices.GetByIdAsync(id);
             return Ok(_mapper.Map<CategoryViewModel>(category));
+
         }
 
 
@@ -64,6 +69,7 @@ namespace iPhoneBE.API.Controllers
             var category = _mapper.Map<Category>(Createcategory);
 
             if (category == null)
+
             {
                 return BadRequest("Invalid category data.");
             }
@@ -80,6 +86,7 @@ namespace iPhoneBE.API.Controllers
                 return BadRequest(ModelState);
 
             var category = await _categoryServices.UpdateAsync(id, updateCategory);
+
             return Ok(_mapper.Map<CategoryViewModel>(category));
         }
 
@@ -88,6 +95,7 @@ namespace iPhoneBE.API.Controllers
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var deletedCategory = await _categoryServices.DeleteAsync(id);
+
             return Ok(_mapper.Map<CategoryViewModel>(deletedCategory));
         }
 

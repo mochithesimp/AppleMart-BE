@@ -47,8 +47,6 @@ namespace iPhoneBE.Service.Services
             var accessToken = await CreateAccessToken(existingUser);
             var refreshToken = await CreateRefreshToken(existingUser);
 
-
-
             return new JwtViewModel
             {
                 AccessToken = accessToken,
