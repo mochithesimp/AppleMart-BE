@@ -1,4 +1,5 @@
-﻿using iPhoneBE.Data.Model;
+﻿using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Data.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace iPhoneBE.Data.Entities
 {
-    public class PaypalTransaction
+    public class PaypalTransaction : IBaseEntity
     {
         [Key]
         public int TransactionID { get; set; }
@@ -21,6 +22,7 @@ namespace iPhoneBE.Data.Entities
         public float Amount { get; set; }
         public string Currency { get; set; }
         public DateTime CreatedDate { get; set; }
+        public bool IsDeleted { get; set; }
         public virtual Order Order { get; set; }
     }
 }

@@ -6,10 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Internal;
+using iPhoneBE.Data.Interfaces;
 
 namespace iPhoneBE.Data.Model
 {
-    public class Voucher
+    public class Voucher : IBaseEntity
     {
         [Key]
         public int VoucherID { get; set; }

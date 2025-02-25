@@ -6,10 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using iPhoneBE.Data.Entities;
+using iPhoneBE.Data.Interfaces;
 
 namespace iPhoneBE.Data.Model
 {
-    public class OrderDetail
+    public class OrderDetail : IBaseEntity
     {
         [Key]
         public int OrderDetailID { get; set; }
@@ -29,7 +30,7 @@ namespace iPhoneBE.Data.Model
         [Required(ErrorMessage = "Price is required.")]
         [Range(0, double.MaxValue, ErrorMessage = "Price must be at least 0.")]
         public double Price { get; set; }
-
+        public bool IsDeleted { get; set; }
         public ProductItem ProductItem { get; set; }
         public Order Order { get; set; }
         public virtual ICollection<Review> Reviews { get; set;}

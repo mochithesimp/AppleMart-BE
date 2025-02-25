@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using iPhoneBE.Data.Model;
+using iPhoneBE.Data.Models.AttributeModel;
 using iPhoneBE.Data.Models.CategoryModel;
 using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Data.Models.ProductModel;
 using iPhoneBE.Data.Models.UserModel;
+using iPhoneBE.Data.ViewModels.AttributeDTO;
 using iPhoneBE.Data.ViewModels.CategoryDTO;
 using iPhoneBE.Data.ViewModels.ProductDTO;
 using iPhoneBE.Data.ViewModels.ProductItemDTO;
@@ -39,6 +41,10 @@ namespace iPhoneBE.Data.Mapping
                 .ForMember(dest => dest.UserName, opt => opt.Ignore())
                 .ForMember(dest => dest.Email, opt => opt.Ignore())
                 .ReverseMap();
+
+            CreateMap<Entities.Attribute, AttributeViewModel>().ReverseMap();
+            CreateMap<Entities.Attribute, CreateAttributeModel>().ReverseMap();
+            CreateMap<Entities.Attribute, UpdateAttributeModel>().ReverseMap();
         }
     }
 }

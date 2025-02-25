@@ -10,8 +10,10 @@ namespace iPhoneBE.Data.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
+        IRepository<Entities.Attribute> AttributeRepository { get; }
         IRepository<Category> CategoryRepository { get; }
         IRepository<Blog> BlogRepository { get; }
+
 
         void CommitTransaction();
         void RollbackTransaction();
