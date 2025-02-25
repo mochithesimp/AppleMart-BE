@@ -17,6 +17,10 @@ namespace iPhoneBE.Data
             //service.Configure<EmailConfiguration>(options => configuration.GetSection("MailSettings").Bind(options));
             service.AddScoped<IEmailHelper, EmailHelper>();
 
+            service.Configure<EmailConfiguration>(configuration.GetSection("MailSettings"));
+            //service.Configure<EmailConfiguration>(options => configuration.GetSection("MailSettings").Bind(options));
+            service.AddScoped<IEmailHelper, EmailHelper>();
+
             return service;
         }
     }
