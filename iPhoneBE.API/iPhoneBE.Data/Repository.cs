@@ -1,4 +1,4 @@
-﻿using iPhoneBE.Data.Data;
+using iPhoneBE.Data.Data;
 using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +59,15 @@ namespace iPhoneBE.Data
                 {
                     query = query.Include(include);
                 }
+            }
+
+            // Add OrderBy for entities that have DisplayIndex property
+            if (typeof(TEntity).GetProperty("DisplayIndex") != null)
+            {
+                var parameter = Expression.Parameter(typeof(TEntity), "x");
+                var property = Expression.Property(parameter, "DisplayIndex");
+                var lambda = Expression.Lambda<Func<TEntity, int>>(property, parameter);
+                query = query.OrderBy(lambda);
             }
 
             return await query.ToListAsync();

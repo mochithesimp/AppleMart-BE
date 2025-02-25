@@ -22,7 +22,7 @@ namespace iPhoneBE.Data
         IRepository<ProductItemAttribute> _productItemAttributeRepository;
         IRepository<Product> _productRepository;
         IRepository<ProductItem> _productItemRepository;
-
+        IRepository<ProductImg> _productImgRepository;
 
         public UnitOfWork(
             AppleMartDBContext dbContext,
@@ -31,9 +31,9 @@ namespace iPhoneBE.Data
             IRepository<Entities.Attribute> attributeRepository,
             IRepository<ProductItemAttribute> productItemAttributeRepository,
             IRepository<ProductItem> productItemRepository,
-            IRepository<Product> productRepository
-
-            )
+            IRepository<Product> productRepository,
+            IRepository<ProductImg> productImgRepository
+        )
         {
             _dbContext = dbContext;
             _categoryRepository = categoryRepository;
@@ -42,6 +42,7 @@ namespace iPhoneBE.Data
             _productItemAttributeRepository = productItemAttributeRepository;
             _productItemRepository = productItemRepository;
             _productRepository = productRepository;
+            _productImgRepository = productImgRepository;
         }
 
         //repository
@@ -51,6 +52,8 @@ namespace iPhoneBE.Data
         public IRepository<ProductItemAttribute> ProductItemAttributeRepository => _productItemAttributeRepository;
         public IRepository<ProductItem> ProductItemRepository => _productItemRepository;
         public IRepository<Product> ProductRepository => _productRepository;
+        public IRepository<ProductImg> ProductImgRepository => _productImgRepository;
+
         //transaction
         public void BeginTransaction()
         {
