@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using iPhoneBE.Data.Entities;
 
 namespace iPhoneBE.Data.ViewModels.ProductItemDTO
 {
@@ -28,6 +29,6 @@ namespace iPhoneBE.Data.ViewModels.ProductItemDTO
         public bool IsDeleted { get; set; }
         public virtual Product Product { get; set; }
         public virtual ICollection<ProductImg> ProductImgs { get; set; }
-        public virtual ICollection<ProductSpecification> ProductSpecifications { get; set; }
+        public virtual ICollection<ProductItemAttribute> ProductItemAttributes { get; set; }
     }
 }

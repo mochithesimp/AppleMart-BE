@@ -25,12 +25,11 @@ namespace iPhoneBE.Data.Model
         [MaxLength(1000, ErrorMessage = "Description cannot exceed 1000 characters.")]
         public string? Description { get; set; }
 
-        [MaxLength(100, ErrorMessage = "Color cannot exceed 100 characters.")]
-        public string? Color { get; set; }
-
         [Required(ErrorMessage = "Quantity is required.")]
         [Range(0, int.MaxValue, ErrorMessage = "Quantity must be at least 0.")]
         public int Quantity { get; set; }
+
+        public int DisplayIndex { get; set; }
 
         public double Price { get; set; }
 
@@ -41,7 +40,7 @@ namespace iPhoneBE.Data.Model
         public virtual ICollection<ProductImg> ProductImgs { get; set; }
         public virtual ICollection<Review> Reviews { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
-        public virtual ICollection<ProductSpecification> ProductSpecifications { get; set; }
+        public virtual ICollection<ProductItemAttribute> ProductItemAttributes { get; set; }
         public virtual ICollection<Voucher> Vouchers { get; set; }
     }
 }
