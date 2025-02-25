@@ -1,4 +1,4 @@
-﻿using iPhoneBE.Data.Model;
+﻿using iPhoneBE.Data.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -6,12 +6,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using iPhoneBE.Data.Model;
 
 namespace iPhoneBE.Data.Entities
 {
-    public class ProductItemAttribute
+    public class ProductItemAttribute : IBaseEntity
     {
-
         [Key]
         public int ProductItemAttributeID { get; set; }
 
@@ -20,6 +20,8 @@ namespace iPhoneBE.Data.Entities
         public int AttributeID { get; set; }
 
         public string Value { get; set; }
+
+        public bool IsDeleted { get; set; }
 
         [ForeignKey("ProductItemID")]
         public virtual ProductItem ProductItem { get; set; }

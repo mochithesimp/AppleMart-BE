@@ -19,25 +19,33 @@ namespace iPhoneBE.Data
         IRepository<Entities.Attribute> _attributeRepository;
         IRepository<Category> _categoryRepository;
         IRepository<Blog> _blogRepository;
-        
+        IRepository<ProductItemAttribute> _productItemAttributeRepository;
+        IRepository<ProductItem> _productItemRepository;
+
 
         public UnitOfWork(
             AppleMartDBContext dbContext,
             IRepository<Category> categoryRepository,
             IRepository<Blog> blogRepository,
-            IRepository<Entities.Attribute> attributeRepository
+            IRepository<Entities.Attribute> attributeRepository,
+            IRepository<ProductItemAttribute> productItemAttributeRepository,
+            IRepository<ProductItem> productItemRepository
             )
         {
             _dbContext = dbContext;
             _categoryRepository = categoryRepository;
             _blogRepository = blogRepository;
             _attributeRepository = attributeRepository;
+            _productItemAttributeRepository = productItemAttributeRepository;
+            _productItemRepository = productItemRepository;
         }
 
         //repository
         public IRepository<Entities.Attribute> AttributeRepository => _attributeRepository;
         public IRepository<Category> CategoryRepository => _categoryRepository;
         public IRepository<Blog> BlogRepository => _blogRepository;
+        public IRepository<ProductItemAttribute> ProductItemAttributeRepository => _productItemAttributeRepository;
+        public IRepository<ProductItem> ProductItemRepository => _productItemRepository;
 
         //transaction
         public void BeginTransaction()
