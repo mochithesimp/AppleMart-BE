@@ -24,6 +24,7 @@ namespace iPhoneBE.Data
         IRepository<ProductItem> _productItemRepository;
         IRepository<ProductImg> _productImgRepository;
         IRepository<BlogImage> _blogImageRepository;
+        IRepository<Review> _reviewRepository;
 
         public UnitOfWork(
             AppleMartDBContext dbContext,
@@ -34,7 +35,8 @@ namespace iPhoneBE.Data
             IRepository<ProductItem> productItemRepository,
             IRepository<Product> productRepository,
             IRepository<ProductImg> productImgRepository,
-            IRepository<BlogImage> blogImageRepository
+            IRepository<BlogImage> blogImageRepository,
+            IRepository<Review> reviewRepository
         )
         {
             _dbContext = dbContext;
@@ -46,6 +48,7 @@ namespace iPhoneBE.Data
             _productRepository = productRepository;
             _productImgRepository = productImgRepository;
             _blogImageRepository = blogImageRepository;
+            _reviewRepository = reviewRepository;
         }
 
         //repository
@@ -57,6 +60,7 @@ namespace iPhoneBE.Data
         public IRepository<Product> ProductRepository => _productRepository;
         public IRepository<ProductImg> ProductImgRepository => _productImgRepository;
         public IRepository<BlogImage> BlogImageRepository => _blogImageRepository;
+        public IRepository<Review> ReviewRepository => _reviewRepository;
 
         //transaction
         public void BeginTransaction()
