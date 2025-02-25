@@ -1,13 +1,16 @@
 ﻿using AutoMapper;
+using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AttributeModel;
 using iPhoneBE.Data.Models.CategoryModel;
+using iPhoneBE.Data.Models.ProductItemAttributeModel;
 using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Data.Models.ProductModel;
 using iPhoneBE.Data.Models.UserModel;
 using iPhoneBE.Data.ViewModels.AttributeDTO;
 using iPhoneBE.Data.ViewModels.CategoryDTO;
 using iPhoneBE.Data.ViewModels.ProductDTO;
+using iPhoneBE.Data.ViewModels.ProductItemAttributeDTO;
 using iPhoneBE.Data.ViewModels.ProductItemDTO;
 using iPhoneBE.Data.ViewModels.UserDTO;
 using System;
@@ -45,6 +48,10 @@ namespace iPhoneBE.Data.Mapping
             CreateMap<Entities.Attribute, AttributeViewModel>().ReverseMap();
             CreateMap<Entities.Attribute, CreateAttributeModel>().ReverseMap();
             CreateMap<Entities.Attribute, UpdateAttributeModel>().ReverseMap();
+
+            CreateMap<ProductItemAttribute, ProductItemAttributeViewModel>().ReverseMap();
+            CreateMap<ProductItemAttribute, CreateProductItemAttributeModel>().ReverseMap();
+            CreateMap<ProductItemAttribute, UpdateProductItemAttributeModel>().ReverseMap();
         }
     }
 }

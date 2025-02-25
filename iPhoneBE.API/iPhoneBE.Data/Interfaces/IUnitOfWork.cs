@@ -13,6 +13,8 @@ namespace iPhoneBE.Data.Interfaces
         IRepository<Entities.Attribute> AttributeRepository { get; }
         IRepository<Category> CategoryRepository { get; }
         IRepository<Blog> BlogRepository { get; }
+        IRepository<ProductItemAttribute> ProductItemAttributeRepository { get; }
+        IRepository<ProductItem> ProductItemRepository { get; }
 
 
         void CommitTransaction();
