@@ -18,15 +18,16 @@ namespace iPhoneBE.Data.ViewModels.ProductItemDTO
 
         public string Name { get; set; }
 
-        public string Description { get; set; }
-
-        public string Color { get; set; }
+        public string? Description { get; set; }
 
         public int Quantity { get; set; }
+
+        public int DisplayIndex { get; set; }
 
         public double Price { get; set; }
 
         public bool IsDeleted { get; set; }
+
         public virtual Product Product { get; set; }
         public virtual ICollection<ProductImg> ProductImgs { get; set; }
         public virtual ICollection<ProductItemAttribute> ProductItemAttributes { get; set; }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using iPhoneBE.Data.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -9,6 +10,9 @@ namespace iPhoneBE.Data.Models.ProductModel
 {
     public class CreateProductModel
     {
+        [Required(ErrorMessage = "Product ID is required.")]
+        public int ProductID { get; set; }
+
         [Required(ErrorMessage = "Category ID is required.")]
         public int CategoryID { get; set; }
 
@@ -20,5 +24,7 @@ namespace iPhoneBE.Data.Models.ProductModel
         public string? Description { get; set; }
 
         public int DisplayIndex { get; set; }
+
+        public bool IsDeleted = false;
     }
 }

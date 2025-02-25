@@ -9,6 +9,9 @@ namespace iPhoneBE.Data.Models.ProductModel
 {
     public class UpdateProductModel
     {
+        [Required(ErrorMessage = "Product ID is required.")]
+        public int ProductID { get; set; }
+
         [Required(ErrorMessage = "Category ID is required.")]
         public int CategoryID { get; set; }
 
