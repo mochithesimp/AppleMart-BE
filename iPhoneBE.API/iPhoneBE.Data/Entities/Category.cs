@@ -20,6 +20,8 @@ namespace iPhoneBE.Data.Model
         [MaxLength(1000, ErrorMessage = "Description cannot exceed 1000 characters.")]
         public string? Description { get; set; }
 
+        public int DisplayIndex { get; set; }
+
         public bool IsDeleted { get; set; }
 
         public virtual ICollection<Product> Products { get; set; }

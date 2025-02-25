@@ -19,6 +19,7 @@ namespace iPhoneBE.Data.Data
 
         }
 
+        public DbSet<Entities.Attribute> Attributes { get; set; }
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<BlogImage> BlogImages { get; set; }
         public DbSet<Category> Categories { get; set; }
@@ -32,7 +33,7 @@ namespace iPhoneBE.Data.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductImg> ProductImgs { get; set; }
         public DbSet<ProductItem> ProductItems { get; set; }
-        public DbSet<ProductSpecification> ProductSpecifications { get; set; }
+        public DbSet<ProductItemAttribute> ProductItemAttributes { get; set; }
         public DbSet<Review> Reviews { get; set; }
         //public DbSet<Role> Roles { get; set; }
         public DbSet<ShippingMethod> ShippingMethods { get; set; }

@@ -27,6 +27,8 @@ namespace iPhoneBE.Data.Model
 
         public bool IsDeleted { get; set; }
 
+        public int DisplayIndex { get; set; }
+
         public virtual Category Category { get; set; }
 
         public virtual ICollection<ProductItem> ProductItems { get; set; }
