@@ -2,6 +2,8 @@
 using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AttributeModel;
+using iPhoneBE.Data.Models.BlogImageModel;
+using iPhoneBE.Data.Models.BlogModel;
 using iPhoneBE.Data.Models.CategoryModel;
 using iPhoneBE.Data.Models.ProductImgModel;
 using iPhoneBE.Data.Models.ProductItemAttributeModel;
@@ -9,6 +11,7 @@ using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Data.Models.ProductModel;
 using iPhoneBE.Data.Models.UserModel;
 using iPhoneBE.Data.ViewModels.AttributeDTO;
+using iPhoneBE.Data.ViewModels.BlogDTO;
 using iPhoneBE.Data.ViewModels.CategoryDTO;
 using iPhoneBE.Data.ViewModels.ProductDTO;
 using iPhoneBE.Data.ViewModels.ProductImgDTO;
@@ -83,6 +86,11 @@ namespace iPhoneBE.Data.Mapping
                 .ForMember(dest => dest.ProductImgID, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore())
                 .ForMember(dest => dest.ProductItemID, opt => opt.Ignore());
+
+            CreateMap<Blog, BlogViewModel>();
+            CreateMap<BlogImage, BlogImageViewModel>();
+            CreateMap<CreateBlogModel, Blog>();
+            CreateMap<CreateBlogImageModel, BlogImage>();
         }
     }
 }
