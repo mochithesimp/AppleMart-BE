@@ -73,9 +73,18 @@ namespace iPhoneBE.Service.Services
                 if (category == null)
                     throw new KeyNotFoundException($"Category with ID {id} not found.");
 
-                _mapper.Map(newCategory, category);
-                var result = await _unitOfWork.CategoryRepository.Update(category);
+                bool IsInvalid(string value) => string.IsNullOrWhiteSpace(value) || value == "string";
 
+                if (!IsInvalid(newCategory.Name))
+                {
+                    category.Name = newCategory.Name;
+                }
+                if (!IsInvalid(newCategory.Description))
+                {
+                    category.Description = newCategory.Description;
+                }
+
+                var result = await _unitOfWork.CategoryRepository.Update(category);
                 if (!result)
                 {
                     _unitOfWork.RollbackTransaction();
