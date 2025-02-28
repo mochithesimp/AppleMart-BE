@@ -32,6 +32,7 @@ namespace iPhoneBE.Data.Helper.EmailHelper
 
                 mailMessage.From = new MailAddress(_emailConfig.DefaultSender);
                 mailMessage.To.Add(emailRequest.To);
+                mailMessage.IsBodyHtml = true;
                 mailMessage.Subject = emailRequest.Subject;
                 mailMessage.Body = emailRequest.Body;
 

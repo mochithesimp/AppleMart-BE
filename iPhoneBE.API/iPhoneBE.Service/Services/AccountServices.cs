@@ -1,7 +1,9 @@
 ﻿using iPhoneBE.Data;
+using iPhoneBE.Data.Helper.EmailHelper;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AuthenticationModel;
+using iPhoneBE.Data.Models.EmailModel;
 using iPhoneBE.Data.ViewModels.AuthenticationDTO;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -24,13 +26,15 @@ namespace iPhoneBE.Service.Services
         private readonly IUserServices _userServices;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<User> _userManager;
+        private readonly IEmailHelper _emailHelper;
 
-        public AccountServices(IConfiguration configuration, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IUserServices userServices)
+        public AccountServices(IConfiguration configuration, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IUserServices userServices, IEmailHelper emailHelper)
         {
             _configuration = configuration;
             _userManager = userManager;
             _roleManager = roleManager;
             _userServices = userServices;
+            _emailHelper = emailHelper;
         }
 
         public async Task<JwtViewModel> LoginAsync(LoginModel model)
@@ -56,25 +60,20 @@ namespace iPhoneBE.Service.Services
             };
         }
 
-        public async Task<IdentityResult> RegisterAsync(RegisterModel model)
+        public async Task<IdentityResult> RegisterAsync(User user)
         {
-            var newUser = new User
-            {
-                Name = model.name,
-                Email = model.Email,
-                UserName = model.Email,
-            };
 
-            var result = await _userManager.CreateAsync(newUser, model.Password);
+            var result = await _userManager.CreateAsync(user, user.PasswordHash);
 
             if (result.Succeeded)
             {
-                // Kiểm tra role có tồn tại không, nếu chưa thì tạo mới
+
+                // check role - new role
                 if (!await _roleManager.RoleExistsAsync("Customer"))
                 {
                     await _roleManager.CreateAsync(new IdentityRole("Customer"));
                 }
-                await _userManager.AddToRoleAsync(newUser, "Customer");
+                await _userManager.AddToRoleAsync(user, "Customer");
             }
 
             return result;
