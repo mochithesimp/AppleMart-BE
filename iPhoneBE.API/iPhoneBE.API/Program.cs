@@ -1,5 +1,4 @@
-﻿
-using iPhoneBE.API.Middlewares;
+﻿using iPhoneBE.API.Middlewares;
 using iPhoneBE.Data;
 using iPhoneBE.Data.Data;
 using iPhoneBE.Data.Mapping;
@@ -12,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using iPhoneBE.API.Hubs;
 
 namespace iPhoneBE.API
 {
@@ -22,6 +22,8 @@ namespace iPhoneBE.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
+            builder.Services.AddSignalR();
 
             // Swagger Configuration
             builder.Services.AddSwaggerGen(option =>
@@ -82,9 +84,18 @@ namespace iPhoneBE.API
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
                     };
 
-                    // Thêm logging
                     x.Events = new JwtBearerEvents
                     {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        },
                         OnAuthenticationFailed = context =>
                         {
                             Console.WriteLine($"OnAuthenticationFailed: {context.Exception.Message}");
@@ -95,11 +106,6 @@ namespace iPhoneBE.API
                             var accountService = context.HttpContext.RequestServices.GetRequiredService<IAccountServices>();
                             return accountService.ValidateToken(context);
                         },
-                        OnMessageReceived = context =>
-                        {
-
-                            return Task.CompletedTask;
-                        },
                         OnChallenge = context =>
                         {
                             Console.WriteLine($"OnChallenge: {context.Error}, {context.ErrorDescription}");
@@ -107,9 +113,9 @@ namespace iPhoneBE.API
                         }
                     };
                 });
+
             builder.Services.AddAuthorization();
 
-            //add database
             var server = builder.Configuration["server"] ?? "localhost";
             var database = builder.Configuration["database"] ?? "AppleMartDB";
             var port = builder.Configuration["port"] ?? "1433";
@@ -129,38 +135,51 @@ namespace iPhoneBE.API
 
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
-
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
             });
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddCors();
+
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("http://localhost:3000") 
+                           .AllowAnyHeader()
+                           .AllowAnyMethod()
+                           .AllowCredentials(); 
+                });
+            });
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-                // Không dùng HTTPS redirect trong môi trường dev
             }
             else
             {
-                app.UseHttpsRedirection();  //production
+                app.UseHttpsRedirection();
             }
 
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-            app.UseCors(opt =>
-            {
-                opt.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-            });
+            app.UseCors();
 
-            //check db init
+            app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.MapHub<ChatHub>("/chatHub");
+
+            app.MapControllers();
+
             var scope = app.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppleMartDBContext>();
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
@@ -168,17 +187,11 @@ namespace iPhoneBE.API
             try
             {
                 context.Database.Migrate();
-                //DbInitializer.Initialize(context);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "A problem occurred during migration");
             }
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.MapControllers();
 
             app.Run();
         }

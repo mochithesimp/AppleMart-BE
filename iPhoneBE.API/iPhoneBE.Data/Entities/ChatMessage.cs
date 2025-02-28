@@ -1,4 +1,5 @@
-﻿using iPhoneBE.Data.Model;
+﻿using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Data.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace iPhoneBE.Data.Entities
 {
-    public class ChatMessage
+    public class ChatMessage : IBaseEntity
     {
         [Key]
         public int ChatID { get; set; }
