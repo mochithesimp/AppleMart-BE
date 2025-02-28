@@ -6,8 +6,6 @@
 # dotenv files
 .env
 
-iPhoneBE.API/iPhoneBE.API/appsettings.json
-
 
 # User-specific files
 *.rsuser
