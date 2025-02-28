@@ -57,11 +57,26 @@ namespace iPhoneBE.API
             //identity
             builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
+                options.Password.RequiredLength = 1;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+
                 options.User.RequireUniqueEmail = true;
+
+                options.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";
             })
                 .AddEntityFrameworkStores<AppleMartDBContext>()
                 .AddDefaultTokenProviders()
                 .AddTokenProvider<DataProtectorTokenProvider<User>>("REFRESHTOKENPROVIDER");
+                //.AddTokenProvider<EmailConfirmationTokenProvider<User>>("emailconfirmation");
+
+
+            builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
+                opt.TokenLifespan = TimeSpan.FromHours(2));
+            //builder.Services.Configure<EmailConfirmationTokenProviderOptions>(opt =>
+            //    opt.TokenLifespan = TimeSpan.FromDays(3));
 
             //add jwt
             builder.Services
@@ -140,6 +155,7 @@ namespace iPhoneBE.API
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
             });
 
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 

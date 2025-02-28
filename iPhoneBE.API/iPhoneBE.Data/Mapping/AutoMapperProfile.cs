@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using iPhoneBE.Data.Entities;
+using iPhoneBE.Data.Migrations;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AttributeModel;
+using iPhoneBE.Data.Models.AuthenticationModel;
 using iPhoneBE.Data.Models.BlogImageModel;
 using iPhoneBE.Data.Models.BlogModel;
 using iPhoneBE.Data.Models.CategoryModel;
@@ -78,6 +80,13 @@ namespace iPhoneBE.Data.Mapping
                 .ForMember(dest => dest.UserName, opt => opt.Ignore())
                 .ForMember(dest => dest.Email, opt => opt.Ignore())
                 .ReverseMap();
+            CreateMap<RegisterModel, User>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email)) // Map Email -> UserName
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+            .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => src.Password))
+            .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false))
+            .ReverseMap();
 
             CreateMap<ProductImg, ProductImgViewModel>().ReverseMap();
             CreateMap<CreateProductImgModel, ProductImg>()

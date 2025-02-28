@@ -10,7 +10,7 @@ namespace iPhoneBE.Data.Models.AuthenticationModel
     public class RegisterModel
     {
         [Required]
-        public string name { get; set; }
+        public string Name { get; set; }
         [Required, EmailAddress]
         public string Email { get; set; }
         [Required]

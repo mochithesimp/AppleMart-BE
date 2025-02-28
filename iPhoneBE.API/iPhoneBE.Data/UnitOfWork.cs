@@ -16,6 +16,7 @@ namespace iPhoneBE.Data
         private readonly AppleMartDBContext _dbContext;
         private IDbContextTransaction? _transaction = null;
 
+        // thieu private read only
         IRepository<Entities.Attribute> _attributeRepository;
         IRepository<Category> _categoryRepository;
         IRepository<Blog> _blogRepository;
