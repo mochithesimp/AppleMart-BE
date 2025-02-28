@@ -19,6 +19,9 @@ namespace iPhoneBE.Data.Interfaces
         IRepository<ProductImg> ProductImgRepository { get; }
         IRepository<BlogImage> BlogImageRepository { get; }
         IRepository<Review> ReviewRepository { get; }
+        IRepository<ChatRoom> ChatRoomRepository { get; }
+        IRepository<ChatMessage> ChatMessageRepository { get; }
+        IRepository<ChatParticipant> ChatParticipantRepository { get; }
 
         void CommitTransaction();
         void RollbackTransaction();

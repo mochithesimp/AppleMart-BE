@@ -1,4 +1,5 @@
-﻿using iPhoneBE.Data.Model;
+﻿using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Data.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace iPhoneBE.Data.Entities
 {
-    public class ChatParticipant
+    public class ChatParticipant : IBaseEntity
     {
         [Key]
         public int ID { get; set; } // ✅ Thêm khóa chính mới
@@ -21,6 +22,9 @@ namespace iPhoneBE.Data.Entities
         public string UserID { get; set; } // ✅ IdentityUser.Id thường là string
 
         public bool IsAdmin { get; set; }
+
+        public bool IsDeleted { get; set; }
+
         public DateTime CreatedDate { get; set; }
 
         public virtual User User { get; set; }
