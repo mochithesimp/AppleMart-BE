@@ -15,6 +15,7 @@ using iPhoneBE.Data.Models.UserModel;
 using iPhoneBE.Data.ViewModels.AttributeDTO;
 using iPhoneBE.Data.ViewModels.BlogDTO;
 using iPhoneBE.Data.ViewModels.CategoryDTO;
+using iPhoneBE.Data.ViewModels.ChatDTO;
 using iPhoneBE.Data.ViewModels.ProductDTO;
 using iPhoneBE.Data.ViewModels.ProductImgDTO;
 using iPhoneBE.Data.ViewModels.ProductItemAttributeDTO;
@@ -100,6 +101,20 @@ namespace iPhoneBE.Data.Mapping
             CreateMap<BlogImage, BlogImageViewModel>();
             CreateMap<CreateBlogModel, Blog>();
             CreateMap<CreateBlogImageModel, BlogImage>();
+
+            // Chat mappings
+            CreateMap<ChatMessage, ChatMessageViewModel>()
+                .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.User.UserName));
+
+            CreateMap<ChatRoom, ChatRoomViewModel>()
+                .ForMember(dest => dest.Messages, opt => opt.MapFrom(src => src.ChatMessages))
+                .ForMember(dest => dest.Participants, opt => opt.MapFrom(src => src.ChatParticipants))
+                .ForMember(dest => dest.LastMessage, opt => opt.MapFrom(src =>
+                    src.ChatMessages.OrderByDescending(m => m.CreatedDate).FirstOrDefault()));
+
+            CreateMap<ChatParticipant, ChatParticipantViewModel>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
+                .ForMember(dest => dest.IsOnline, opt => opt.Ignore());
         }
     }
 }

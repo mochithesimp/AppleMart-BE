@@ -26,6 +26,9 @@ namespace iPhoneBE.Data
         IRepository<ProductImg> _productImgRepository;
         IRepository<BlogImage> _blogImageRepository;
         IRepository<Review> _reviewRepository;
+        IRepository<ChatRoom> _chatRoomRepository;
+        IRepository<ChatMessage> _chatMessageRepository;
+        IRepository<ChatParticipant> _chatParticipantRepository;
 
         public UnitOfWork(
             AppleMartDBContext dbContext,
@@ -37,7 +40,10 @@ namespace iPhoneBE.Data
             IRepository<Product> productRepository,
             IRepository<ProductImg> productImgRepository,
             IRepository<BlogImage> blogImageRepository,
-            IRepository<Review> reviewRepository
+            IRepository<Review> reviewRepository,
+            IRepository<ChatRoom> chatRoomRepository,
+            IRepository<ChatMessage> chatMessageRepository,
+            IRepository<ChatParticipant> chatParticipantRepository
         )
         {
             _dbContext = dbContext;
@@ -50,6 +56,9 @@ namespace iPhoneBE.Data
             _productImgRepository = productImgRepository;
             _blogImageRepository = blogImageRepository;
             _reviewRepository = reviewRepository;
+            _chatRoomRepository = chatRoomRepository;
+            _chatMessageRepository = chatMessageRepository;
+            _chatParticipantRepository = chatParticipantRepository;
         }
 
         //repository
@@ -62,6 +71,9 @@ namespace iPhoneBE.Data
         public IRepository<ProductImg> ProductImgRepository => _productImgRepository;
         public IRepository<BlogImage> BlogImageRepository => _blogImageRepository;
         public IRepository<Review> ReviewRepository => _reviewRepository;
+        public IRepository<ChatRoom> ChatRoomRepository => _chatRoomRepository;
+        public IRepository<ChatMessage> ChatMessageRepository => _chatMessageRepository;
+        public IRepository<ChatParticipant> ChatParticipantRepository => _chatParticipantRepository;
 
         //transaction
         public void BeginTransaction()
