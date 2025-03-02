@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Google.Apis.Auth;
 using iPhoneBE.Data.Helper.EmailHelper;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AuthenticationModel;
 using iPhoneBE.Data.Models.EmailModel;
+using iPhoneBE.Data.ViewModels.AuthenticationDTO;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -45,6 +47,31 @@ namespace iPhoneBE.API.Controllers
             }
 
             return Ok(result);
+        }
+
+        [HttpPost("GoogleLogin")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var result = await _accountServices.GoogleLoginAsync(model);
+
+                if (result == null)
+                {
+                    return Unauthorized("Invalid Google token");
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
         }
 
         [HttpPost("Register")]

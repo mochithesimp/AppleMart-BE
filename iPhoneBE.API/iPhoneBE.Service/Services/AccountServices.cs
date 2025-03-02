@@ -1,4 +1,6 @@
-﻿using iPhoneBE.Data;
+﻿using Google.Apis.Auth;
+using iPhoneBE.Data;
+using iPhoneBE.Data.Helper;
 using iPhoneBE.Data.Helper.EmailHelper;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
@@ -60,26 +62,94 @@ namespace iPhoneBE.Service.Services
             };
         }
 
+        public async Task<JwtViewModel> GoogleLoginAsync(GoogleAuthModel model)
+        {
+            // Xác thực token từ Google
+            var settings = new GoogleJsonWebSignature.ValidationSettings()
+            {
+                Audience = new List<string> { _configuration["Authentication:Google:ClientId"] }
+            };
+
+            var payload = await GoogleJsonWebSignature.ValidateAsync(model.IdToken, settings);
+            if (payload == null)
+                return null;
+
+            // Kiểm tra xem user đã tồn tại chưa
+            var user = await _userManager.FindByEmailAsync(payload.Email);
+
+            if (user == null)
+            {
+                // Tạo user mới nếu chưa tồn tại
+                user = new User
+                {
+                    UserName = payload.Email,
+                    Email = payload.Email,
+                    Name = payload.Name,
+                    PhoneNumber = model.PhoneNumber,
+                    EmailConfirmed = payload.EmailVerified
+                };
+
+                var password = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 8);
+                var result = await _userManager.CreateAsync(user, password);
+
+                if (!result.Succeeded)
+                {
+                    throw new Exception($"Failed to create user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
+
+                await AssignRoleAsync(user, RolesHelper.Customer);
+            }
+            else
+            {
+                bool isUpdated = false; 
+
+                if (user.Name != model.Name)
+                {
+                    user.Name = model.Name;
+                    isUpdated = true;
+                }
+
+                if (!string.IsNullOrEmpty(model.PhoneNumber) && user.PhoneNumber != model.PhoneNumber)
+                {
+                    user.PhoneNumber = model.PhoneNumber;
+                    isUpdated = true;
+                }
+
+                if (isUpdated)
+                {
+                    await _userManager.UpdateAsync(user);
+                }
+            }
+
+            // Tạo JWT token
+            var accessToken = await CreateAccessToken(user);
+            var refreshToken = await CreateRefreshToken(user);
+
+            return new JwtViewModel
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                UserName = user.UserName,
+                Name = user.Name,
+            };
+        }
+
         public async Task<IdentityResult> RegisterAsync(User user)
         {
 
             var result = await _userManager.CreateAsync(user, user.PasswordHash);
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-
-                // check role - new role
-                if (!await _roleManager.RoleExistsAsync("Customer"))
-                {
-                    await _roleManager.CreateAsync(new IdentityRole("Customer"));
-                }
-                await _userManager.AddToRoleAsync(user, "Customer");
+                throw new Exception($"Failed to create user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
             }
+
+            await AssignRoleAsync(user, RolesHelper.Customer);
 
             return result;
         }
 
-        private async Task<string> CreateAccessToken(User user)
+        public async Task<string> CreateAccessToken(User user)
         {
             DateTime expiredDate = DateTime.UtcNow.AddMinutes(int.Parse(_configuration["JWT:AccessTokenExpiredByMinutes"]));
             var userRoles = await _userManager.GetRolesAsync(user);
@@ -115,7 +185,7 @@ namespace iPhoneBE.Service.Services
             return token;
         }
 
-        private async Task<string> CreateRefreshToken(User user)
+        public async Task<string> CreateRefreshToken(User user)
         {
             var code = Guid.NewGuid().ToString();
             var expiredDate = DateTime.UtcNow.AddHours(int.Parse(_configuration["JWT:RefreshTokenExpiredByHours"]));
@@ -216,7 +286,7 @@ namespace iPhoneBE.Service.Services
                     ValidateAudience = false,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuerSigningKey = true,
-                    ValidateLifetime = true, 
+                    ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 }, out _);
 
@@ -259,6 +329,15 @@ namespace iPhoneBE.Service.Services
             {
                 throw new Exception(e.Message);
             }
+        }
+
+        private async Task AssignRoleAsync(User user, string roleName)
+        {
+            if (!await _roleManager.RoleExistsAsync(roleName))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+            await _userManager.AddToRoleAsync(user, roleName);
         }
     }
 }

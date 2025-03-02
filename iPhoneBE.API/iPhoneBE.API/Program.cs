@@ -4,7 +4,6 @@ using iPhoneBE.Data.Data;
 using iPhoneBE.Data.Mapping;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Service;
-using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using iPhoneBE.API.Hubs;
+using iPhoneBE.API.CustomTokenProviders;
+using Google.Apis.Auth;
 
 namespace iPhoneBE.API
 {
@@ -69,15 +70,16 @@ namespace iPhoneBE.API
             })
                 .AddEntityFrameworkStores<AppleMartDBContext>()
                 .AddDefaultTokenProviders()
-                .AddTokenProvider<DataProtectorTokenProvider<User>>("REFRESHTOKENPROVIDER");
-                //.AddTokenProvider<EmailConfirmationTokenProvider<User>>("emailconfirmation");
+                .AddTokenProvider<DataProtectorTokenProvider<User>>("REFRESHTOKENPROVIDER")
+                .AddTokenProvider<EmailConfirmationTokenProvider<User>>("emailconfirmation");
 
 
             builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
                 opt.TokenLifespan = TimeSpan.FromHours(2));
-            //builder.Services.Configure<EmailConfirmationTokenProviderOptions>(opt =>
-            //    opt.TokenLifespan = TimeSpan.FromDays(3));
+            builder.Services.Configure<EmailConfirmationTokenProviderOptions>(opt =>
+                opt.TokenLifespan = TimeSpan.FromDays(3));
 
+            //add jwt
             //add jwt
             builder.Services
                 .AddAuthentication(options =>
@@ -98,35 +100,12 @@ namespace iPhoneBE.API
                         ValidAudience = builder.Configuration["JWT:Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
                     };
-
-                    x.Events = new JwtBearerEvents
-                    {
-                        OnMessageReceived = context =>
-                        {
-                            var accessToken = context.Request.Query["access_token"];
-                            var path = context.HttpContext.Request.Path;
-                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
-                            {
-                                context.Token = accessToken;
-                            }
-                            return Task.CompletedTask;
-                        },
-                        OnAuthenticationFailed = context =>
-                        {
-                            Console.WriteLine($"OnAuthenticationFailed: {context.Exception.Message}");
-                            return Task.CompletedTask;
-                        },
-                        OnTokenValidated = context =>
-                        {
-                            var accountService = context.HttpContext.RequestServices.GetRequiredService<IAccountServices>();
-                            return accountService.ValidateToken(context);
-                        },
-                        OnChallenge = context =>
-                        {
-                            Console.WriteLine($"OnChallenge: {context.Error}, {context.ErrorDescription}");
-                            return Task.CompletedTask;
-                        }
-                    };
+                })
+                // Thêm Google Authentication nếu muốn sử dụng OAuth chuẩn của ASP.NET
+                .AddGoogle(options =>
+                {
+                    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+                    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
                 });
 
             builder.Services.AddAuthorization();
@@ -164,10 +143,10 @@ namespace iPhoneBE.API
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    builder.WithOrigins("http://localhost:3000") 
+                    builder.WithOrigins("http://localhost:3000") // Hoặc danh sách origin cụ thể
                            .AllowAnyHeader()
                            .AllowAnyMethod()
-                           .AllowCredentials(); 
+                           .AllowCredentials();
                 });
             });
 
