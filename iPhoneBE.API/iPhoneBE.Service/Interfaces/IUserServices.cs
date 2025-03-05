@@ -1,6 +1,6 @@
 ﻿using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.UserModel;
-using iPhoneBE.Data.ViewModels.UserDTO;
+using iPhoneBE.Data.ViewModels.UserVM;
 
 namespace iPhoneBE.Service.Interfaces
 {

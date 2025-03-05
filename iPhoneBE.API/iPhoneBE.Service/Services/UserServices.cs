@@ -2,7 +2,7 @@
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.UserModel;
-using iPhoneBE.Data.ViewModels.UserDTO;
+using iPhoneBE.Data.ViewModels.UserVM;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

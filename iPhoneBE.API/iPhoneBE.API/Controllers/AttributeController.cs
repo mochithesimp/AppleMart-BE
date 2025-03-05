@@ -1,7 +1,7 @@
 using AutoMapper;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AttributeModel;
-using iPhoneBE.Data.ViewModels.AttributeDTO;
+using iPhoneBE.Data.ViewModels.AttributeVM;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

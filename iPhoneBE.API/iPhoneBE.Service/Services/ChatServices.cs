@@ -1,7 +1,6 @@
 using AutoMapper;
 using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Interfaces;
-using iPhoneBE.Data.ViewModels.ChatDTO;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Linq.Expressions;
+using iPhoneBE.Data.ViewModels.ChatVM;
 
 namespace iPhoneBE.Service.Services
 {

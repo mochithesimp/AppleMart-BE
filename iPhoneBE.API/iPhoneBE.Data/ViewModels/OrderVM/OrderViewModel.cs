@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace iPhoneBE.Data.ViewModels.OrderDTO
+namespace iPhoneBE.Data.ViewModels.OrderVM
 {
     public class OrderViewModel
     {

@@ -1,4 +1,4 @@
-namespace iPhoneBE.Data.ViewModels.ProductImgDTO
+namespace iPhoneBE.Data.ViewModels.ProductImgVM
 {
     public class ProductImgViewModel
     {

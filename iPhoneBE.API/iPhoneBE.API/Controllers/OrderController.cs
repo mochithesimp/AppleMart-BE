@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using iPhoneBE.Data.Models.OrderModel;
-using iPhoneBE.Data.ViewModels.OrderDTO;
+using iPhoneBE.Data.ViewModels.OrderVM;
 using iPhoneBE.Service.Interfaces;
 using iPhoneBE.Service.Services;
 using Microsoft.AspNetCore.Http;

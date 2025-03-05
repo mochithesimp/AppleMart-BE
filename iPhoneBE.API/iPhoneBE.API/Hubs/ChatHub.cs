@@ -1,4 +1,3 @@
-using iPhoneBE.Data.ViewModels.ChatDTO;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;

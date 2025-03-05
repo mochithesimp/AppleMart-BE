@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace iPhoneBE.Data.ViewModels.UserDTO
+namespace iPhoneBE.Data.ViewModels.UserVM
 {
     public class UserViewModel
     {

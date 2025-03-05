@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace iPhoneBE.Data.ViewModels.CategoryDTO
+namespace iPhoneBE.Data.ViewModels.CategoryVM
 {
     public class CategoryViewModel
     {

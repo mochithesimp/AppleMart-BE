@@ -1,5 +1,5 @@
 using iPhoneBE.Data.Entities;
-using iPhoneBE.Data.ViewModels.ChatDTO;
+using iPhoneBE.Data.ViewModels.ChatVM;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

@@ -5,7 +5,7 @@ using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.CategoryModel;
 using iPhoneBE.Data.Models.EmailModel;
-using iPhoneBE.Data.ViewModels.CategoryDTO;
+using iPhoneBE.Data.ViewModels.CategoryVM;
 using iPhoneBE.Service.Interfaces;
 using iPhoneBE.Service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

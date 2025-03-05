@@ -4,7 +4,7 @@ using iPhoneBE.Data.Helper.EmailHelper;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AuthenticationModel;
 using iPhoneBE.Data.Models.EmailModel;
-using iPhoneBE.Data.ViewModels.AuthenticationDTO;
+using iPhoneBE.Data.ViewModels.AuthenticationVM;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
