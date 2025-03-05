@@ -8,8 +8,11 @@
 
   <ItemGroup>
     <Compile Remove="Model\**" />
+    <Compile Remove="Repository\**" />
     <EmbeddedResource Remove="Model\**" />
+    <EmbeddedResource Remove="Repository\**" />
     <None Remove="Model\**" />
+    <None Remove="Repository\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,10 +34,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Repository\" />
   </ItemGroup>
 
 </Project>

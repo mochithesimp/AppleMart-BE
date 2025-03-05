@@ -56,7 +56,7 @@ namespace iPhoneBE.Service.Services
 
                 return result;
             }
-            catch (Exception ex)
+            catch
             {
                 _unitOfWork.RollbackTransaction();
                 throw;
@@ -87,7 +87,6 @@ namespace iPhoneBE.Service.Services
                 var result = await _unitOfWork.CategoryRepository.Update(category);
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
                     throw new InvalidOperationException("Failed to update category.");
                 }
 
@@ -116,7 +115,6 @@ namespace iPhoneBE.Service.Services
                 var result = await _unitOfWork.CategoryRepository.SoftDelete(category);
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
                     throw new InvalidOperationException("Failed to delete category.");
                 }
 

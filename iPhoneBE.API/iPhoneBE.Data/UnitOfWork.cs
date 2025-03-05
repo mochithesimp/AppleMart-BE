@@ -29,6 +29,8 @@ namespace iPhoneBE.Data
         IRepository<ChatRoom> _chatRoomRepository;
         IRepository<ChatMessage> _chatMessageRepository;
         IRepository<ChatParticipant> _chatParticipantRepository;
+        IRepository<Order> _orderRepository;
+        IRepository<OrderDetail> _orderDetailRepository;
 
         public UnitOfWork(
             AppleMartDBContext dbContext,
@@ -43,7 +45,9 @@ namespace iPhoneBE.Data
             IRepository<Review> reviewRepository,
             IRepository<ChatRoom> chatRoomRepository,
             IRepository<ChatMessage> chatMessageRepository,
-            IRepository<ChatParticipant> chatParticipantRepository
+            IRepository<ChatParticipant> chatParticipantRepository,
+            IRepository<Order> orderRepository,
+            IRepository<OrderDetail> orderDetailRepository
         )
         {
             _dbContext = dbContext;
@@ -59,6 +63,8 @@ namespace iPhoneBE.Data
             _chatRoomRepository = chatRoomRepository;
             _chatMessageRepository = chatMessageRepository;
             _chatParticipantRepository = chatParticipantRepository;
+            _orderRepository = orderRepository;
+            _orderDetailRepository = orderDetailRepository;
         }
 
         //repository
@@ -74,6 +80,9 @@ namespace iPhoneBE.Data
         public IRepository<ChatRoom> ChatRoomRepository => _chatRoomRepository;
         public IRepository<ChatMessage> ChatMessageRepository => _chatMessageRepository;
         public IRepository<ChatParticipant> ChatParticipantRepository => _chatParticipantRepository;
+        public IRepository<Order> OrderRepository => _orderRepository;
+        public IRepository<OrderDetail> OrderDetailRepository => _orderDetailRepository;
+        
 
         //transaction
         public void BeginTransaction()
