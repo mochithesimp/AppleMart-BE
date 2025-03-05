@@ -1,5 +1,4 @@
 using AutoMapper;
-using iPhoneBE.Data;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AttributeModel;
@@ -38,27 +37,27 @@ namespace iPhoneBE.Service.Services
 
         public async Task<Data.Entities.Attribute> AddAsync(Data.Entities.Attribute attribute)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
 
             try
             {
                 var result = await _unitOfWork.AttributeRepository.AddAsync(attribute);
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
                 return result;
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
 
         public async Task<Data.Entities.Attribute> UpdateAsync(int id, UpdateAttributeModel newAttribute)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var attribute = await _unitOfWork.AttributeRepository.GetByIdAsync(id);
@@ -74,17 +73,16 @@ namespace iPhoneBE.Service.Services
 
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
                     throw new InvalidOperationException("Failed to update attribute.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
                 return attribute;
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
@@ -93,7 +91,7 @@ namespace iPhoneBE.Service.Services
 
         public async Task<Data.Entities.Attribute> DeleteAsync(int id)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var attribute = await _unitOfWork.AttributeRepository.GetByIdAsync(id);
@@ -103,17 +101,16 @@ namespace iPhoneBE.Service.Services
                 var result = await _unitOfWork.AttributeRepository.SoftDelete(attribute);
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
                     throw new InvalidOperationException("Failed to delete attribute.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
                 return attribute;
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }

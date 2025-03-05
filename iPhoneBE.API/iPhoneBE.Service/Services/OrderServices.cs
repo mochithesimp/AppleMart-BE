@@ -32,7 +32,7 @@ namespace iPhoneBE.Service.Services
 
         public async Task<Order> AddAsync(OrderModel model)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var order = new Order
@@ -50,7 +50,7 @@ namespace iPhoneBE.Service.Services
                 };
 
                 var result = await _unitOfWork.OrderRepository.AddAsync(order);
-                _unitOfWork.SaveChanges();
+                await _unitOfWork.SaveChangesAsync();
 
                 var productIds = model.OrderDetails.Select(od => od.ProductItemID).ToList();
                 var products = await _unitOfWork.ProductItemRepository.GetAllAsync(p => productIds.Contains(p.ProductID));
@@ -84,14 +84,14 @@ namespace iPhoneBE.Service.Services
                     await _unitOfWork.ProductItemRepository.Update(product);
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
                 return result;
             }
             catch (Exception ex)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 Console.WriteLine($"Error in AddAsync: {ex.Message} - {ex.InnerException}");
                 throw;
             }

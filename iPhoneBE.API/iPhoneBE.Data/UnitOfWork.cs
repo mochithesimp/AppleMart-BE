@@ -4,33 +4,30 @@ using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace iPhoneBE.Data
 {
-    public class UnitOfWork : IUnitOfWork, IDisposable
+    public class UnitOfWork : IDisposable, IUnitOfWork
     {
         private readonly AppleMartDBContext _dbContext;
         private IDbContextTransaction? _transaction = null;
 
-        // thieu private read only
-        IRepository<Entities.Attribute> _attributeRepository;
-        IRepository<Category> _categoryRepository;
-        IRepository<Blog> _blogRepository;
-        IRepository<ProductItemAttribute> _productItemAttributeRepository;
-        IRepository<Product> _productRepository;
-        IRepository<ProductItem> _productItemRepository;
-        IRepository<ProductImg> _productImgRepository;
-        IRepository<BlogImage> _blogImageRepository;
-        IRepository<Review> _reviewRepository;
-        IRepository<ChatRoom> _chatRoomRepository;
-        IRepository<ChatMessage> _chatMessageRepository;
-        IRepository<ChatParticipant> _chatParticipantRepository;
-        IRepository<Order> _orderRepository;
-        IRepository<OrderDetail> _orderDetailRepository;
+        // 🔹 Thêm `private readonly` để đảm bảo các repository không bị thay đổi sau khi khởi tạo
+        private readonly IRepository<Entities.Attribute> _attributeRepository;
+        private readonly IRepository<Category> _categoryRepository;
+        private readonly IRepository<Blog> _blogRepository;
+        private readonly IRepository<ProductItemAttribute> _productItemAttributeRepository;
+        private readonly IRepository<Product> _productRepository;
+        private readonly IRepository<ProductItem> _productItemRepository;
+        private readonly IRepository<ProductImg> _productImgRepository;
+        private readonly IRepository<BlogImage> _blogImageRepository;
+        private readonly IRepository<Review> _reviewRepository;
+        private readonly IRepository<ChatRoom> _chatRoomRepository;
+        private readonly IRepository<ChatMessage> _chatMessageRepository;
+        private readonly IRepository<ChatParticipant> _chatParticipantRepository;
+        private readonly IRepository<Order> _orderRepository;
+        private readonly IRepository<OrderDetail> _orderDetailRepository;
 
         public UnitOfWork(
             AppleMartDBContext dbContext,
@@ -67,7 +64,7 @@ namespace iPhoneBE.Data
             _orderDetailRepository = orderDetailRepository;
         }
 
-        //repository
+        // 🔹 Repository getter
         public IRepository<Entities.Attribute> AttributeRepository => _attributeRepository;
         public IRepository<Category> CategoryRepository => _categoryRepository;
         public IRepository<Blog> BlogRepository => _blogRepository;
@@ -82,20 +79,28 @@ namespace iPhoneBE.Data
         public IRepository<ChatParticipant> ChatParticipantRepository => _chatParticipantRepository;
         public IRepository<Order> OrderRepository => _orderRepository;
         public IRepository<OrderDetail> OrderDetailRepository => _orderDetailRepository;
-        
 
-        //transaction
-        public void BeginTransaction()
+        // 🔹 Transaction - Dùng async để tránh block luồng
+        public async Task BeginTransactionAsync()
         {
-            _transaction = _dbContext.Database.BeginTransaction();
+            _transaction = await _dbContext.Database.BeginTransactionAsync();
         }
 
-        public void CommitTransaction()
+        public async Task CommitTransactionAsync()
         {
             if (_transaction != null)
             {
-                _transaction.Commit();
-                _transaction.Dispose();
+                await _transaction.CommitAsync();
+                await _transaction.DisposeAsync();
+            }
+        }
+
+        public async Task RollbackTransactionAsync()
+        {
+            if (_transaction != null)
+            {
+                await _transaction.RollbackAsync();
+                await _transaction.DisposeAsync();
             }
         }
 
@@ -105,18 +110,10 @@ namespace iPhoneBE.Data
             GC.SuppressFinalize(this);
         }
 
-        public void RollbackTransaction()
+        // 🔹 Lưu thay đổi vào DB - Thêm async để dùng trong môi trường bất đồng bộ
+        public async Task<int> SaveChangesAsync()
         {
-            if (_transaction != null)
-            {
-                _transaction.Rollback();
-                _transaction.Dispose();
-            }
-        }
-
-        public int SaveChanges()
-        {
-            return _dbContext.SaveChanges();
+            return await _dbContext.SaveChangesAsync();
         }
     }
 }

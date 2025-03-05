@@ -56,7 +56,7 @@ namespace iPhoneBE.Service.Services
 
         public async Task<Blog> AddAsync(Blog blog)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var product = await _unitOfWork.ProductRepository.GetByIdAsync(blog.ProductId);
@@ -85,21 +85,21 @@ namespace iPhoneBE.Service.Services
                     }
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
                 return result;
             }
             catch
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
 
         public async Task<Blog> UpdateAsync(int id, UpdateBlogModel newBlog)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var blog = await _unitOfWork.BlogRepository.GetByIdAsync(id);
@@ -154,24 +154,23 @@ namespace iPhoneBE.Service.Services
                 var result = await _unitOfWork.BlogRepository.Update(blog);
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
                     throw new InvalidOperationException("Failed to update blog.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
                 return blog;
             }
             catch
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
 
         public async Task<Blog> DeleteAsync(int id)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var blog = await _unitOfWork.BlogRepository.GetByIdAsync(id);
@@ -181,17 +180,16 @@ namespace iPhoneBE.Service.Services
                 var result = await _unitOfWork.BlogRepository.SoftDelete(blog);
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
                     throw new InvalidOperationException("Failed to delete blog.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
                 return blog;
             }
             catch
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }

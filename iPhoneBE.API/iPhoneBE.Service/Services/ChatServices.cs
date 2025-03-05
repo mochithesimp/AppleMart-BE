@@ -95,7 +95,7 @@ namespace iPhoneBE.Service.Services
             if (existingRoom.Any())
                 return await GetChatRoom(existingRoom.First().ChatRoomID);
 
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var chatRoom = new ChatRoom
@@ -111,14 +111,14 @@ namespace iPhoneBE.Service.Services
                 };
 
                 await _unitOfWork.ChatRoomRepository.AddAsync(chatRoom);
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
                 return await GetChatRoom(chatRoom.ChatRoomID);
             }
             catch
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
@@ -140,7 +140,7 @@ namespace iPhoneBE.Service.Services
             };
 
             await _unitOfWork.ChatMessageRepository.AddAsync(message);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<ChatMessageViewModel>(message);
         }
@@ -159,7 +159,7 @@ namespace iPhoneBE.Service.Services
                 await _unitOfWork.ChatMessageRepository.Update(message);
             }
 
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
             return true;
         }
 

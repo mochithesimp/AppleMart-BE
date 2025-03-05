@@ -112,7 +112,7 @@ namespace iPhoneBE.Service.Services
 
         public async Task<UserViewModel> UpdateAsync(string id, UserModel updatedUser)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var user = await _userManager.FindByIdAsync(id);
@@ -124,12 +124,11 @@ namespace iPhoneBE.Service.Services
                 var result = await _userManager.UpdateAsync(user);
                 if (!result.Succeeded)
                 {
-                    _unitOfWork.RollbackTransaction();
                     throw new InvalidOperationException("Failed to update user.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
                 var userRoles = await _userManager.GetRolesAsync(user);
 
@@ -140,7 +139,7 @@ namespace iPhoneBE.Service.Services
             }
             catch
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
@@ -148,7 +147,7 @@ namespace iPhoneBE.Service.Services
         //soft deleted
         public async Task<UserViewModel> DeleteAsync(string id)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var user = await _userManager.FindByIdAsync(id);
@@ -160,12 +159,12 @@ namespace iPhoneBE.Service.Services
 
                 if (!result.Succeeded)
                 {
-                    _unitOfWork.RollbackTransaction();
+                    await _unitOfWork.RollbackTransactionAsync();
                     throw new InvalidOperationException("Failed to delete user.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
                 var userRoles = await _userManager.GetRolesAsync(user);
 
@@ -176,7 +175,7 @@ namespace iPhoneBE.Service.Services
             }
             catch
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }

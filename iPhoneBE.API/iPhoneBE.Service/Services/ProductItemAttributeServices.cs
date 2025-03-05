@@ -37,7 +37,7 @@ namespace iPhoneBE.Service.Services
 
         public async Task<ProductItemAttribute> AddAsync(ProductItemAttribute productItemAttribute)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
 
             try
             {
@@ -51,21 +51,21 @@ namespace iPhoneBE.Service.Services
 
                 var result = await _unitOfWork.ProductItemAttributeRepository.AddAsync(productItemAttribute);
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
                 return result;
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
 
         public async Task<ProductItemAttribute> UpdateAsync(int id, UpdateProductItemAttributeModel newProductItemAttribute)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var productItemAttribute = await _unitOfWork.ProductItemAttributeRepository.GetByIdAsync(id);
@@ -93,24 +93,24 @@ namespace iPhoneBE.Service.Services
 
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
+                    await _unitOfWork.RollbackTransactionAsync();
                     throw new InvalidOperationException("Failed to update product item attribute.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
                 return productItemAttribute;
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
 
         public async Task<ProductItemAttribute> DeleteAsync(int id)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var productItemAttribute = await _unitOfWork.ProductItemAttributeRepository.GetByIdAsync(id);
@@ -120,17 +120,16 @@ namespace iPhoneBE.Service.Services
                 var result = await _unitOfWork.ProductItemAttributeRepository.SoftDelete(productItemAttribute);
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
                     throw new InvalidOperationException("Failed to delete product item attribute.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
                 return productItemAttribute;
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
