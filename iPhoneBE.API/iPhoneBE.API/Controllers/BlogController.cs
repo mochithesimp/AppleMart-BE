@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Models.BlogModel;
-using iPhoneBE.Data.ViewModels.BlogDTO;
+using iPhoneBE.Data.ViewModels.BlogVM;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

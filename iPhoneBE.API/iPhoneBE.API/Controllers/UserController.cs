@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using iPhoneBE.Data.Models.UserModel;
-using iPhoneBE.Data.ViewModels.CategoryDTO;
-using iPhoneBE.Data.ViewModels.UserDTO;
 using iPhoneBE.Service.Interfaces;
 using iPhoneBE.Service.Services;
 using Microsoft.AspNetCore.Authorization;

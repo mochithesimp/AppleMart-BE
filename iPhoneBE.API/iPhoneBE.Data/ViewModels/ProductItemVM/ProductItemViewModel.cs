@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using iPhoneBE.Data.Entities;
 
-namespace iPhoneBE.Data.ViewModels.ProductItemDTO
+namespace iPhoneBE.Data.ViewModels.ProductItemVM
 {
     public class ProductItemViewModel
     {

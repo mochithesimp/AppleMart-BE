@@ -51,7 +51,7 @@ namespace iPhoneBE.Service.Services
 
         public async Task<ProductItem> AddAsync(ProductItem productItem)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var product = await _unitOfWork.ProductRepository.GetByIdAsync(productItem.ProductID);
@@ -62,7 +62,7 @@ namespace iPhoneBE.Service.Services
                 productItem.ProductImgs = new List<ProductImg>();
 
                 var result = await _unitOfWork.ProductItemRepository.AddAsync(productItem);
-                _unitOfWork.SaveChanges();
+                await _unitOfWork.SaveChangesAsync();
 
                 if (images.Any())
                 {
@@ -71,10 +71,10 @@ namespace iPhoneBE.Service.Services
                         img.ProductItemID = result.ProductItemID;
                         await _unitOfWork.ProductImgRepository.AddAsync(img);
                     }
-                    _unitOfWork.SaveChanges();
+                    await _unitOfWork.SaveChangesAsync();
                 }
 
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.CommitTransactionAsync();
 
                 return await _unitOfWork.ProductItemRepository.GetByIdAsync(result.ProductItemID,
                     o => o.ProductImgs,
@@ -83,14 +83,14 @@ namespace iPhoneBE.Service.Services
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
 
         public async Task<ProductItem> UpdateAsync(int id, UpdateProductItemModel newProductItem)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var productItem = await _unitOfWork.ProductItemRepository.GetByIdAsync(id,
@@ -169,12 +169,12 @@ namespace iPhoneBE.Service.Services
 
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
+                    await _unitOfWork.RollbackTransactionAsync();
                     throw new InvalidOperationException("Failed to update product item.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
                 return await _unitOfWork.ProductItemRepository.GetByIdAsync(id,
                     o => o.ProductImgs,
@@ -183,14 +183,14 @@ namespace iPhoneBE.Service.Services
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
 
         public async Task<ProductItem> DeleteAsync(int id)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var productItem = await _unitOfWork.ProductItemRepository.GetByIdAsync(id);
@@ -200,17 +200,16 @@ namespace iPhoneBE.Service.Services
                 var result = await _unitOfWork.ProductItemRepository.SoftDelete(productItem);
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
                     throw new InvalidOperationException("Failed to delete product item.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
                 return productItem;
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }

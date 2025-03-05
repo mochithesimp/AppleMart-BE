@@ -1,4 +1,4 @@
-using iPhoneBE.Data.ViewModels.ChatDTO;
+using iPhoneBE.Data.ViewModels.ChatVM;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace iPhoneBE.Data.ViewModels.AttributeDTO
+namespace iPhoneBE.Data.ViewModels.AttributeVM
 {
     public class AttributeViewModel
     {

@@ -40,7 +40,7 @@ namespace iPhoneBE.Service.Services
 
         public async Task<Product> AddAsync(Product product)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
 
             try
             {
@@ -50,21 +50,21 @@ namespace iPhoneBE.Service.Services
 
                 var result = await _unitOfWork.ProductRepository.AddAsync(product);
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
                 return result;
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
 
         public async Task<Product> UpdateAsync(int id, UpdateProductModel newProduct)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var product = await _unitOfWork.ProductRepository.GetByIdAsync(id);
@@ -95,24 +95,24 @@ namespace iPhoneBE.Service.Services
 
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
+                    await _unitOfWork.RollbackTransactionAsync();
                     throw new InvalidOperationException("Failed to update product.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
                 return product;
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
 
         public async Task<Product> DeleteAsync(int id)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var product = await _unitOfWork.ProductRepository.GetByIdAsync(id);
@@ -122,17 +122,17 @@ namespace iPhoneBE.Service.Services
                 var result = await _unitOfWork.ProductRepository.SoftDelete(product);
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
+                    await _unitOfWork.RollbackTransactionAsync();
                     throw new InvalidOperationException("Failed to delete product.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
                 return product;
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }

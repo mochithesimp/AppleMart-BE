@@ -1,5 +1,4 @@
-﻿using iPhoneBE.Data.Configurations;
-using iPhoneBE.Data.Entities;
+﻿using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Model;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

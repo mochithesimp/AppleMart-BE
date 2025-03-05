@@ -1,4 +1,4 @@
-namespace iPhoneBE.Data.ViewModels.BlogDTO
+namespace iPhoneBE.Data.ViewModels.BlogVM
 {
     public class BlogViewModel
     {

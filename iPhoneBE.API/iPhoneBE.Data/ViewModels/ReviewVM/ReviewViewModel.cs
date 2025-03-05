@@ -1,4 +1,4 @@
-namespace iPhoneBE.Data.ViewModels.ReviewDTO
+namespace iPhoneBE.Data.ViewModels.ReviewVM
 {
     public class ReviewViewModel
     {

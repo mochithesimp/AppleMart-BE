@@ -12,20 +12,16 @@ using iPhoneBE.Data.Models.ProductItemAttributeModel;
 using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Data.Models.ProductModel;
 using iPhoneBE.Data.Models.UserModel;
-using iPhoneBE.Data.ViewModels.AttributeDTO;
-using iPhoneBE.Data.ViewModels.BlogDTO;
-using iPhoneBE.Data.ViewModels.CategoryDTO;
-using iPhoneBE.Data.ViewModels.ChatDTO;
-using iPhoneBE.Data.ViewModels.ProductDTO;
-using iPhoneBE.Data.ViewModels.ProductImgDTO;
-using iPhoneBE.Data.ViewModels.ProductItemAttributeDTO;
-using iPhoneBE.Data.ViewModels.ProductItemDTO;
-using iPhoneBE.Data.ViewModels.UserDTO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using iPhoneBE.Data.ViewModels.AttributeVM;
+using iPhoneBE.Data.ViewModels.BlogVM;
+using iPhoneBE.Data.ViewModels.CategoryVM;
+using iPhoneBE.Data.ViewModels.ChatVM;
+using iPhoneBE.Data.ViewModels.OrderVM;
+using iPhoneBE.Data.ViewModels.ProductImgVM;
+using iPhoneBE.Data.ViewModels.ProductItemAttributeVM;
+using iPhoneBE.Data.ViewModels.ProductItemVM;
+using iPhoneBE.Data.ViewModels.ProductVM;
+using iPhoneBE.Data.ViewModels.UserVM;
 
 namespace iPhoneBE.Data.Mapping
 {
@@ -115,6 +111,11 @@ namespace iPhoneBE.Data.Mapping
             CreateMap<ChatParticipant, ChatParticipantViewModel>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
                 .ForMember(dest => dest.IsOnline, opt => opt.Ignore());
+
+            CreateMap<Order, OrderViewModel>()
+                .ForMember(dest => dest.OrderDetails, opt => opt.MapFrom(src => src.OrderDetails));
+
+            CreateMap<OrderDetail, OrderDetailViewModel>();
         }
     }
 }

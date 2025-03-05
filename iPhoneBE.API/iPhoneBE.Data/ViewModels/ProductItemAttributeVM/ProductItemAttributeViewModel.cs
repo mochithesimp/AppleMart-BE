@@ -1,4 +1,4 @@
-namespace iPhoneBE.Data.ViewModels.ProductItemAttributeDTO
+namespace iPhoneBE.Data.ViewModels.ProductItemAttributeVM
 {
     public class ProductItemAttributeViewModel
     {

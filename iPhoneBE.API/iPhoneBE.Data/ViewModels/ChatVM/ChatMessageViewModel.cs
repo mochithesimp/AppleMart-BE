@@ -1,6 +1,6 @@
 using System;
 
-namespace iPhoneBE.Data.ViewModels.ChatDTO
+namespace iPhoneBE.Data.ViewModels.ChatVM
 {
     public class ChatMessageViewModel
     {

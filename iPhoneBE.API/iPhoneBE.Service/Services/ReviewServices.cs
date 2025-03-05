@@ -19,7 +19,7 @@ namespace iPhoneBE.Service.Services
 
         public async Task<Review> AddAsync(Review review)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 //var user = await _unitOfWork.UserRepository.GetByIdAsync(review.UserID);
@@ -44,14 +44,14 @@ namespace iPhoneBE.Service.Services
                 review.Date = DateTime.Now;
                 var result = await _unitOfWork.ReviewRepository.AddAsync(review);
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
                 return result;
             }
             catch
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }

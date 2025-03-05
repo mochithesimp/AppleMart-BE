@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace iPhoneBE.Data.ViewModels.ChatDTO
+namespace iPhoneBE.Data.ViewModels.ChatVM
 {
     public class ChatRoomViewModel
     {

@@ -1,7 +1,7 @@
 using AutoMapper;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.ProductItemModel;
-using iPhoneBE.Data.ViewModels.ProductItemDTO;
+using iPhoneBE.Data.ViewModels.ProductItemVM;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

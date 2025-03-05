@@ -23,6 +23,7 @@ namespace iPhoneBE.Service
             service.AddScoped<IProductServices, ProductServices>();
             service.AddScoped<IProductItemServices, ProductItemServices>();
             service.AddScoped<IChatServices, ChatServices>();
+            service.AddScoped<IOrderServices, OrderServices>();
 
             return service;
         }

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using iPhoneBE.Data;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.CategoryModel;
@@ -45,20 +44,20 @@ namespace iPhoneBE.Service.Services
 
         public async Task<Category> AddAsync(Category category)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
 
             try
             {
                 var result = await _unitOfWork.CategoryRepository.AddAsync(category);
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
 
                 return result;
             }
-            catch (Exception ex)
+            catch
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
@@ -66,7 +65,7 @@ namespace iPhoneBE.Service.Services
         //update
         public async Task<Category> UpdateAsync(int id, UpdateCategoryModel newCategory)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var category = await _unitOfWork.CategoryRepository.GetByIdAsync(id);
@@ -87,17 +86,16 @@ namespace iPhoneBE.Service.Services
                 var result = await _unitOfWork.CategoryRepository.Update(category);
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
                     throw new InvalidOperationException("Failed to update category.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
                 return category;
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }
@@ -106,7 +104,7 @@ namespace iPhoneBE.Service.Services
         //soft delete
         public async Task<Category> DeleteAsync(int id)
         {
-            _unitOfWork.BeginTransaction();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var category = await _unitOfWork.CategoryRepository.GetByIdAsync(id);
@@ -116,17 +114,16 @@ namespace iPhoneBE.Service.Services
                 var result = await _unitOfWork.CategoryRepository.SoftDelete(category);
                 if (!result)
                 {
-                    _unitOfWork.RollbackTransaction();
                     throw new InvalidOperationException("Failed to delete category.");
                 }
 
-                _unitOfWork.SaveChanges();
-                _unitOfWork.CommitTransaction();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
                 return category;
             }
             catch (Exception)
             {
-                _unitOfWork.RollbackTransaction();
+                await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
         }

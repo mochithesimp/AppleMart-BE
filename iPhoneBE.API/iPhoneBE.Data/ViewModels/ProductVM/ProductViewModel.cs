@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace iPhoneBE.Data.ViewModels.ProductDTO
+namespace iPhoneBE.Data.ViewModels.ProductVM
 {
     public class ProductViewModel
     {

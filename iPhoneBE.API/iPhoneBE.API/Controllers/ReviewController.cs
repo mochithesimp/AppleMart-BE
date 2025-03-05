@@ -1,7 +1,7 @@
 using AutoMapper;
 using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Models.ReviewModel;
-using iPhoneBE.Data.ViewModels.ReviewDTO;
+using iPhoneBE.Data.ViewModels.ReviewVM;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

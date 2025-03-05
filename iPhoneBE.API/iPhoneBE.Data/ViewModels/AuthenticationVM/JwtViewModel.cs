@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace iPhoneBE.Data.ViewModels.AuthenticationDTO
+namespace iPhoneBE.Data.ViewModels.AuthenticationVM
 {
     public class JwtViewModel
     {

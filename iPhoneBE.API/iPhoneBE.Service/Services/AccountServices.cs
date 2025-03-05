@@ -6,7 +6,7 @@ using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AuthenticationModel;
 using iPhoneBE.Data.Models.EmailModel;
-using iPhoneBE.Data.ViewModels.AuthenticationDTO;
+using iPhoneBE.Data.ViewModels.AuthenticationVM;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;

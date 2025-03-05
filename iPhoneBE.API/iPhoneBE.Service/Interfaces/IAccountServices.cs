@@ -1,6 +1,6 @@
 ﻿using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AuthenticationModel;
-using iPhoneBE.Data.ViewModels.AuthenticationDTO;
+using iPhoneBE.Data.ViewModels.AuthenticationVM;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 
