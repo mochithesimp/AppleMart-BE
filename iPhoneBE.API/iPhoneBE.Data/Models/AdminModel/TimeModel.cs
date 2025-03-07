@@ -8,6 +8,9 @@ namespace iPhoneBE.Data.Models.AdminModel
     {
         public int? Year { get; set; }
 
+        [Range(1, 4, ErrorMessage = "Quarter must be between 1 and 4.")]
+        public int? Quarter { get; set; }
+
         [Range(1, 12, ErrorMessage = "Month must be between 1 and 12.")]
         public int? Month { get; set; }
 

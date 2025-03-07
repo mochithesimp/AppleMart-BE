@@ -34,5 +34,24 @@ namespace iPhoneBE.API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("get-top-selling-product-items")]
+        public async Task<IActionResult> GetTopSellingProductItemsAsync([FromQuery] TimeModel model, int? topN)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminServices.GetTopSellingProductItemsAsync(model, topN);
+            return Ok(result);
+        }
+
+        [HttpGet("get-top-costumers")]
+        public async Task<IActionResult> GetTopCustomersAsync([FromQuery] TimeModel model, int? topN)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminServices.GetTopCustomersAsync(model, topN);
+            return Ok(result);
+        }
     }
 }
