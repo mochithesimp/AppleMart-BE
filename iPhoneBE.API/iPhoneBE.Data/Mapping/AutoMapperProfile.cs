@@ -15,6 +15,7 @@ using iPhoneBE.Data.Models.UserModel;
 using iPhoneBE.Data.ViewModels.AttributeVM;
 using iPhoneBE.Data.ViewModels.BlogVM;
 using iPhoneBE.Data.ViewModels.CategoryVM;
+using iPhoneBE.Data.ViewModels.ChatDTO;
 using iPhoneBE.Data.ViewModels.ChatVM;
 using iPhoneBE.Data.ViewModels.OrderVM;
 using iPhoneBE.Data.ViewModels.ProductImgVM;
@@ -98,9 +99,10 @@ namespace iPhoneBE.Data.Mapping
             CreateMap<CreateBlogModel, Blog>();
             CreateMap<CreateBlogImageModel, BlogImage>();
 
-            // Chat mappings
             CreateMap<ChatMessage, ChatMessageViewModel>()
-                .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src => src.User.UserName));
+                .ForMember(dest => dest.ChatID, opt => opt.MapFrom(src => src.ChatMessageID))
+                .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src =>
+                    src.User != null ? src.User.UserName : "Unknown User"));
 
             CreateMap<ChatRoom, ChatRoomViewModel>()
                 .ForMember(dest => dest.Messages, opt => opt.MapFrom(src => src.ChatMessages))
@@ -109,7 +111,8 @@ namespace iPhoneBE.Data.Mapping
                     src.ChatMessages.OrderByDescending(m => m.CreatedDate).FirstOrDefault()));
 
             CreateMap<ChatParticipant, ChatParticipantViewModel>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src =>
+                    src.User != null ? src.User.UserName : "Unknown User"))
                 .ForMember(dest => dest.IsOnline, opt => opt.Ignore());
 
             CreateMap<Order, OrderViewModel>()

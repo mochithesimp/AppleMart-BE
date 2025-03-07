@@ -1,4 +1,5 @@
 using iPhoneBE.Data.Entities;
+using iPhoneBE.Data.ViewModels.ChatDTO;
 using iPhoneBE.Data.ViewModels.ChatVM;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,5 +15,6 @@ namespace iPhoneBE.Service.Interfaces
         Task<bool> MarkMessagesAsRead(int chatRoomId, string userId);
         Task<List<ChatParticipantViewModel>> GetOnlineUsers();
         Task UpdateUserOnlineStatus(string userId, bool isOnline);
+        Task<ChatRoomViewModel> CreateGroupRoom(string name, List<string> userIds);
     }
 }

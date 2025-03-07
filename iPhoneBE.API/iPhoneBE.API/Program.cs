@@ -24,7 +24,10 @@ namespace iPhoneBE.API
 
             // Add services to the container.
 
-            builder.Services.AddSignalR();
+            builder.Services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
 
             // Swagger Configuration
             builder.Services.AddSwaggerGen(option =>
@@ -80,7 +83,6 @@ namespace iPhoneBE.API
                 opt.TokenLifespan = TimeSpan.FromDays(3));
 
             //add jwt
-            //add jwt
             builder.Services
                 .AddAuthentication(options =>
                 {
@@ -99,6 +101,22 @@ namespace iPhoneBE.API
                         ValidIssuer = builder.Configuration["JWT:Issuer"],
                         ValidAudience = builder.Configuration["JWT:Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
+                    };
+
+                    // Add SignalR specific JWT configuration
+                    x.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
                     };
                 })
                 // Thêm Google Authentication nếu muốn sử dụng OAuth chuẩn của ASP.NET

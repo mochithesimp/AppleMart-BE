@@ -8,10 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using iPhoneBE.Data.Entities;
 using Microsoft.AspNetCore.Identity;
+using iPhoneBE.Data.Interfaces;
 
 namespace iPhoneBE.Data.Model
 {
-    public class User : IdentityUser
+    public class User : IdentityUser, IBaseEntity
     {
         [Required(ErrorMessage = "User name is required.")]
         [MaxLength(255, ErrorMessage = "User name cannot exceed 255 characters.")]

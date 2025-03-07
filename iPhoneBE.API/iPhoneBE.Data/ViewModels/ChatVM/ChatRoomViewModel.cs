@@ -1,3 +1,4 @@
+using iPhoneBE.Data.ViewModels.ChatDTO;
 using System;
 using System.Collections.Generic;
 
