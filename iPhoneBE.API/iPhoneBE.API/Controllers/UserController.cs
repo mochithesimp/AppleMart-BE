@@ -47,7 +47,7 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCategory(string id)
+        public async Task<IActionResult> DeleteUser(string id)
         {
             var deletedUser = await _userServices.DeleteAsync(id);
             return Ok(deletedUser);
