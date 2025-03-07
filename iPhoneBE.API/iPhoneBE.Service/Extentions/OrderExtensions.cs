@@ -14,6 +14,23 @@ namespace iPhoneBE.Service.Extentions
             return year.HasValue ? query.Where(o => o.OrderDate.Year == year.Value) : query;
         }
 
+        public static IQueryable<Order> FilterByQuarter(this IQueryable<Order> query, int? quarter, int? year)
+        {
+            if (quarter.HasValue)
+            {
+                int selectedYear = year ?? DateTime.UtcNow.Year;
+                int startMonth = (quarter.Value - 1) * 3 + 1;
+                int endMonth = startMonth + 2;
+
+                query = query.Where(o =>
+                    o.OrderDate.Year == selectedYear &&
+                    o.OrderDate.Month >= startMonth &&
+                    o.OrderDate.Month <= endMonth);
+            }
+            return query;
+        }
+
+
         public static IQueryable<Order> FilterByMonth(this IQueryable<Order> query, int? month, int? year)
         {
             if (month.HasValue)
