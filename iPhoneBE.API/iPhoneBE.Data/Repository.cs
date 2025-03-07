@@ -73,6 +73,12 @@ namespace iPhoneBE.Data
             return await query.ToListAsync();
         }
 
+        public IQueryable<TEntity> GetAllQueryable()
+        {
+            return _dbContext.Set<TEntity>().AsQueryable();
+        }
+
+
         public async Task<TEntity?> GetByIdAsync(int id, params Expression<Func<TEntity, object>>[] includes)
         {
             IQueryable<TEntity> query = _dbContext.Set<TEntity>();

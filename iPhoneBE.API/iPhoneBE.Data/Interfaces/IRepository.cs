@@ -21,5 +21,6 @@ namespace iPhoneBE.Data.Interfaces
         Task<bool> SoftDeleteRange(List<TEntity> entities);
         Task<bool> HardRemove(Expression<Func<TEntity, bool>> predicate);
         Task<bool> HardRemoveRange(List<TEntity> entities);
+        IQueryable<TEntity> GetAllQueryable();
     }
 }

@@ -159,7 +159,6 @@ namespace iPhoneBE.Service.Services
 
                 if (!result.Succeeded)
                 {
-                    await _unitOfWork.RollbackTransactionAsync();
                     throw new InvalidOperationException("Failed to delete user.");
                 }
 
