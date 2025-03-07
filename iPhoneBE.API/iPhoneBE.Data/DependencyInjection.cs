@@ -1,5 +1,6 @@
 ﻿using iPhoneBE.Data.Helper.EmailHelper;
 using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Data.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,6 +13,7 @@ namespace iPhoneBE.Data
         {
             service.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             service.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            service.AddScoped<IRepository<User>, Repository<User>>();
 
             service.Configure<EmailConfiguration>(configuration.GetSection("MailSettings"));
             //service.Configure<EmailConfiguration>(options => configuration.GetSection("MailSettings").Bind(options));

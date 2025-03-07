@@ -2,6 +2,13 @@ using iPhoneBE.Data.ViewModels.ChatVM;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using System.Linq.Expressions;
+using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Data.Entities;
+using Microsoft.Extensions.Logging;
+using iPhoneBE.Data.ViewModels.ChatVM;
+using iPhoneBE.Data.ViewModels.ChatDTO;
 
 namespace iPhoneBE.API.Controllers
 {
@@ -11,21 +18,43 @@ namespace iPhoneBE.API.Controllers
     public class ChatController : ControllerBase
     {
         private readonly IChatServices _chatService;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<ChatController> _logger;
 
-        public ChatController(IChatServices chatService)
+        public ChatController(IChatServices chatService, IUnitOfWork unitOfWork, ILogger<ChatController> logger)
         {
             _chatService = chatService;
+            _unitOfWork = unitOfWork;
+            _logger = logger;
+        }
+
+        private string GetUserId()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
         [HttpGet("rooms")]
         public async Task<ActionResult<List<ChatRoomViewModel>>> GetUserChatRooms()
         {
-            var userId = User.Identity?.Name;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+            try
+            {
+                var userId = GetUserId();
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _logger.LogWarning("Unauthorized access attempt - no user ID");
+                    return Unauthorized();
+                }
 
-            var rooms = await _chatService.GetUserChatRooms(userId);
-            return Ok(rooms);
+                _logger.LogInformation($"Fetching chat rooms for user: {userId}");
+                var rooms = await _chatService.GetUserChatRooms(userId);
+                _logger.LogInformation($"Found {rooms.Count} rooms for user {userId}");
+                return Ok(rooms);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting chat rooms");
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
         }
 
         [HttpGet("room/{roomId}")]
@@ -45,18 +74,23 @@ namespace iPhoneBE.API.Controllers
         [HttpPost("room/private")]
         public async Task<ActionResult<ChatRoomViewModel>> CreatePrivateRoom([FromBody] string otherUserId)
         {
-            var userId = User.Identity?.Name;
+            var userId = GetUserId();
             if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
+                return Unauthorized("User is not authenticated.");
 
             try
             {
+                Console.WriteLine($"Creating chat room between {userId} and {otherUserId}");
                 var room = await _chatService.CreatePrivateRoom(userId, otherUserId);
                 return Ok(room);
             }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound($"User not found: {ex.Message}");
+            }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest($"Error creating chat room: {ex.Message}");
             }
         }
 
@@ -65,6 +99,63 @@ namespace iPhoneBE.API.Controllers
         {
             var users = await _chatService.GetOnlineUsers();
             return Ok(users);
+        }
+
+        [HttpPost("room/group")]
+        public async Task<ActionResult<ChatRoomViewModel>> CreateGroupRoom([FromBody] CreateGroupRoomRequest request)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User is not authenticated.");
+
+            try
+            {
+                var participants = new List<string> { userId };
+                participants.AddRange(request.Participants);
+
+                var room = await _chatService.CreateGroupRoom(request.Name, participants);
+                return Ok(room);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error creating group chat: {ex.Message}");
+            }
+        }
+
+        [HttpGet("room/{roomId}/debug")]
+        public async Task<ActionResult> DebugRoom(int roomId)
+        {
+            try
+            {
+                var room = await _unitOfWork.ChatRoomRepository
+                    .GetAllAsync(
+                        predicate: r => r.ChatRoomID == roomId,
+                        includes: new Expression<Func<ChatRoom, object>>[]
+                        {
+                            r => r.ChatParticipants,
+                            r => r.ChatMessages
+                        }
+                    );
+
+                var debugInfo = new
+                {
+                    RoomFound = room != null,
+                    MessageCount = room?.FirstOrDefault()?.ChatMessages?.Count ?? 0,
+                    Messages = room?.FirstOrDefault()?.ChatMessages?.Select(m => new
+                    {
+                        m.ChatMessageID,
+                        m.Content,
+                        m.CreatedDate,
+                        m.SenderID
+                    })
+                };
+
+                return Ok(debugInfo);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
     }
 }

@@ -28,9 +28,10 @@ namespace iPhoneBE.Data
         private readonly IRepository<ChatParticipant> _chatParticipantRepository;
         private readonly IRepository<Order> _orderRepository;
         private readonly IRepository<OrderDetail> _orderDetailRepository;
-
+        private readonly IRepository<User> _userRepository;
         public UnitOfWork(
             AppleMartDBContext dbContext,
+            IRepository<User> userRepository,
             IRepository<Category> categoryRepository,
             IRepository<Blog> blogRepository,
             IRepository<Entities.Attribute> attributeRepository,
@@ -48,6 +49,7 @@ namespace iPhoneBE.Data
         )
         {
             _dbContext = dbContext;
+            _userRepository = userRepository;
             _categoryRepository = categoryRepository;
             _blogRepository = blogRepository;
             _attributeRepository = attributeRepository;
@@ -79,6 +81,8 @@ namespace iPhoneBE.Data
         public IRepository<ChatParticipant> ChatParticipantRepository => _chatParticipantRepository;
         public IRepository<Order> OrderRepository => _orderRepository;
         public IRepository<OrderDetail> OrderDetailRepository => _orderDetailRepository;
+
+        public IRepository<User> UserRepository => _userRepository;
 
         // 🔹 Transaction - Dùng async để tránh block luồng
         public async Task BeginTransactionAsync()

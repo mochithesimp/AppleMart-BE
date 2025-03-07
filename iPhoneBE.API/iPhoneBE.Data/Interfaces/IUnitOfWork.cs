@@ -19,6 +19,7 @@ namespace iPhoneBE.Data.Interfaces
         IRepository<ProductItem> ProductItemRepository { get; }
         IRepository<Product> ProductRepository { get; }
         IRepository<Review> ReviewRepository { get; }
+        IRepository<User> UserRepository { get; }
 
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();

@@ -13,13 +13,13 @@ namespace iPhoneBE.Data.Entities
     public class ChatParticipant : IBaseEntity
     {
         [Key]
-        public int ID { get; set; } // ✅ Thêm khóa chính mới
+        public int ID { get; set; } 
 
         [ForeignKey("ChatRoom")]
         public int ChatRoomID { get; set; }
 
         [ForeignKey("User")]
-        public string UserID { get; set; } // ✅ IdentityUser.Id thường là string
+        public string UserID { get; set; }
 
         public bool IsAdmin { get; set; }
 

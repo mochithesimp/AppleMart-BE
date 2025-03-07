@@ -13,15 +13,14 @@ namespace iPhoneBE.Data.Entities
     public class ChatMessage : IBaseEntity
     {
         [Key]
-        public int ChatID { get; set; }
+        public int ChatMessageID { get; set; }
 
         [ForeignKey("ChatRoomID")]
         public int ChatRoomID { get; set; }
 
-        [ForeignKey("UserID")]
-        public int SenderID { get; set; }
+        public string SenderID { get; set; }
 
-        public string? Content { get; set; }
+        public string Content { get; set; }
 
         public bool IsRead { get; set; }
 
@@ -29,8 +28,7 @@ namespace iPhoneBE.Data.Entities
 
         public bool IsDeleted { get; set; }
 
-        public User User { get; set; }
-
-        public ChatRoom ChatRoom { get; set; }
+        public virtual ChatRoom ChatRoom { get; set; }
+        public virtual User User { get; set; }
     }
 }

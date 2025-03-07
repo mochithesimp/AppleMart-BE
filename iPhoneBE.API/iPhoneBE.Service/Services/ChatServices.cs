@@ -1,6 +1,7 @@
 using AutoMapper;
 using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Data.ViewModels.ChatDTO;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Linq.Expressions;
+using iPhoneBE.Data.Model;
 using iPhoneBE.Data.ViewModels.ChatVM;
 
 namespace iPhoneBE.Service.Services
@@ -27,65 +29,187 @@ namespace iPhoneBE.Service.Services
 
         public async Task<List<ChatRoomViewModel>> GetUserChatRooms(string userId)
         {
-            var chatRooms = await _unitOfWork.ChatRoomRepository.GetAllAsync(
-                predicate: null,
-                includes: new Expression<Func<ChatRoom, object>>[]
+            try
+            {
+                Console.WriteLine($"Getting chat rooms for user: {userId}");
+
+                var chatRooms = await _unitOfWork.ChatRoomRepository.GetAllAsync(
+                    predicate: r => r.ChatParticipants.Any(p => p.UserID == userId),
+                    includes: new Expression<Func<ChatRoom, object>>[]
+                    {
+                        r => r.ChatParticipants,
+                        r => r.ChatMessages
+                    }
+                );
+
+                var participantIds = chatRooms
+                    .SelectMany(r => r.ChatParticipants.Select(p => p.UserID))
+                    .Distinct()
+                    .ToList();
+
+                var users = await _unitOfWork.UserRepository
+                    .GetAllAsync(u => participantIds.Contains(u.Id));
+
+                var userDict = users.ToDictionary(u => u.Id, u => u.UserName);
+
+                var userRooms = chatRooms.Select(room =>
                 {
-                    r => r.ChatParticipants,
-                    r => r.ChatMessages
-                }
-            );
+                    try
+                    {
+                        return new ChatRoomViewModel
+                        {
+                            ChatRoomID = room.ChatRoomID,
+                            RoomName = room.RoomName ?? "Chat Room",
+                            IsGroup = room.IsGroup,
+                            CreatedDate = room.CreatedDate,
+                            Messages = (room.ChatMessages ?? Enumerable.Empty<ChatMessage>())
+                                .OrderByDescending(m => m.CreatedDate)
+                                .Select(m => new ChatMessageViewModel
+                                {
+                                    ChatID = m.ChatMessageID,
+                                    ChatRoomID = m.ChatRoomID,
+                                    SenderID = m.SenderID,
+                                    SenderName = userDict.TryGetValue(m.SenderID, out var senderName) ? senderName : "Unknown User",
+                                    Content = m.Content ?? "",
+                                    IsRead = m.IsRead,
+                                    CreatedDate = m.CreatedDate,
+                                    IsDeleted = m.IsDeleted
+                                })
+                                .ToList(),
+                            Participants = (room.ChatParticipants ?? Enumerable.Empty<ChatParticipant>())
+                                .Select(p => new ChatParticipantViewModel
+                                {
+                                    ID = p.ID,
+                                    ChatRoomID = p.ChatRoomID,
+                                    UserID = p.UserID,
+                                    UserName = userDict.TryGetValue(p.UserID, out var userName) ? userName : "Unknown User",
+                                    IsAdmin = p.IsAdmin,
+                                    CreatedDate = p.CreatedDate,
+                                    IsOnline = _onlineUsers.ContainsKey(p.UserID) && _onlineUsers[p.UserID]
+                                })
+                                .ToList()
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error mapping room {room.ChatRoomID}: {ex.Message}");
+                        return null;
+                    }
+                })
+                .Where(r => r != null)
+                .ToList();
 
-            var userRooms = chatRooms.Where(r => r.ChatParticipants.Any(p => p.UserID == userId))
-                                   .Select(room => new ChatRoomViewModel
-                                   {
-                                       ChatRoomID = room.ChatRoomID,
-                                       RoomName = room.RoomName,
-                                       IsGroup = room.IsGroup,
-                                       CreatedDate = room.CreatedDate,
-                                       LastMessage = _mapper.Map<ChatMessageViewModel>(
-                                           room.ChatMessages.OrderByDescending(m => m.CreatedDate).FirstOrDefault()
-                                       ),
-                                       Participants = _mapper.Map<List<ChatParticipantViewModel>>(room.ChatParticipants)
-                                   })
-                                   .ToList();
-
-            return userRooms;
+                Console.WriteLine($"Successfully mapped {userRooms.Count} rooms");
+                return userRooms;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetUserChatRooms: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public async Task<ChatRoomViewModel> GetChatRoom(int chatRoomId, int pageSize = 20, int pageNumber = 1)
         {
-            var chatRoom = await _unitOfWork.ChatRoomRepository.GetByIdAsync(
-                chatRoomId,
-                r => r.ChatParticipants,
-                r => r.ChatMessages.OrderByDescending(m => m.CreatedDate)
-            );
-
-            if (chatRoom == null)
-                throw new KeyNotFoundException($"Chat room with ID {chatRoomId} not found.");
-
-            var messages = chatRoom.ChatMessages
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .OrderBy(m => m.CreatedDate)
-                .ToList();
-
-            var roomViewModel = new ChatRoomViewModel
+            try
             {
-                ChatRoomID = chatRoom.ChatRoomID,
-                RoomName = chatRoom.RoomName,
-                IsGroup = chatRoom.IsGroup,
-                CreatedDate = chatRoom.CreatedDate,
-                Messages = _mapper.Map<List<ChatMessageViewModel>>(messages),
-                Participants = _mapper.Map<List<ChatParticipantViewModel>>(chatRoom.ChatParticipants)
-            };
+                // First, get the chat room with basic includes
+                var chatRoom = await _unitOfWork.ChatRoomRepository
+                    .GetAllAsync(
+                        predicate: r => r.ChatRoomID == chatRoomId,
+                        includes: new Expression<Func<ChatRoom, object>>[]
+                        {
+                            r => r.ChatParticipants,
+                            r => r.ChatMessages
+                        }
+                    );
 
-            return roomViewModel;
+                var room = chatRoom.FirstOrDefault();
+                if (room == null)
+                    throw new KeyNotFoundException($"Chat room with ID {chatRoomId} not found.");
+
+                // Get all user IDs involved in this chat room
+                var userIds = room.ChatParticipants
+                    .Select(p => p.UserID)
+                    .Union(room.ChatMessages.Select(m => m.SenderID))
+                    .Distinct()
+                    .ToList();
+
+                // Fetch user information separately
+                var users = await _unitOfWork.UserRepository
+                    .GetAllAsync(u => userIds.Contains(u.Id));
+
+                // Create a dictionary for quick user lookup
+                var userDict = users.ToDictionary(u => u.Id, u => u.UserName);
+
+                // Create the view model
+                var roomViewModel = new ChatRoomViewModel
+                {
+                    ChatRoomID = room.ChatRoomID,
+                    RoomName = room.RoomName ?? "Chat Room",
+                    IsGroup = room.IsGroup,
+                    CreatedDate = room.CreatedDate,
+                    Messages = room.ChatMessages
+                        .OrderByDescending(m => m.CreatedDate)
+                        .Skip((pageNumber - 1) * pageSize)
+                        .Take(pageSize)
+                        .Select(m => new ChatMessageViewModel
+                        {
+                            ChatID = m.ChatMessageID,
+                            ChatRoomID = m.ChatRoomID,
+                            SenderID = m.SenderID,
+                            SenderName = userDict.TryGetValue(m.SenderID, out var senderName) ? senderName : "Unknown User",
+                            Content = m.Content ?? "",
+                            IsRead = m.IsRead,
+                            CreatedDate = m.CreatedDate,
+                            IsDeleted = m.IsDeleted
+                        })
+                        .ToList(),
+                    Participants = room.ChatParticipants
+                        .Select(p => new ChatParticipantViewModel
+                        {
+                            ID = p.ID,
+                            ChatRoomID = p.ChatRoomID,
+                            UserID = p.UserID,
+                            UserName = userDict.TryGetValue(p.UserID, out var userName) ? userName : "Unknown User",
+                            IsAdmin = p.IsAdmin,
+                            CreatedDate = p.CreatedDate,
+                            IsOnline = _onlineUsers.ContainsKey(p.UserID) && _onlineUsers[p.UserID]
+                        })
+                        .ToList()
+                };
+
+                // Set the last message
+                roomViewModel.LastMessage = room.ChatMessages
+                    .OrderByDescending(m => m.CreatedDate)
+                    .Select(m => new ChatMessageViewModel
+                    {
+                        ChatID = m.ChatMessageID,
+                        ChatRoomID = m.ChatRoomID,
+                        SenderID = m.SenderID,
+                        SenderName = userDict.TryGetValue(m.SenderID, out var senderName) ? senderName : "Unknown User",
+                        Content = m.Content ?? "",
+                        IsRead = m.IsRead,
+                        CreatedDate = m.CreatedDate,
+                        IsDeleted = m.IsDeleted
+                    })
+                    .FirstOrDefault();
+
+                return roomViewModel;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetChatRoom: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public async Task<ChatRoomViewModel> CreatePrivateRoom(string userId1, string userId2)
         {
-            // Check if room already exists
+            Console.WriteLine($"Creating private room between {userId1} and {userId2}");
+
             var existingRoom = await _unitOfWork.ChatRoomRepository.GetAllAsync(
                 r => !r.IsGroup && r.ChatParticipants.Any(p => p.UserID == userId1)
                                && r.ChatParticipants.Any(p => p.UserID == userId2),
@@ -93,7 +217,10 @@ namespace iPhoneBE.Service.Services
             );
 
             if (existingRoom.Any())
+            {
+                Console.WriteLine("Private room already exists.");
                 return await GetChatRoom(existingRoom.First().ChatRoomID);
+            }
 
             await _unitOfWork.BeginTransactionAsync();
             try
@@ -110,39 +237,73 @@ namespace iPhoneBE.Service.Services
                     }
                 };
 
+                Console.WriteLine("Saving new chat room...");
                 await _unitOfWork.ChatRoomRepository.AddAsync(chatRoom);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
+                Console.WriteLine("Chat room created successfully.");
                 return await GetChatRoom(chatRoom.ChatRoomID);
             }
-            catch
+            catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
+                Console.WriteLine($"Error creating chat room: {ex.Message}");
                 throw;
             }
         }
 
-        public async Task<ChatMessageViewModel> SendMessage(int chatRoomId, string userId, string content)
+        public async Task<ChatMessageViewModel> SendMessage(int chatRoomId, string senderId, string content)
         {
-            var chatRoom = await _unitOfWork.ChatRoomRepository.GetByIdAsync(chatRoomId);
-            if (chatRoom == null)
-                throw new KeyNotFoundException($"Chat room with ID {chatRoomId} not found.");
-
-            var message = new ChatMessage
+            try
             {
-                ChatRoomID = chatRoomId,
-                SenderID = int.Parse(userId),
-                Content = content,
-                IsRead = false,
-                CreatedDate = DateTime.UtcNow,
-                IsDeleted = false
-            };
+                // First verify the chat room exists
+                var room = await _unitOfWork.ChatRoomRepository
+                    .GetSingleByConditionAsynce(r => r.ChatRoomID == chatRoomId);
 
-            await _unitOfWork.ChatMessageRepository.AddAsync(message);
-            await _unitOfWork.SaveChangesAsync();
+                if (room == null)
+                    throw new KeyNotFoundException($"Chat room with ID {chatRoomId} not found.");
 
-            return _mapper.Map<ChatMessageViewModel>(message);
+                // Get sender information
+                var sender = await _unitOfWork.UserRepository
+                    .GetSingleByConditionAsynce(u => u.Id == senderId);
+
+                if (sender == null)
+                    throw new KeyNotFoundException($"User with ID {senderId} not found.");
+
+                // Create and save the message
+                var message = new ChatMessage
+                {
+                    ChatRoomID = chatRoomId,
+                    SenderID = senderId,
+                    Content = content,
+                    IsRead = false,
+                    CreatedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                };
+
+                await _unitOfWork.ChatMessageRepository.AddAsync(message);
+                await _unitOfWork.SaveChangesAsync();
+
+                // Return the view model
+                return new ChatMessageViewModel
+                {
+                    ChatID = message.ChatMessageID,
+                    ChatRoomID = message.ChatRoomID,
+                    SenderID = message.SenderID,
+                    SenderName = sender.UserName,
+                    Content = message.Content,
+                    IsRead = message.IsRead,
+                    CreatedDate = message.CreatedDate,
+                    IsDeleted = message.IsDeleted
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in SendMessage: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
         }
 
         public async Task<bool> MarkMessagesAsRead(int chatRoomId, string userId)
@@ -165,26 +326,65 @@ namespace iPhoneBE.Service.Services
 
         public async Task<List<ChatParticipantViewModel>> GetOnlineUsers()
         {
-            var participants = await _unitOfWork.ChatParticipantRepository.GetAllAsync();
-            var onlineParticipants = participants
-                .Select(p => new ChatParticipantViewModel
-                {
-                    ID = p.ID,
-                    UserID = p.UserID,
-                    IsOnline = _onlineUsers.ContainsKey(p.UserID) && _onlineUsers[p.UserID]
-                })
-                .Where(p => p.IsOnline)
-                .ToList();
+            var users = await _unitOfWork.UserRepository.GetAllAsync();
 
-            return onlineParticipants;
+            return users.Select(u => new ChatParticipantViewModel
+            {
+                ID = 0,
+                UserID = u.Id,
+                UserName = u.UserName,
+                IsOnline = _onlineUsers.ContainsKey(u.Id) && _onlineUsers[u.Id]
+            }).ToList();
         }
+
 
         public async Task UpdateUserOnlineStatus(string userId, bool isOnline)
         {
+            Console.WriteLine($"Updating Online Status: UserID={userId}, Online={isOnline}");
+
             if (_onlineUsers.ContainsKey(userId))
                 _onlineUsers[userId] = isOnline;
             else
                 _onlineUsers.Add(userId, isOnline);
+        }
+
+        public async Task<ChatRoomViewModel> CreateGroupRoom(string name, List<string> userIds)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Group name cannot be empty");
+
+            if (userIds == null || !userIds.Any())
+                throw new ArgumentException("Group must have at least one participant");
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var chatRoom = new ChatRoom
+                {
+                    RoomName = name,
+                    IsGroup = true,
+                    CreatedDate = DateTime.UtcNow,
+                    IsDeleted = false,
+                    ChatParticipants = userIds.Select(userId => new ChatParticipant
+                    {
+                        UserID = userId,
+                        IsAdmin = true,
+                        CreatedDate = DateTime.UtcNow,
+                        IsDeleted = false
+                    }).ToList()
+                };
+
+                await _unitOfWork.ChatRoomRepository.AddAsync(chatRoom);
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                return await GetChatRoom(chatRoom.ChatRoomID);
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
     }
 }
