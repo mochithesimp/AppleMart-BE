@@ -1,4 +1,5 @@
 ﻿using iPhoneBE.Data.Model;
+using iPhoneBE.Data.Models.AdminModel;
 using iPhoneBE.Data.Models.OrderModel;
 
 namespace iPhoneBE.Service.Interfaces
@@ -7,5 +8,6 @@ namespace iPhoneBE.Service.Interfaces
     {
         Task<Order> AddAsync(OrderModel model);
         Task<Order> GetByIdAsync(int id);
+        Task<object> GetOrdersAsync(Guid? userId, string? status, TimeModel model, string userRole, Guid currentUserId);
     }
 }

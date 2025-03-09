@@ -43,12 +43,11 @@ namespace iPhoneBE.Service.Services
         {
 
             var existingUser = await _userManager.FindByEmailAsync(model.Email);
-            var isCorrect = await _userManager.CheckPasswordAsync(existingUser, model.Password);
+            if (existingUser == null) return null;
 
-            if (existingUser == null || !isCorrect)
-            {
-                return null;
-            }
+            var isCorrect = await _userManager.CheckPasswordAsync(existingUser, model.Password);
+            if (!isCorrect) return null;
+
 
             var accessToken = await CreateAccessToken(existingUser);
             var refreshToken = await CreateRefreshToken(existingUser);
@@ -57,6 +56,7 @@ namespace iPhoneBE.Service.Services
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
+                UserID = existingUser.Id,
                 UserName = existingUser.UserName,
                 Name = existingUser.Name,
             };
@@ -159,9 +159,9 @@ namespace iPhoneBE.Service.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // Unique ID của token
                 new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64), // Thời gian phát hành
                 new Claim(JwtRegisteredClaimNames.Exp, ((DateTimeOffset)expiredDate).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64), // Thời gian hết hạn
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString(), ClaimValueTypes.String),
                 new Claim(ClaimTypes.Name, user.Name),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.NameId, user.Id)
             };
 
             foreach (var role in userRoles)
@@ -227,14 +227,12 @@ namespace iPhoneBE.Service.Services
                 return;
             }
 
-            var identity = context.Principal.Identity as ClaimsIdentity;
-
-            //check issuer
-            //if (identity.FindFirst(JwtRegisteredClaimNames.Iss) == null)
-            //{
-            //    context.Fail("This token is not issued by point entry");
-            //    return;
-            //}
+            var identity = context.Principal?.Identity as ClaimsIdentity;
+            if (identity == null)
+            {
+                context.Fail("Invalid token.");
+                return;
+            }
 
             //check email
             var emailClaim = identity.FindFirst(JwtRegisteredClaimNames.Email) ?? identity.FindFirst(ClaimTypes.Email);
