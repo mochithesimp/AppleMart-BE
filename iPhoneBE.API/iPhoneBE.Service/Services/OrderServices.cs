@@ -2,8 +2,11 @@
 using iPhoneBE.Data.Helper;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
+using iPhoneBE.Data.Models.AdminModel;
 using iPhoneBE.Data.Models.OrderModel;
+using iPhoneBE.Service.Extentions;
 using iPhoneBE.Service.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +24,47 @@ namespace iPhoneBE.Service.Services
             _unitOfWork = unitOfWork;
         }
 
+        public async Task<object> GetOrdersAsync(Guid? userId, string? status, TimeModel model, string userRole, Guid currentUserId)
+        {
+            var query = _unitOfWork.OrderRepository.GetAllQueryable();
+
+            // Nếu user là Customer, chỉ cho phép lấy đơn hàng của họ
+            if (userRole == "Customer")
+            {
+                query = query.Where(o => o.UserID == currentUserId.ToString());
+            }
+            else if (userId.HasValue)
+            {
+                // Nếu là Admin hoặc role cao hơn, có thể lọc theo userId (nếu có)
+                query = query.Where(o => o.UserID == userId.Value.ToString());
+            }
+
+            var orders = await query
+                .FilterByStatus(status)
+                .FilterByYear(model.Year)
+                .FilterByQuarter(model.Quarter, model.Year)
+                .FilterByMonth(model.Month, model.Year)
+                .FilterByDay(model.Day, model.Month, model.Year)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            return new
+            {
+                IsFiltered = model.Year.HasValue || model.Quarter.HasValue || model.Month.HasValue || model.Day.HasValue || !string.IsNullOrEmpty(status) || userId.HasValue,
+                Year = model.Year,
+                Quarter = model.Quarter,
+                Month = model.Month,
+                Day = model.Day,
+                Status = status,
+                UserId = userRole == "Customer" ? currentUserId : userId, // Nếu là Customer thì buộc phải lấy của họ
+                Orders = orders
+            };
+        }
+
+
         public async Task<Order> GetByIdAsync(int id)
         {
-            var order = await _unitOfWork.OrderRepository.GetByIdAsync(id);
+            var order = await _unitOfWork.OrderRepository.GetByIdAsync(id, o => o.OrderDetails);
             if (order == null)
                 throw new KeyNotFoundException($"Order with ID {id} not found.");
 

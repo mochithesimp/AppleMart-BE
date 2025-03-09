@@ -9,6 +9,11 @@ namespace iPhoneBE.Service.Extentions
 {
     public static class OrderExtensions
     {
+        public static IQueryable<Order> FilterByStatus(this IQueryable<Order> query, string? status)
+        {
+            return !string.IsNullOrWhiteSpace(status) ? query.Where(o => o.OrderStatus == status) : query;
+        }
+
         public static IQueryable<Order> FilterByYear(this IQueryable<Order> query, int? year)
         {
             return year.HasValue ? query.Where(o => o.OrderDate.Year == year.Value) : query;
