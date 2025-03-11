@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using iPhoneBE.Data.Helper;
 using iPhoneBE.Data.Models.AdminModel;
 using iPhoneBE.Data.Models.OrderModel;
 using iPhoneBE.Data.ViewModels.OrderVM;
 using iPhoneBE.Service.Interfaces;
 using iPhoneBE.Service.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,11 +18,13 @@ namespace iPhoneBE.API.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderServices _orderServices;
+        private readonly IUserServices _userServices;
         private readonly IMapper _mapper;
 
-        public OrderController(IOrderServices orderServices, IMapper mapper)
+        public OrderController(IOrderServices orderServices, IUserServices userServices, IMapper mapper)
         {
             _orderServices = orderServices;
+            _userServices = userServices;
             _mapper = mapper;
         }
 
@@ -60,6 +64,47 @@ namespace iPhoneBE.API.Controllers
             var orderViewModel = _mapper.Map<OrderViewModel>(order);
 
             return CreatedAtAction(nameof(GetOrderById), new { id = orderViewModel.OrderID }, orderViewModel);
+        }
+
+        [HttpPut("{orderId}/status")]
+        [Authorize]
+        public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromBody] string newStatus, [FromQuery] string? shipperId = null)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User not authenticated" });
+            }
+
+            var (user, role) = await _userServices.GetUserWithRoleAsync(userId);
+            if (user == null)
+            {
+                return Unauthorized(new { message = "User not found" });
+            }
+
+            
+            //if (role != "Admin" && role != "Staff" && role != "Shipper")
+            //{
+            //    return Forbid("You do not have permission to update order status.");
+            //}
+
+            var validStatuses = new List<string>
+                {
+                    OrderStatusHelper.Pending, OrderStatusHelper.Paid, OrderStatusHelper.Processing,
+                    OrderStatusHelper.Shipped, OrderStatusHelper.Delivered, OrderStatusHelper.Completed,
+                    OrderStatusHelper.Cancelled, OrderStatusHelper.Refunded
+                };
+
+            if (!validStatuses.Contains(newStatus))
+            {
+                return BadRequest(new { message = $"Invalid status '{newStatus}'. Allowed values: {string.Join(", ", validStatuses)}" });
+            }
+
+            bool result = await _orderServices.UpdateOrderStatusAsync(orderId, newStatus, user, shipperId);
+
+            return result
+                ? Ok(new { message = "Order status updated successfully." })
+                : BadRequest(new { message = "Failed to update order status." });
         }
 
     }

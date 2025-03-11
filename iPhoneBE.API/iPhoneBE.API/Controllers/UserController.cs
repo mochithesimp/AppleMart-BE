@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using iPhoneBE.Data.Models.UserModel;
+using iPhoneBE.Data.ViewModels.UserVM;
 using iPhoneBE.Service.Interfaces;
 using iPhoneBE.Service.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -32,9 +33,20 @@ namespace iPhoneBE.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var result = await _userServices.GetByIdAsync(id);
-            return Ok(result);
+            var (user, role) = await _userServices.GetUserWithRoleAsync(id);
+
+            if (user == null)
+            {
+                return NotFound(new { message = $"User with ID {id} not found." });
+            }
+
+            var userViewModel = _mapper.Map<UserViewModel>(user);
+            userViewModel.Role = role;
+
+            return Ok(userViewModel);
         }
+
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] UserModel updateCategory)
