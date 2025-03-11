@@ -82,28 +82,20 @@ namespace iPhoneBE.Service.Services
         }
 
 
-        public async Task<UserViewModel> GetByIdAsync(string id)
+        public async Task<(User user, string role)> GetUserWithRoleAsync(string id)
         {
-            try
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
             {
-                var user = await _userManager.FindByIdAsync(id);
-                if (user == null)
-                {
-                    throw new KeyNotFoundException($"User with ID {id} not found.");
-                }
-
-                var userRoles = await _userManager.GetRolesAsync(user);
-
-                var userViewModel = _mapper.Map<UserViewModel>(user);
-                userViewModel.Role = userRoles.FirstOrDefault() ?? "No Role";
-
-                return userViewModel;
+                throw new KeyNotFoundException($"User with ID {id} not found.");
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var role = userRoles.FirstOrDefault() ?? "No Role";
+
+            return (user, role);
         }
+
 
         public async Task<User> FindByEmail(string email)
         {

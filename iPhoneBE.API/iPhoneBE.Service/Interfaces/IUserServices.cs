@@ -9,7 +9,7 @@ namespace iPhoneBE.Service.Interfaces
         Task<UserViewModel> DeleteAsync(string id);
         Task<User> FindByEmail(string email);
         Task<IEnumerable<UserViewModel>> GetAllAsync();
-        Task<UserViewModel> GetByIdAsync(string id);
+        Task<(User user, string role)> GetUserWithRoleAsync(string id);
         Task<UserViewModel> UpdateAsync(string id, UserModel updatedUser);
     }
 }

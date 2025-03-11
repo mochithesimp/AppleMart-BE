@@ -18,7 +18,7 @@ namespace iPhoneBE.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -193,18 +193,22 @@ namespace iPhoneBE.API
 
             app.MapControllers();
 
-            var scope = app.Services.CreateScope();
+            await using var scope = app.Services.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<AppleMartDBContext>();
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
             try
             {
                 context.Database.Migrate();
+                await DbInitializer.Initialize(context, userManager, roleManager);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "A problem occurred during migration");
             }
+
 
             app.Run();
         }
