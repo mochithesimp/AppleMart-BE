@@ -9,8 +9,14 @@ using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Globalization;
 using System.Net;
+using System.Text;
+using System.Threading;
 
 namespace iPhoneBE.API.Controllers
 {
@@ -22,13 +28,15 @@ namespace iPhoneBE.API.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IEmailHelper _emailHelper;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
 
-        public AccountController(IAccountServices accountServices, UserManager<User> userManager,IEmailHelper emailHelper, IMapper mapper)
+        public AccountController(IAccountServices accountServices, UserManager<User> userManager, IEmailHelper emailHelper, IMapper mapper, IConfiguration configuration)
         {
             _accountServices = accountServices;
             _userManager = userManager;
             _emailHelper = emailHelper;
             _mapper = mapper;
+            _configuration = configuration;
         }
 
         [HttpPost("Login")]
@@ -147,6 +155,36 @@ namespace iPhoneBE.API.Controllers
             }
         }
 
+        [HttpGet("forget-password")]
+        public async Task<IActionResult> ForgetPassword(CancellationToken cancellationToken, string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                return BadRequest("Email not exist");
+            }
+
+            string resetPasswordUrl = _configuration.GetValue<string>("ResetPasswordUrl");
+
+            string token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            string encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            string resetPasswordUrlFull = $"{resetPasswordUrl}?Email={email}?token={encodedToken}";
+
+            string emailBody = $"Please reset your password by clicking here: <a href='{resetPasswordUrlFull}'>click here</a><p style='word-break: break-all;'><small>{token}</small></p>?";
+
+            await _emailHelper.SendMailAsync(cancellationToken, new EmailRequestModel
+            {
+                To = email,
+                Subject = "Confirm Email for reset password",
+                Body = emailBody
+            });
+
+            return Ok("Please check your email");
+        }
+
         [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail(string userEmail, string token)
         {
@@ -170,6 +208,30 @@ namespace iPhoneBE.API.Controllers
             }
 
             return BadRequest($"confirm email failed: {result.Errors}");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
+            {
+                return BadRequest("Email not exist");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.ResetPasswordToken, model.ConfirmPassword);
+
+            if (result.Succeeded)
+            {
+                return Ok("reset password successful");
+            }
+            return BadRequest("reset password fail");
         }
     }
 }
