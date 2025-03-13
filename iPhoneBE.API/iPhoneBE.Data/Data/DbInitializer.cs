@@ -32,7 +32,7 @@ namespace iPhoneBE.Data.Data
                     ("staff", "staff@example.com", "Store Staff", RolesHelper.Staff),
                     ("Vu", "vu@example.com", "Store Shipper", RolesHelper.Shipper),
                     ("Nhan", "nhan@example.com", "Store Shipper", RolesHelper.Shipper),
-                    ("customer", "customer@example.com", "Regular Customer", RolesHelper.Customer)
+                    ("customer", "user@example.com", "Regular Customer", RolesHelper.Customer)
                 };
 
                 foreach (var (username, email, name, role) in users)
@@ -51,13 +51,13 @@ namespace iPhoneBE.Data.Data
             {
                 var categories = new List<Category>
                 {
-                    new Category { Name = "iPhone", Description = "Dòng điện thoại thông minh của Apple", IsActive = true },
-                    new Category { Name = "iPad", Description = "Máy tính bảng của Apple", IsActive = true },
-                    new Category { Name = "MacBook", Description = "Laptop của Apple", IsActive = true },
-                    new Category { Name = "iMac", Description = "Máy tính để bàn All-in-One của Apple", IsActive = true },
-                    new Category { Name = "Apple Watch", Description = "Đồng hồ thông minh của Apple", IsActive = true },
-                    new Category { Name = "AirPods", Description = "Tai nghe không dây của Apple", IsActive = true },
-                    new Category { Name = "Accessories", Description = "Phụ kiện chính hãng của Apple", IsActive = true }
+                    new Category { Name = "iPhone", Description = "Dòng điện thoại thông minh của Apple", IsDeleted = true },
+                    new Category { Name = "iPad", Description = "Máy tính bảng của Apple", IsDeleted = true },
+                    new Category { Name = "MacBook", Description = "Laptop của Apple", IsDeleted = true },
+                    new Category { Name = "iMac", Description = "Máy tính để bàn All-in-One của Apple", IsDeleted = true },
+                    new Category { Name = "Apple Watch", Description = "Đồng hồ thông minh của Apple", IsDeleted = true },
+                    new Category { Name = "AirPods", Description = "Tai nghe không dây của Apple", IsDeleted = true },
+                    new Category { Name = "Accessories", Description = "Phụ kiện chính hãng của Apple", IsDeleted = true }
                 };
                 context.Categories.AddRange(categories);
                 await context.SaveChangesAsync();
