@@ -72,24 +72,32 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpPost("room/private")]
-        public async Task<ActionResult<ChatRoomViewModel>> CreatePrivateRoom([FromBody] string otherUserId)
+        public async Task<ActionResult<ChatRoomViewModel>> CreatePrivateRoom([FromBody] CreatePrivateRoomRequest request)
         {
-            var userId = GetUserId();
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("User is not authenticated.");
-
             try
             {
-                Console.WriteLine($"Creating chat room between {userId} and {otherUserId}");
-                var room = await _chatService.CreatePrivateRoom(userId, otherUserId);
+                var currentUserId = GetUserId();
+                if (string.IsNullOrEmpty(currentUserId))
+                    return Unauthorized("User is not authenticated.");
+
+                if (string.IsNullOrEmpty(request.OtherUserId))
+                    return BadRequest("Other user ID is required.");
+
+                if (currentUserId == request.OtherUserId)
+                    return BadRequest("Cannot create a chat room with yourself.");
+
+                _logger.LogInformation($"Creating chat room between {currentUserId} and {request.OtherUserId}");
+                var room = await _chatService.CreatePrivateRoom(currentUserId, request.OtherUserId);
                 return Ok(room);
             }
             catch (KeyNotFoundException ex)
             {
+                _logger.LogWarning($"User not found: {ex.Message}");
                 return NotFound($"User not found: {ex.Message}");
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error creating private chat room");
                 return BadRequest($"Error creating chat room: {ex.Message}");
             }
         }
@@ -156,6 +164,11 @@ namespace iPhoneBE.API.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
+        }
+
+        public class CreatePrivateRoomRequest
+        {
+            public string OtherUserId { get; set; }
         }
     }
 }
