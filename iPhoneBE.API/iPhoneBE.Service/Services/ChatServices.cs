@@ -114,7 +114,6 @@ namespace iPhoneBE.Service.Services
         {
             try
             {
-                // First, get the chat room with basic includes
                 var chatRoom = await _unitOfWork.ChatRoomRepository
                     .GetAllAsync(
                         predicate: r => r.ChatRoomID == chatRoomId,
@@ -129,21 +128,17 @@ namespace iPhoneBE.Service.Services
                 if (room == null)
                     throw new KeyNotFoundException($"Chat room with ID {chatRoomId} not found.");
 
-                // Get all user IDs involved in this chat room
                 var userIds = room.ChatParticipants
                     .Select(p => p.UserID)
                     .Union(room.ChatMessages.Select(m => m.SenderID))
                     .Distinct()
                     .ToList();
 
-                // Fetch user information separately
                 var users = await _unitOfWork.UserRepository
                     .GetAllAsync(u => userIds.Contains(u.Id));
 
-                // Create a dictionary for quick user lookup
                 var userDict = users.ToDictionary(u => u.Id, u => u.UserName);
 
-                // Create the view model
                 var roomViewModel = new ChatRoomViewModel
                 {
                     ChatRoomID = room.ChatRoomID,
@@ -180,7 +175,6 @@ namespace iPhoneBE.Service.Services
                         .ToList()
                 };
 
-                // Set the last message
                 roomViewModel.LastMessage = room.ChatMessages
                     .OrderByDescending(m => m.CreatedDate)
                     .Select(m => new ChatMessageViewModel
@@ -257,21 +251,18 @@ namespace iPhoneBE.Service.Services
         {
             try
             {
-                // First verify the chat room exists
                 var room = await _unitOfWork.ChatRoomRepository
                     .GetSingleByConditionAsynce(r => r.ChatRoomID == chatRoomId);
 
                 if (room == null)
                     throw new KeyNotFoundException($"Chat room with ID {chatRoomId} not found.");
 
-                // Get sender information
                 var sender = await _unitOfWork.UserRepository
                     .GetSingleByConditionAsynce(u => u.Id == senderId);
 
                 if (sender == null)
                     throw new KeyNotFoundException($"User with ID {senderId} not found.");
 
-                // Create and save the message
                 var message = new ChatMessage
                 {
                     ChatRoomID = chatRoomId,
@@ -285,7 +276,6 @@ namespace iPhoneBE.Service.Services
                 await _unitOfWork.ChatMessageRepository.AddAsync(message);
                 await _unitOfWork.SaveChangesAsync();
 
-                // Return the view model
                 return new ChatMessageViewModel
                 {
                     ChatID = message.ChatMessageID,
