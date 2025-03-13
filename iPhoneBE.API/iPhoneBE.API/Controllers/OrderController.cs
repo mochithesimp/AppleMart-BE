@@ -82,17 +82,11 @@ namespace iPhoneBE.API.Controllers
                 return Unauthorized(new { message = "User not found" });
             }
 
-            
-            //if (role != "Admin" && role != "Staff" && role != "Shipper")
-            //{
-            //    return Forbid("You do not have permission to update order status.");
-            //}
-
             var validStatuses = new List<string>
                 {
                     OrderStatusHelper.Pending, OrderStatusHelper.Paid, OrderStatusHelper.Processing,
                     OrderStatusHelper.Shipped, OrderStatusHelper.Delivered, OrderStatusHelper.Completed,
-                    OrderStatusHelper.Cancelled, OrderStatusHelper.Refunded
+                    OrderStatusHelper.Cancelled, OrderStatusHelper.RefundRequested, OrderStatusHelper.Refunded
                 };
 
             if (!validStatuses.Contains(newStatus))
