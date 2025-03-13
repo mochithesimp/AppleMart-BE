@@ -27,6 +27,12 @@ namespace iPhoneBE.Data.Data
                 Id = "e450c7fa-cb9b-40b0-b5f2-7ad083eefd63",
                 Name = "Customer",
                 NormalizedName = "CUSTOMER"
+            },
+            new IdentityRole
+            {
+                Id = "f7c2d1b8-1234-4e56-7890-abcdef123456",
+                Name = "Shipper",
+                NormalizedName = "SHIPPER"
             }
             );
         }

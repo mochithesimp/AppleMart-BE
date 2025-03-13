@@ -31,14 +31,26 @@ namespace iPhoneBE.Service.Services
         {
             var query = _unitOfWork.OrderRepository.GetAllQueryable();
 
-            // Nếu user là Customer, chỉ cho phép lấy đơn hàng của họ
             if (userRole == "Customer")
             {
+                // Nếu là Customer, chỉ lấy đơn hàng của chính họ
                 query = query.Where(o => o.UserID == currentUserId.ToString());
+            }
+            else if (userRole == "Shipper")
+            {
+                // Nếu là Shipper, chỉ lấy đơn hàng mà họ đang giao (Shipped) hoặc đã giao thành công (delivered)
+                query = query.Where(o => o.ShipperID == currentUserId.ToString() &&
+                                 (o.OrderStatus == OrderStatusHelper.Shipped || o.OrderStatus == OrderStatusHelper.Delivered));
+
+                if (!string.IsNullOrEmpty(status) && !(status == OrderStatusHelper.Shipped || status == OrderStatusHelper.Delivered))
+                {
+                    throw new ArgumentException($"Shippers can only filter orders by '{OrderStatusHelper.Shipped}' or '{OrderStatusHelper.Delivered}'.");
+                }
+
             }
             else if (userId.HasValue)
             {
-                // Nếu là Admin hoặc role cao hơn, có thể lọc theo userId (nếu có)
+                // Nếu là Admin hoặc Staff, có thể lọc theo userId nếu có
                 query = query.Where(o => o.UserID == userId.Value.ToString());
             }
 
@@ -59,10 +71,11 @@ namespace iPhoneBE.Service.Services
                 Month = model.Month,
                 Day = model.Day,
                 Status = status,
-                UserId = userRole == "Customer" ? currentUserId : userId, // Nếu là Customer thì buộc phải lấy của họ
+                UserId = userRole == "Customer" || userRole == "Shipper" ? currentUserId : userId,
                 Orders = orders
             };
         }
+
 
 
         public async Task<Order> GetByIdAsync(int id)
@@ -154,8 +167,20 @@ namespace iPhoneBE.Service.Services
                 throw new InvalidOperationException($"The order is already in '{newStatus}' status.");
             }
 
-            bool isCustomer = await _userManager.IsInRoleAsync(user, "Customer");
-            bool isStaff = await _userManager.IsInRoleAsync(user, "Staff");
+            bool isCustomer = await _userManager.IsInRoleAsync(user, RolesHelper.Customer);
+            bool isStaff = await _userManager.IsInRoleAsync(user, RolesHelper.Staff);
+            bool isShipper = await _userManager.IsInRoleAsync(user, RolesHelper.Shipper);
+
+            // Kiểm tra quyền sở hữu đơn hàng trước khi cập nhật
+            if (isCustomer && order.UserID != user.Id.ToString())
+            {
+                throw new UnauthorizedAccessException("You can only update your own orders.");
+            }
+
+            if (isShipper && order.ShipperID != user.Id.ToString())
+            {
+                throw new UnauthorizedAccessException("You can only update the orders assigned to you.");
+            }
 
             await _unitOfWork.BeginTransactionAsync();
             try
@@ -167,6 +192,10 @@ namespace iPhoneBE.Service.Services
                 else if (isStaff)
                 {
                     await HandleStaffStatusChange(order, newStatus, shipperId);
+                }
+                else if (isShipper)
+                {
+                    await HandleShipperStatusChange(order, newStatus, shipperId);
                 }
                 else
                 {
@@ -187,8 +216,6 @@ namespace iPhoneBE.Service.Services
             }
         }
 
-
-
         private async Task HandleCustomerStatusChange(Order order, string newStatus)
         {
             if (newStatus == OrderStatusHelper.Cancelled && order.OrderStatus == OrderStatusHelper.Pending)
@@ -200,6 +227,10 @@ namespace iPhoneBE.Service.Services
                      (order.OrderStatus == OrderStatusHelper.Delivered || order.OrderStatus == OrderStatusHelper.Completed))
             {
                 order.OrderStatus = OrderStatusHelper.RefundRequested;
+            }
+            else if (newStatus == OrderStatusHelper.Completed && order.OrderStatus == OrderStatusHelper.Delivered)
+            {
+                order.OrderStatus = OrderStatusHelper.Completed;
             }
             else
             {
@@ -215,7 +246,6 @@ namespace iPhoneBE.Service.Services
                 { OrderStatusHelper.Pending, new List<string> { OrderStatusHelper.Processing } },
                 { OrderStatusHelper.Paid, new List<string> { OrderStatusHelper.Processing } },
                 { OrderStatusHelper.Processing, new List<string> { OrderStatusHelper.Shipped } },
-                { OrderStatusHelper.Shipped, new List<string> { OrderStatusHelper.Delivered } },
                 { OrderStatusHelper.Delivered, new List<string> { OrderStatusHelper.Completed, OrderStatusHelper.RefundRequested } },
                 { OrderStatusHelper.RefundRequested, new List<string> { OrderStatusHelper.Refunded } }
             };
@@ -232,12 +262,7 @@ namespace iPhoneBE.Service.Services
                     throw new ArgumentException("A shipper must be assigned before shipping.");
                 }
 
-                if (IsShipperBusy(shipperId))
-                {
-                    throw new InvalidOperationException("The assigned shipper is already delivering another order.");
-                }
-
-                order.ShipperID = shipperId;
+                await AssignShipperToOrder(order, shipperId);
             }
             else if (order.OrderStatus == OrderStatusHelper.RefundRequested && newStatus == OrderStatusHelper.Refunded)
             {
@@ -257,10 +282,42 @@ namespace iPhoneBE.Service.Services
             order.OrderStatus = newStatus;
         }
 
-        private bool IsShipperBusy(string shipperId)
+        private async Task HandleShipperStatusChange(Order order, string newStatus, string? shipperId)
         {
-            return _unitOfWork.OrderRepository.GetAllQueryable().Any(o => o.ShipperID == shipperId && o.OrderStatus == OrderStatusHelper.Shipped);
+            if (newStatus == OrderStatusHelper.Delivered && order.OrderStatus == OrderStatusHelper.Shipped)
+            {
+                if (order.ShipperID != shipperId)
+                {
+                    throw new UnauthorizedAccessException("You are not assigned to this order.");
+                }
+                order.OrderStatus = OrderStatusHelper.Delivered;
+            }
+
+            else
+            {
+                throw new InvalidOperationException("Shipper can only update 'Shipped' orders to 'Delivered'.");
+            }
         }
+
+        private async Task AssignShipperToOrder(Order order, string shipperId)
+        {
+            var shipper = await _userManager.FindByIdAsync(shipperId);
+            if (shipper == null || !await _userManager.IsInRoleAsync(shipper, RolesHelper.Shipper))
+            {
+                throw new ArgumentException("Invalid shipper ID or user is not a shipper.");
+            }
+
+            int activeDeliveries = await _unitOfWork.OrderRepository.GetAllQueryable()
+                .CountAsync(o => o.ShipperID == shipperId && o.OrderStatus == OrderStatusHelper.Shipped);
+
+            if (activeDeliveries >= 3)
+            {
+                throw new InvalidOperationException("This shipper is already handling 3 deliveries.");
+            }
+
+            order.ShipperID = shipperId;
+        }
+
 
         private async Task RestoreProductStock(int orderId)
         {
@@ -275,7 +332,6 @@ namespace iPhoneBE.Service.Services
             var products = await _unitOfWork.ProductItemRepository
                 .GetAllQueryable()
                 .Where(p => productIds.Contains(p.ProductItemID))
-                .AsNoTracking()
                 .ToListAsync();
 
 
