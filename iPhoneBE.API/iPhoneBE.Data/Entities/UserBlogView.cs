@@ -14,15 +14,14 @@ namespace iPhoneBE.Data.Entities
     {
         [Key]
         public int UserBlogViewID { get; set; }
-
-        [ForeignKey("UserId")]
-        public int UserId { get; set; }
-
-        [ForeignKey("BlogId")]
+        public string UserId { get; set; }
         public int BlogId { get; set; }
         public int Like { get; set; }
 
+
+        [ForeignKey("BlogId")]
         public Blog Blog { get; set; }
+        [ForeignKey("UserId")]
         public User User { get; set; }
     }
 }
