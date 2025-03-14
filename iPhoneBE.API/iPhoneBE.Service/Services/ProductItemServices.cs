@@ -147,23 +147,38 @@ namespace iPhoneBE.Service.Services
                     }
                 }
 
-                if (newProductItem.NewImageUrls?.Any() == true)
+                if (newProductItem.UpdatedProductImgs?.Any() == true)
                 {
-                    var validImageUrls = newProductItem.NewImageUrls
-                        .Where(url => !IsInvalid(url))
-                        .ToList();
-
-                    foreach (var imageUrl in validImageUrls)
+                    foreach (var updatedImg in newProductItem.UpdatedProductImgs)
                     {
-                        var newImage = new ProductImg
+                        var existingImg = productItem.ProductImgs
+                            .FirstOrDefault(img => img.ProductImgID == updatedImg.ProductImgID);
+
+                        if (existingImg != null && !IsInvalid(updatedImg.ImageUrl))
                         {
-                            ProductItemID = productItem.ProductItemID,
-                            ImageUrl = imageUrl,
-                            IsDeleted = false
-                        };
-                        await _unitOfWork.ProductImgRepository.AddAsync(newImage);
+                            existingImg.ImageUrl = updatedImg.ImageUrl;
+                            await _unitOfWork.ProductImgRepository.Update(existingImg);
+                        }
                     }
                 }
+
+                //if (newProductItem.NewImageUrls?.Any() == true)
+                //{
+                //    var validImageUrls = newProductItem.NewImageUrls
+                //        .Where(url => !IsInvalid(url))
+                //        .ToList();
+
+                //    foreach (var imageUrl in validImageUrls)
+                //    {
+                //        var newImage = new ProductImg
+                //        {
+                //            ProductItemID = productItem.ProductItemID,
+                //            ImageUrl = imageUrl,
+                //            IsDeleted = false
+                //        };
+                //        await _unitOfWork.ProductImgRepository.AddAsync(newImage);
+                //    }
+                //}
 
                 var result = await _unitOfWork.ProductItemRepository.Update(productItem);
 

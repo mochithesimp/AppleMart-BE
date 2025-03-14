@@ -26,6 +26,7 @@ namespace iPhoneBE.Service
             service.AddScoped<IOrderServices, OrderServices>();
             service.AddScoped<IAdminServices, AdminServices>();
             service.AddScoped<INotificationServices, NotificationServices>();
+            service.AddScoped<IProductImgServices, ProductImgServices>();
 
             return service;
         }

@@ -1,4 +1,5 @@
 ﻿using iPhoneBE.Data.Model;
+using iPhoneBE.Data.Models.ProductImgModel;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -28,8 +29,9 @@ namespace iPhoneBE.Data.Models.ProductItemModel
         [Required(ErrorMessage = "Price is required.")]
         [Range(0, double.MaxValue, ErrorMessage = "Price must be at least 0.")]
         public double Price { get; set; }
+        public required List<UpdateProductImgModel> UpdatedProductImgs { get; set; } = new();
 
-        public List<string> NewImageUrls { get; set; } = new List<string>();
+        //public List<string> NewImageUrls { get; set; } = new List<string>();
 
         public List<int> RemoveImageIds { get; set; } = new List<int>();
     }
