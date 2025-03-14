@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using iPhoneBE.Data.Interfaces;
+using iPhoneBE.Data.Model;
+using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace iPhoneBE.Data.Model
+namespace iPhoneBE.Data.Entities
 {
-    public class Notification
+    public class Notification : IBaseEntity
     {
         [Key]
         public int NotificationID { get; set; }
 
         [ForeignKey("User")]
-        public string UserId { get; set; }
+        public string UserID { get; set; } 
 
         [Required(ErrorMessage = "Header is required.")]
         [MaxLength(255, ErrorMessage = "Header cannot exceed 255 characters.")]
@@ -29,6 +27,7 @@ namespace iPhoneBE.Data.Model
         public bool IsDeleted { get; set; }
 
         public DateTime CreatedDate { get; set; }
+
         public virtual User User { get; set; }
     }
 }

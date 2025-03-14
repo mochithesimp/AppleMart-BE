@@ -111,7 +111,8 @@ namespace iPhoneBE.API
                             var accessToken = context.Request.Query["access_token"];
                             var path = context.HttpContext.Request.Path;
 
-                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                (path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/notificationHub")))
                             {
                                 context.Token = accessToken;
                             }
@@ -190,6 +191,7 @@ namespace iPhoneBE.API
             app.UseAuthorization();
 
             app.MapHub<ChatHub>("/chatHub");
+            app.MapHub<NotificationHub>("/notificationHub");
 
             app.MapControllers();
 

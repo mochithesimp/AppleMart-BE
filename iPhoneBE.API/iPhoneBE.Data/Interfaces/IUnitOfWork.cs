@@ -1,9 +1,11 @@
 ﻿using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Model;
+using System;
+using System.Threading.Tasks;
 
 namespace iPhoneBE.Data.Interfaces
 {
-    public interface IUnitOfWork
+    public interface IUnitOfWork : IDisposable
     {
         IRepository<Entities.Attribute> AttributeRepository { get; }
         IRepository<BlogImage> BlogImageRepository { get; }
@@ -20,6 +22,7 @@ namespace iPhoneBE.Data.Interfaces
         IRepository<Product> ProductRepository { get; }
         IRepository<Review> ReviewRepository { get; }
         IRepository<User> UserRepository { get; }
+        IRepository<Entities.Notification> NotificationRepository { get; }
 
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
