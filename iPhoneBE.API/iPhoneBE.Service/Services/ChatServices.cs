@@ -19,12 +19,14 @@ namespace iPhoneBE.Service.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly Dictionary<string, bool> _onlineUsers;
+        private readonly INotificationServices _notificationServices;
 
-        public ChatServices(IUnitOfWork unitOfWork, IMapper mapper)
+        public ChatServices(IUnitOfWork unitOfWork, IMapper mapper, INotificationServices notificationServices)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _onlineUsers = new Dictionary<string, bool>();
+            _notificationServices = notificationServices;
         }
 
         public async Task<List<ChatRoomViewModel>> GetUserChatRooms(string userId)
@@ -252,7 +254,8 @@ namespace iPhoneBE.Service.Services
             try
             {
                 var room = await _unitOfWork.ChatRoomRepository
-                    .GetSingleByConditionAsynce(r => r.ChatRoomID == chatRoomId);
+                    .GetSingleByConditionAsynce(r => r.ChatRoomID == chatRoomId,
+                        r => r.ChatParticipants);
 
                 if (room == null)
                     throw new KeyNotFoundException($"Chat room with ID {chatRoomId} not found.");
@@ -274,6 +277,20 @@ namespace iPhoneBE.Service.Services
                 };
 
                 await _unitOfWork.ChatMessageRepository.AddAsync(message);
+
+                var notificationTasks = room.ChatParticipants
+                    .Where(p => p.UserID != senderId)
+                    .Select(async participant =>
+                    {
+                        var notification = await _notificationServices.CreateNotification(
+                            participant.UserID,
+                            $"New message from {sender.UserName}",
+                            content.Length > 50 ? content.Substring(0, 47) + "..." : content
+                        );
+                        return notification;
+                    });
+
+                await Task.WhenAll(notificationTasks);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new ChatMessageViewModel

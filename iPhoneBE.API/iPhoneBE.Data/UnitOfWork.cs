@@ -29,6 +29,8 @@ namespace iPhoneBE.Data
         private readonly IRepository<Order> _orderRepository;
         private readonly IRepository<OrderDetail> _orderDetailRepository;
         private readonly IRepository<User> _userRepository;
+        private readonly IRepository<Entities.Notification> _notificationRepository;
+
         public UnitOfWork(
             AppleMartDBContext dbContext,
             IRepository<User> userRepository,
@@ -45,7 +47,8 @@ namespace iPhoneBE.Data
             IRepository<ChatMessage> chatMessageRepository,
             IRepository<ChatParticipant> chatParticipantRepository,
             IRepository<Order> orderRepository,
-            IRepository<OrderDetail> orderDetailRepository
+            IRepository<OrderDetail> orderDetailRepository,
+            IRepository<Entities.Notification> notificationRepository
         )
         {
             _dbContext = dbContext;
@@ -64,6 +67,7 @@ namespace iPhoneBE.Data
             _chatParticipantRepository = chatParticipantRepository;
             _orderRepository = orderRepository;
             _orderDetailRepository = orderDetailRepository;
+            _notificationRepository = notificationRepository;
         }
 
         // 🔹 Repository getter
@@ -81,6 +85,7 @@ namespace iPhoneBE.Data
         public IRepository<ChatParticipant> ChatParticipantRepository => _chatParticipantRepository;
         public IRepository<Order> OrderRepository => _orderRepository;
         public IRepository<OrderDetail> OrderDetailRepository => _orderDetailRepository;
+        public IRepository<Entities.Notification> NotificationRepository => _notificationRepository;
 
         public IRepository<User> UserRepository => _userRepository;
 
