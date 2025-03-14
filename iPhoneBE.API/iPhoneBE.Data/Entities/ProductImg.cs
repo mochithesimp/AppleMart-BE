@@ -12,6 +12,7 @@ namespace iPhoneBE.Data.Model
     public class ProductImg : IBaseEntity
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ProductImgID { get; set; }
 
         [ForeignKey("ProductItem")]

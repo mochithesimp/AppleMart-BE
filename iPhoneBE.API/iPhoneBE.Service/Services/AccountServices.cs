@@ -84,7 +84,7 @@ namespace iPhoneBE.Service.Services
                 {
                     UserName = payload.Email,
                     Email = payload.Email,
-                    Name = payload.Name,
+                    Name = model.Name,
                     PhoneNumber = model.PhoneNumber,
                     EmailConfirmed = payload.EmailVerified
                 };
