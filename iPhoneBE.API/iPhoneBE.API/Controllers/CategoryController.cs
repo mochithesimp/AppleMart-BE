@@ -31,9 +31,6 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpGet]
-
-
-
         public async Task<ActionResult<IEnumerable<CategoryViewModel>>> GetAll(string? categoryName = null)
         {
             try
