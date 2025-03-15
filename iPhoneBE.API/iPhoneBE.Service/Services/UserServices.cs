@@ -53,7 +53,7 @@ namespace iPhoneBE.Service.Services
             //    throw new UnauthorizedAccessException($"Access denied for role: {currentUserRole}");
             //}
 
-            var users = await _userManager.Users.ToListAsync();
+            var users = await _userManager.Users.Where(u => !u.IsDeleted).ToListAsync();
             var userList = new List<UserViewModel>();
 
             foreach (var user in users)

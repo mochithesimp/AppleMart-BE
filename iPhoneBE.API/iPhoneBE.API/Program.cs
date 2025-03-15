@@ -162,10 +162,14 @@ namespace iPhoneBE.API
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    builder.WithOrigins("http://localhost:3000") // Hoặc danh sách origin cụ thể
-                           .AllowAnyHeader()
-                           .AllowAnyMethod()
-                           .AllowCredentials();
+                    builder.WithOrigins(
+                        "http://localhost:3000",
+                        "https://iphone-fe-five.vercel.app",
+                        "https://apple-mart-fe-customer-opksxkvgp-apple-mart-project.vercel.app"
+                    )
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
                 });
             });
 
