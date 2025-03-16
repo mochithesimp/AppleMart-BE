@@ -7,12 +7,11 @@ namespace iPhoneBE.Data.Models.ProductItemModel
         public string? SearchTerm { get; set; }
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
-        public string? PriceSort { get; set; } // "LowToHigh" or "HighToLow"
+        public string? PriceSort { get; set; } 
         public List<string>? Colors { get; set; }
         public List<string>? RAMSizes { get; set; }
         public List<string>? ROMSizes { get; set; }
 
-        // Paging parameters
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;
 
@@ -33,28 +32,24 @@ namespace iPhoneBE.Data.Models.ProductItemModel
         public int PageSize { get; set; }
         public int TotalPages { get; set; }
 
-        // Navigation properties
         public int? NextPage => HasNextPage ? PageNumber + 1 : null;
         public int? PreviousPage => HasPreviousPage ? PageNumber - 1 : null;
         public bool HasNextPage => PageNumber < TotalPages;
         public bool HasPreviousPage => PageNumber > 1;
 
-        // First and last page information
         public bool IsFirstPage => PageNumber == 1;
         public bool IsLastPage => PageNumber == TotalPages;
 
-        // Page groups (useful for pagination UI)
         public IEnumerable<int> Pages
         {
             get
             {
-                const int maxPages = 5; // Show maximum 5 page numbers
+                const int maxPages = 5;
                 var halfMax = maxPages / 2;
 
                 var start = Math.Max(1, PageNumber - halfMax);
                 var end = Math.Min(TotalPages, start + maxPages - 1);
 
-                // Adjust start if we're near the end
                 if (end == TotalPages)
                 {
                     start = Math.Max(1, end - maxPages + 1);
