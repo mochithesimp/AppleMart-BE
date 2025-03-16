@@ -30,6 +30,7 @@ namespace iPhoneBE.Data
         private readonly IRepository<OrderDetail> _orderDetailRepository;
         private readonly IRepository<User> _userRepository;
         private readonly IRepository<Entities.Notification> _notificationRepository;
+        private readonly IRepository<PaypalTransaction> _paypalTransactionRepository;
 
         public UnitOfWork(
             AppleMartDBContext dbContext,
@@ -48,7 +49,8 @@ namespace iPhoneBE.Data
             IRepository<ChatParticipant> chatParticipantRepository,
             IRepository<Order> orderRepository,
             IRepository<OrderDetail> orderDetailRepository,
-            IRepository<Entities.Notification> notificationRepository
+            IRepository<Entities.Notification> notificationRepository,
+            IRepository<PaypalTransaction> paypalTransactionRepository
         )
         {
             _dbContext = dbContext;
@@ -68,6 +70,7 @@ namespace iPhoneBE.Data
             _orderRepository = orderRepository;
             _orderDetailRepository = orderDetailRepository;
             _notificationRepository = notificationRepository;
+            _paypalTransactionRepository = paypalTransactionRepository;
         }
 
         // 🔹 Repository getter
@@ -86,7 +89,7 @@ namespace iPhoneBE.Data
         public IRepository<Order> OrderRepository => _orderRepository;
         public IRepository<OrderDetail> OrderDetailRepository => _orderDetailRepository;
         public IRepository<Entities.Notification> NotificationRepository => _notificationRepository;
-
+        public IRepository<PaypalTransaction> PaypalTransactionRepository => _paypalTransactionRepository;
         public IRepository<User> UserRepository => _userRepository;
 
         // 🔹 Transaction - Dùng async để tránh block luồng

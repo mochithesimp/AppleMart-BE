@@ -7,6 +7,7 @@ using iPhoneBE.Data.Models.AuthenticationModel;
 using iPhoneBE.Data.Models.BlogImageModel;
 using iPhoneBE.Data.Models.BlogModel;
 using iPhoneBE.Data.Models.CategoryModel;
+using iPhoneBE.Data.Models.PaypalModel;
 using iPhoneBE.Data.Models.ProductImgModel;
 using iPhoneBE.Data.Models.ProductItemAttributeModel;
 using iPhoneBE.Data.Models.ProductItemModel;
@@ -18,6 +19,7 @@ using iPhoneBE.Data.ViewModels.CategoryVM;
 using iPhoneBE.Data.ViewModels.ChatDTO;
 using iPhoneBE.Data.ViewModels.ChatVM;
 using iPhoneBE.Data.ViewModels.OrderVM;
+using iPhoneBE.Data.ViewModels.PaypalVM;
 using iPhoneBE.Data.ViewModels.ProductImgVM;
 using iPhoneBE.Data.ViewModels.ProductItemAttributeVM;
 using iPhoneBE.Data.ViewModels.ProductItemVM;
@@ -119,6 +121,17 @@ namespace iPhoneBE.Data.Mapping
                 .ForMember(dest => dest.OrderDetails, opt => opt.MapFrom(src => src.OrderDetails));
 
             CreateMap<OrderDetail, OrderDetailViewModel>();
+
+            CreateMap<CreatePaypalTransactionModel, PaypalTransaction>()
+                .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.OrderId))
+                .ForMember(dest => dest.PaypalPaymentId, opt => opt.MapFrom(src => src.PaypalPaymentId))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
+                .ForMember(dest => dest.Currency, opt => opt.MapFrom(src => src.Currency))
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedDate))
+                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted));
+
+            CreateMap<PaypalTransaction, PaypalTransactionViewModel>().ReverseMap();
         }
     }
 }

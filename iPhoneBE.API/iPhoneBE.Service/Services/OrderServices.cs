@@ -95,7 +95,7 @@ namespace iPhoneBE.Service.Services
                 var order = new Order
                 {
                     UserID = model.UserID,
-                    ShipperID = model.ShipperID,
+                    ShipperID = (model.ShipperID == "string" || model.ShipperID == null) ? null : model.ShipperID,
                     OrderDate = model.OrderDate,
                     Address = model.Address,
                     PaymentMethod = model.PaymentMethod,

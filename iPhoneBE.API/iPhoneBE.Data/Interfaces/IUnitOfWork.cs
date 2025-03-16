@@ -23,6 +23,7 @@ namespace iPhoneBE.Data.Interfaces
         IRepository<Review> ReviewRepository { get; }
         IRepository<User> UserRepository { get; }
         IRepository<Entities.Notification> NotificationRepository { get; }
+        IRepository<PaypalTransaction> PaypalTransactionRepository { get; }
 
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
