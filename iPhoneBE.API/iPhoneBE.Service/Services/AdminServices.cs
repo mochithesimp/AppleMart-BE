@@ -4,7 +4,7 @@ using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AdminModel;
 using iPhoneBE.Data.ViewModels.ProductItemVM;
-using iPhoneBE.Service.Extentions;
+using iPhoneBE.Service.Extensions;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

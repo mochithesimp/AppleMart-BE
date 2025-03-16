@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace iPhoneBE.Service.Extentions
+namespace iPhoneBE.Service.Extensions
 {
     public static class OrderExtensions
     {

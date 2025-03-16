@@ -2,6 +2,7 @@ using AutoMapper;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.ProductItemModel;
+using iPhoneBE.Service.Extensions;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -19,21 +20,18 @@ namespace iPhoneBE.Service.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<ProductItem>> GetAllAsync()
+        public async Task<PagedResult<ProductItem>> GetAllAsync(ProductItemFilterModel filter)
         {
-            var result = await _unitOfWork.ProductItemRepository.GetAllAsync(
-                o => o.IsDeleted == false,
-                o => o.ProductImgs.Where(img => !img.IsDeleted),
-                o => o.Product,
-                o => o.ProductItemAttributes
-            );
+            var query = _unitOfWork.ProductItemRepository.GetAllQueryable()
+                .ApplyBaseQuery()
+                .FilterBySearchTerm(filter.SearchTerm)
+                .FilterByPriceRange(filter.MinPrice, filter.MaxPrice)
+                .FilterByColors(filter.Colors)
+                .FilterByRAM(filter.RAMSizes)
+                .FilterByROM(filter.ROMSizes)
+                .ApplySorting(filter.PriceSort);
 
-            result = result?
-                    .Where(r => r.IsDeleted == false)
-                    .OrderBy(r => r.DisplayIndex)
-                    .ToList() ?? new List<ProductItem>();
-
-            return result;
+            return await query.ToPagedResultAsync(filter);
         }
 
         public async Task<ProductItem> GetByIdAsync(int id)
