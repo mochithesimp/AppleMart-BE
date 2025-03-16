@@ -5,10 +5,10 @@ namespace iPhoneBE.Service.Interfaces
 {
     public interface IProductItemServices
     {
-        Task<ProductItem> AddAsync(ProductItem productItem);
-        Task<ProductItem> DeleteAsync(int id);
-        Task<IEnumerable<ProductItem>> GetAllAsync();
+        Task<PagedResult<ProductItem>> GetAllAsync(ProductItemFilterModel filter);
         Task<ProductItem> GetByIdAsync(int id);
+        Task<ProductItem> AddAsync(ProductItem productItem);
         Task<ProductItem> UpdateAsync(int id, UpdateProductItemModel newProductItem);
+        Task<ProductItem> DeleteAsync(int id);
     }
 }
