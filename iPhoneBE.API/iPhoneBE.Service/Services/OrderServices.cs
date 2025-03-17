@@ -109,21 +109,53 @@ namespace iPhoneBE.Service.Services
                 var result = await _unitOfWork.OrderRepository.AddAsync(order);
                 await _unitOfWork.SaveChangesAsync();
 
+                //var productIds = model.OrderDetails.Select(od => od.ProductItemID).ToList();
+                //var products = await _unitOfWork.ProductItemRepository.GetAllAsync(p => productIds.Contains(p.ProductItemID));
+
+                //foreach (var item in model.OrderDetails)
+                //{
+                //    var product = products.FirstOrDefault(p => p.ProductID == item.ProductItemID);
+
+                //    if (product == null)
+                //    {
+                //        throw new KeyNotFoundException("product not found");
+                //    }
+
+                //    if (product.Quantity < item.Quantity)
+                //    {
+                //        throw new InvalidOperationException($"Insufficient stock for Product {item.ProductItemID}. Available: {product.Quantity}, Requested: {item.Quantity}");
+                //    }
+
+                //    var orderDetail = new OrderDetail
+                //    {
+                //        OrderID = result.OrderID,
+                //        ProductItemID = item.ProductItemID,
+                //        Price = item.Price,
+                //        Quantity = item.Quantity,
+                //        IsDeleted = false
+                //    };
+
+                //    await _unitOfWork.OrderDetailRepository.AddAsync(orderDetail);
+
+                //    product.Quantity -= item.Quantity;
+                //    await _unitOfWork.ProductItemRepository.Update(product);
+                //}
+
                 var productIds = model.OrderDetails.Select(od => od.ProductItemID).ToList();
-                var products = await _unitOfWork.ProductItemRepository.GetAllAsync(p => productIds.Contains(p.ProductID));
+                var products = await _unitOfWork.ProductItemRepository.GetAllAsync(p => productIds.Contains(p.ProductItemID));
 
                 foreach (var item in model.OrderDetails)
                 {
-                    var product = products.FirstOrDefault(p => p.ProductID == item.ProductItemID);
+                    var product = products.FirstOrDefault(p => p.ProductItemID == item.ProductItemID);
 
                     if (product == null)
                     {
-                        throw new KeyNotFoundException("product not found");
+                        throw new KeyNotFoundException($"ProductItem {item.ProductItemID} not found");
                     }
 
                     if (product.Quantity < item.Quantity)
                     {
-                        throw new InvalidOperationException($"Insufficient stock for Product {item.ProductItemID}. Available: {product.Quantity}, Requested: {item.Quantity}");
+                        throw new InvalidOperationException($"Insufficient stock for ProductItem {item.ProductItemID}. Available: {product.Quantity}, Requested: {item.Quantity}");
                     }
 
                     var orderDetail = new OrderDetail
