@@ -3,6 +3,7 @@ using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.UserModel;
 using iPhoneBE.Data.ViewModels.UserVM;
+using iPhoneBE.Service.Extensions;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -24,7 +25,7 @@ namespace iPhoneBE.Service.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public UserServices(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, IHttpContextAccessor httpContextAccessor , IUnitOfWork unitOfWork)
+        public UserServices(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper, IHttpContextAccessor httpContextAccessor, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -33,38 +34,18 @@ namespace iPhoneBE.Service.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<UserViewModel>> GetAllAsync()
+        public async Task<IEnumerable<UserViewModel>> GetAllAsync(string role)
         {
-            var claimsUser = _httpContextAccessor.HttpContext?.User; // Lấy ClaimsPrincipal từ HttpContext
-            if (claimsUser == null)
-            {
-                throw new UnauthorizedAccessException("Cannot retrieve user context.");
-            }
+            var usersQuery = _userManager.Users.Where(u => !u.IsDeleted);
 
-            var currentUserRole = claimsUser.FindFirst(ClaimTypes.Role)?.Value;
+            var users = await usersQuery.FilterByRoleAsync(role, _userManager);
 
-            if (string.IsNullOrEmpty(currentUserRole))
-            {
-                throw new UnauthorizedAccessException("User role not found.");
-            }
-
-            //if (currentUserRole != "Admin" && currentUserRole != "Staff")
-            //{
-            //    throw new UnauthorizedAccessException($"Access denied for role: {currentUserRole}");
-            //}
-
-            var users = await _userManager.Users.Where(u => !u.IsDeleted).ToListAsync();
             var userList = new List<UserViewModel>();
 
             foreach (var user in users)
             {
                 var userRoles = await _userManager.GetRolesAsync(user);
                 var userRole = userRoles.FirstOrDefault() ?? "No Role";
-
-                //if (currentUserRole == "Staff" && (userRole == "Admin" || userRole == "Staff"))
-                //{
-                //    continue; // Nếu user hiện tại là Staff, loại bỏ các user có role Admin hoặc Staff
-                //}
 
                 userList.Add(new UserViewModel
                 {
@@ -80,6 +61,8 @@ namespace iPhoneBE.Service.Services
 
             return userList;
         }
+
+
 
 
         public async Task<(User user, string role)> GetUserWithRoleAsync(string id)

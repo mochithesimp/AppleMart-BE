@@ -11,17 +11,56 @@ namespace iPhoneBE.Service.Extensions
             return query
                 .Include(o => o.ProductImgs.Where(img => !img.IsDeleted))
                 .Include(o => o.Product)
+                    .ThenInclude(p => p.Category)
                 .Include(o => o.ProductItemAttributes)
                     .ThenInclude(pia => pia.Attribute)
                 .Where(o => !o.IsDeleted);
         }
 
+        public static IQueryable<ProductItem> FilterByCategory(this IQueryable<ProductItem> query, int? categoryId)
+        {
+            return categoryId.HasValue
+                ? query.Where(p => p.Product.CategoryID == categoryId.Value)
+                : query;
+        }
+
+        public static IQueryable<ProductItem> FilterByProduct(this IQueryable<ProductItem> query, int? productId)
+        {
+            return productId.HasValue
+                ? query.Where(p => p.ProductID == productId.Value)
+                : query;
+        }
+
         public static IQueryable<ProductItem> FilterBySearchTerm(this IQueryable<ProductItem> query, string? searchTerm)
         {
             return !string.IsNullOrWhiteSpace(searchTerm)
-                ? query.Where(p => p.Name.Contains(searchTerm))
+                ? query.Where(p => p.Name.ToLower().Contains(searchTerm.ToLower()))
                 : query;
         }
+
+        public static IQueryable<ProductItemSummaryModel> GetTotalQuantityByCategoryAndProduct(
+            this IQueryable<ProductItem> query, int? categoryId = null, int? productId = null)
+        {
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.Product.CategoryID == categoryId.Value);
+            }
+
+            if (productId.HasValue)
+            {
+                query = query.Where(p => p.ProductID == productId.Value);
+            }
+
+            return query
+                .GroupBy(p => new { p.Product.CategoryID, p.ProductID })
+                .Select(g => new ProductItemSummaryModel
+                {
+                    CategoryId = g.Key.CategoryID,
+                    ProductId = g.Key.ProductID,
+                    TotalQuantity = g.Sum(p => p.Quantity)
+                });
+        }
+
 
         public static IQueryable<ProductItem> FilterByPriceRange(this IQueryable<ProductItem> query, decimal? minPrice, decimal? maxPrice)
         {

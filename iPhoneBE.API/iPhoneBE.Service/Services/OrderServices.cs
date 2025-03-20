@@ -201,6 +201,7 @@ namespace iPhoneBE.Service.Services
 
             bool isCustomer = await _userManager.IsInRoleAsync(user, RolesHelper.Customer);
             bool isStaff = await _userManager.IsInRoleAsync(user, RolesHelper.Staff);
+            bool isAdmin = await _userManager.IsInRoleAsync(user, RolesHelper.Admin);
             bool isShipper = await _userManager.IsInRoleAsync(user, RolesHelper.Shipper);
 
             // Kiểm tra quyền sở hữu đơn hàng trước khi cập nhật
@@ -221,9 +222,9 @@ namespace iPhoneBE.Service.Services
                 {
                     await HandleCustomerStatusChange(order, newStatus);
                 }
-                else if (isStaff)
+                else if (isStaff || isAdmin)
                 {
-                    await HandleStaffStatusChange(order, newStatus, shipperId);
+                    await HandleAdminStatusChange(order, newStatus, shipperId);
                 }
                 else if (isShipper)
                 {
@@ -271,7 +272,7 @@ namespace iPhoneBE.Service.Services
         }
 
 
-        private async Task HandleStaffStatusChange(Order order, string newStatus, string? shipperId)
+        private async Task HandleAdminStatusChange(Order order, string newStatus, string? shipperId)
         {
             var validTransitions = new Dictionary<string, List<string>>
             {
