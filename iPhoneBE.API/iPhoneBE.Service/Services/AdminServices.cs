@@ -3,6 +3,7 @@ using iPhoneBE.Data.Helper;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AdminModel;
+using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Data.ViewModels.ProductItemVM;
 using iPhoneBE.Service.Extensions;
 using iPhoneBE.Service.Interfaces;
@@ -128,6 +129,26 @@ namespace iPhoneBE.Service.Services
                 Month = model.Month,
                 Day = model.Day,
                 TopCustomers = topCustomers
+            };
+        }
+
+        public async Task<object> GetTotalProductItemsAsync(CategoryProductFilterModel filter)
+        {
+            var total = 0;
+
+            var totalQuantityData = await _unitOfWork.ProductItemRepository.GetAllQueryable()
+                .ApplyBaseQuery()
+                .GetTotalQuantityByCategoryAndProduct(filter.CategoryId, filter.ProductId)
+                .ToListAsync();
+
+            if (totalQuantityData != null)
+            {
+                total = totalQuantityData.Sum(t => t.TotalQuantity);
+            }
+
+            return new {
+                total = total,
+                totalQuantityData = totalQuantityData
             };
         }
 

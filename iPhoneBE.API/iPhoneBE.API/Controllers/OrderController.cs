@@ -68,7 +68,7 @@ namespace iPhoneBE.API.Controllers
 
         [HttpPut("{orderId}/status")]
         [Authorize]
-        public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromBody] string newStatus, [FromQuery] string? shipperId = null)
+        public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromQuery] UpdateOrderStatusModel model)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
@@ -89,12 +89,12 @@ namespace iPhoneBE.API.Controllers
                     OrderStatusHelper.Cancelled, OrderStatusHelper.RefundRequested, OrderStatusHelper.Refunded
                 };
 
-            if (!validStatuses.Contains(newStatus))
+            if (!validStatuses.Contains(model.NewStatus))
             {
-                return BadRequest(new { message = $"Invalid status '{newStatus}'. Allowed values: {string.Join(", ", validStatuses)}" });
+                return BadRequest(new { message = $"Invalid status '{model.NewStatus}'. Allowed values: {string.Join(", ", validStatuses)}" });
             }
 
-            bool result = await _orderServices.UpdateOrderStatusAsync(orderId, newStatus, user, shipperId);
+            bool result = await _orderServices.UpdateOrderStatusAsync(orderId, model.NewStatus, user, model.ShipperId);
 
             return result
                 ? Ok(new { message = "Order status updated successfully." })
