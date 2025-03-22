@@ -11,7 +11,6 @@ namespace iPhoneBE.Service.Extensions
             return query
                 .Include(o => o.ProductImgs.Where(img => !img.IsDeleted))
                 .Include(o => o.Product)
-                    .ThenInclude(p => p.Category)
                 .Include(o => o.ProductItemAttributes)
                     .ThenInclude(pia => pia.Attribute)
                 .Where(o => !o.IsDeleted);
