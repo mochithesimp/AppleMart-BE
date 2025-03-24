@@ -7,10 +7,12 @@ namespace iPhoneBE.Data.Models.ProductItemModel
         public string? SearchTerm { get; set; }
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
-        public string? PriceSort { get; set; } 
+        public string? PriceSort { get; set; }
         public List<string>? Colors { get; set; }
         public List<string>? RAMSizes { get; set; }
         public List<string>? ROMSizes { get; set; }
+        public int? CategoryId { get; set; }
+        //public string? CategoryName { get; set; }
 
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 10;

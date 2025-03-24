@@ -135,5 +135,12 @@ namespace iPhoneBE.Service.Extensions
                 TotalPages = totalPages
             };
         }
+
+        public static IQueryable<ProductItem> FilterByCategoryName(this IQueryable<ProductItem> query, string? categoryName)
+        {
+            return !string.IsNullOrWhiteSpace(categoryName)
+                ? query.Where(p => p.Product.Category.Name.ToLower() == categoryName.ToLower())
+                : query;
+        }
     }
 }
