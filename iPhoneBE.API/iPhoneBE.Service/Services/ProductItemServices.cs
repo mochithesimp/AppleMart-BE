@@ -24,7 +24,8 @@ namespace iPhoneBE.Service.Services
         {
             var query = _unitOfWork.ProductItemRepository.GetAllQueryable()
                 .ApplyBaseQuery()
-                .FilterByCategoryName(filter.CategoryName)
+                .FilterByCategory(filter.CategoryId)
+                //.FilterByCategoryName(filter.CategoryName)
                 .FilterBySearchTerm(filter.SearchTerm)
                 .FilterByPriceRange(filter.MinPrice, filter.MaxPrice)
                 .FilterByColors(filter.Colors)
