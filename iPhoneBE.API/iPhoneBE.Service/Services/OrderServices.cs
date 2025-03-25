@@ -1,9 +1,11 @@
-﻿using iPhoneBE.Data.Entities;
+﻿using AutoMapper;
+using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Helper;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AdminModel;
 using iPhoneBE.Data.Models.OrderModel;
+using iPhoneBE.Data.ViewModels.OrderVM;
 using iPhoneBE.Service.Extensions;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -20,11 +22,13 @@ namespace iPhoneBE.Service.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<User> _userManager;
+        private readonly IMapper _mapper;
 
-        public OrderServices(IUnitOfWork unitOfWork, UserManager<User> userManager)
+        public OrderServices(IUnitOfWork unitOfWork, UserManager<User> userManager, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
+            _mapper = mapper;
         }
 
         public async Task<object> GetOrdersAsync(Guid? userId, string? status, TimeModel model, string userRole, Guid currentUserId)
@@ -39,8 +43,7 @@ namespace iPhoneBE.Service.Services
             else if (userRole == "Shipper")
             {
                 // Nếu là Shipper, chỉ lấy đơn hàng mà họ đang giao (Shipped) hoặc đã giao thành công (delivered)
-                query = query.Where(o => o.ShipperID == currentUserId.ToString() &&
-                                 (o.OrderStatus == OrderStatusHelper.Shipped || o.OrderStatus == OrderStatusHelper.Delivered));
+                query = query.Where(o => o.ShipperID == currentUserId.ToString());
 
                 if (!string.IsNullOrEmpty(status) && !(status == OrderStatusHelper.Shipped || status == OrderStatusHelper.Delivered))
                 {
@@ -63,6 +66,7 @@ namespace iPhoneBE.Service.Services
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
 
+            var ordersView = _mapper.Map<List<OrderViewModel>>(orders);
             return new
             {
                 IsFiltered = model.Year.HasValue || model.Quarter.HasValue || model.Month.HasValue || model.Day.HasValue || !string.IsNullOrEmpty(status) || userId.HasValue,
@@ -72,7 +76,7 @@ namespace iPhoneBE.Service.Services
                 Day = model.Day,
                 Status = status,
                 UserId = userRole == "Customer" || userRole == "Shipper" ? currentUserId : userId,
-                Orders = orders
+                Orders = ordersView
             };
         }
 
@@ -95,7 +99,6 @@ namespace iPhoneBE.Service.Services
                 var order = new Order
                 {
                     UserID = model.UserID,
-                    ShipperID = (model.ShipperID == "string" || model.ShipperID == null) ? null : model.ShipperID,
                     OrderDate = model.OrderDate,
                     Address = model.Address,
                     PaymentMethod = model.PaymentMethod,
@@ -108,38 +111,6 @@ namespace iPhoneBE.Service.Services
 
                 var result = await _unitOfWork.OrderRepository.AddAsync(order);
                 await _unitOfWork.SaveChangesAsync();
-
-                //var productIds = model.OrderDetails.Select(od => od.ProductItemID).ToList();
-                //var products = await _unitOfWork.ProductItemRepository.GetAllAsync(p => productIds.Contains(p.ProductItemID));
-
-                //foreach (var item in model.OrderDetails)
-                //{
-                //    var product = products.FirstOrDefault(p => p.ProductID == item.ProductItemID);
-
-                //    if (product == null)
-                //    {
-                //        throw new KeyNotFoundException("product not found");
-                //    }
-
-                //    if (product.Quantity < item.Quantity)
-                //    {
-                //        throw new InvalidOperationException($"Insufficient stock for Product {item.ProductItemID}. Available: {product.Quantity}, Requested: {item.Quantity}");
-                //    }
-
-                //    var orderDetail = new OrderDetail
-                //    {
-                //        OrderID = result.OrderID,
-                //        ProductItemID = item.ProductItemID,
-                //        Price = item.Price,
-                //        Quantity = item.Quantity,
-                //        IsDeleted = false
-                //    };
-
-                //    await _unitOfWork.OrderDetailRepository.AddAsync(orderDetail);
-
-                //    product.Quantity -= item.Quantity;
-                //    await _unitOfWork.ProductItemRepository.Update(product);
-                //}
 
                 var productIds = model.OrderDetails.Select(od => od.ProductItemID).ToList();
                 var products = await _unitOfWork.ProductItemRepository.GetAllAsync(p => productIds.Contains(p.ProductItemID));
