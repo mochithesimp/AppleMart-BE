@@ -12,7 +12,6 @@ namespace iPhoneBE.Data.Models.OrderModel
     {
         [Required(ErrorMessage = "User ID is required.")]
         public string UserID { get; set; }
-        public string? ShipperID { get; set; }
 
         [Required(ErrorMessage = "Order date is required.")]
         public DateTime OrderDate { get; set; }
