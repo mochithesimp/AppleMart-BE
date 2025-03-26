@@ -1,8 +1,10 @@
 using AutoMapper;
+using iPhoneBE.Data.Helper;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Data.ViewModels.ProductItemVM;
 using iPhoneBE.Service.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iPhoneBE.API.Controllers
@@ -53,6 +55,8 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")]
+
         public async Task<ActionResult<ProductItemViewModel>> Add([FromBody] CreateProductItemModel createProductItem)
         {
             if (!ModelState.IsValid)
@@ -74,6 +78,8 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")]
+
         public async Task<IActionResult> Update(int id, [FromBody] UpdateProductItemModel updateProductItem)
         {
             if (!ModelState.IsValid)
@@ -85,6 +91,8 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")]
+
         public async Task<IActionResult> Delete(int id)
         {
             var deletedProductItem = await _productItemServices.DeleteAsync(id);

@@ -8,6 +8,7 @@ using iPhoneBE.Service.Extensions;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -121,7 +122,7 @@ namespace iPhoneBE.Service.Services
         }
 
         //soft deleted
-        public async Task<UserViewModel> DeleteAsync(string id)
+        public async Task<UserViewModel> IsActiveAsync(string id, bool isActive)
         {
             await _unitOfWork.BeginTransactionAsync();
             try
@@ -130,8 +131,17 @@ namespace iPhoneBE.Service.Services
                 if (user == null)
                     throw new KeyNotFoundException($"User with ID {id} not found.");
 
-                user.IsDeleted = true;
-                var result = await _userManager.UpdateAsync(user);
+                IdentityResult result;
+                if (isActive)
+                {
+                    user.IsDeleted = false;
+                    result = await _userManager.UpdateAsync(user);
+                }
+                else
+                {
+                    user.IsDeleted = true;
+                    result = await _userManager.UpdateAsync(user);
+                }
 
                 if (!result.Succeeded)
                 {
@@ -154,6 +164,7 @@ namespace iPhoneBE.Service.Services
                 throw;
             }
         }
+
 
         public async Task<UserViewModel> ChangeUserRoleAsync(string userId, string newRole)
         {

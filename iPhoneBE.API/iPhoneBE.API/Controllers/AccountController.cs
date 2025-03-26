@@ -49,11 +49,6 @@ namespace iPhoneBE.API.Controllers
 
             var result = await _accountServices.LoginAsync(model);
 
-            if (result == null)
-            {
-                return Unauthorized();
-            }
-
             return Ok(result);
         }
 

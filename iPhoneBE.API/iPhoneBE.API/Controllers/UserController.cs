@@ -67,7 +67,14 @@ namespace iPhoneBE.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            var deletedUser = await _userServices.DeleteAsync(id);
+            var deletedUser = await _userServices.IsActiveAsync(id, false);
+            return Ok(deletedUser);
+        }
+
+        [HttpPut("{id}/change-status")]
+        public async Task<IActionResult> ActiveUser(string id)
+        {
+            var deletedUser = await _userServices.IsActiveAsync(id, true);
             return Ok(deletedUser);
         }
 
