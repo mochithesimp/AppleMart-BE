@@ -33,6 +33,7 @@ namespace iPhoneBE.Service
             service.AddScoped<INotificationServices, NotificationServices>();
             service.AddScoped<IProductImgServices, ProductImgServices>();
             service.AddScoped<IPaypalTransactionServices, PaypalTransactionServices>();
+            service.AddScoped<IReviewServices, ReviewServices>();
 
             return service;
         }

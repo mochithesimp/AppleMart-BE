@@ -35,6 +35,34 @@ namespace iPhoneBE.Service.Services
             _unitOfWork = unitOfWork;
         }
 
+        public async Task<User> GetByIdAsync(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null || user.IsDeleted)
+                throw new KeyNotFoundException($"User with ID {id} not found.");
+
+            return user;
+        }
+
+        public async Task<IEnumerable<User>> GetShippersAsync()
+        {
+            var shippers = new List<User>();
+
+            var allUsers = await _userManager.Users
+                .Where(u => !u.IsDeleted)
+                .ToListAsync();
+
+            foreach (var user in allUsers)
+            {
+                if (await _userManager.IsInRoleAsync(user, RolesHelper.Shipper))
+                {
+                    shippers.Add(user);
+                }
+            }
+
+            return shippers;
+        }
+
         public async Task<IEnumerable<UserViewModel>> GetAllAsync(string role)
         {
             var usersQuery = _userManager.Users.Where(u => !u.IsDeleted);

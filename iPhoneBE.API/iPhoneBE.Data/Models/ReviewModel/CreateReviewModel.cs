@@ -15,11 +15,17 @@ namespace iPhoneBE.Data.Models.ReviewModel
 
         public string? ShipperID { get; set; }
 
-        [Required(ErrorMessage = "Rating is required.")]
-        [Range(1, 5, ErrorMessage = "Rating must be between 1 and 5.")]
-        public int Rating { get; set; }
+        [Required(ErrorMessage = "Product rating is required.")]
+        [Range(1, 5, ErrorMessage = "Product rating must be between 1 and 5.")]
+        public int ProductRating { get; set; }
 
-        [MaxLength(1000, ErrorMessage = "Comment cannot exceed 1000 characters.")]
-        public string? Comment { get; set; }
+        [Range(1, 5, ErrorMessage = "Shipper rating must be between 1 and 5.")]
+        public int? ShipperRating { get; set; }
+
+        [MaxLength(1000, ErrorMessage = "Product comment cannot exceed 1000 characters.")]
+        public string? ProductComment { get; set; }
+
+        [MaxLength(1000, ErrorMessage = "Shipper comment cannot exceed 1000 characters.")]
+        public string? ShipperComment { get; set; }
     }
 }

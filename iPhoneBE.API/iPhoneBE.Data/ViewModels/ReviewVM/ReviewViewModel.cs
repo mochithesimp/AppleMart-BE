@@ -8,9 +8,35 @@ namespace iPhoneBE.Data.ViewModels.ReviewVM
         public int ProductItemID { get; set; }
         public string? ShipperID { get; set; }
         public DateTime Date { get; set; }
-        public int Rating { get; set; }
-        public string? Comment { get; set; }
+        public int? ProductRating { get; set; }
+        public int? ShipperRating { get; set; }
+        public string? ProductComment { get; set; }
+        public string? ShipperComment { get; set; }
         public string UserName { get; set; }
         public string? ShipperName { get; set; }
+    }
+
+    public class RatingStatisticsViewModel
+    {
+        public double AverageRating { get; set; }
+        public int TotalReviewers { get; set; }
+    }
+
+    public class ProductRatingViewModel
+    {
+        public int ProductItemID { get; set; }
+        public string ProductName { get; set; }
+        public double AverageRating { get; set; }
+        public int TotalReviewers { get; set; }
+        public List<ReviewViewModel> Reviews { get; set; } = new List<ReviewViewModel>();
+    }
+
+    public class ShipperRatingViewModel
+    {
+        public string ShipperID { get; set; }
+        public string ShipperName { get; set; }
+        public double AverageRating { get; set; }
+        public int TotalReviewers { get; set; }
+        public List<ReviewViewModel> Reviews { get; set; } = new List<ReviewViewModel>();
     }
 }
