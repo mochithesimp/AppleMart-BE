@@ -15,6 +15,7 @@ namespace iPhoneBE.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class OrderController : ControllerBase
     {
         private readonly IOrderServices _orderServices;

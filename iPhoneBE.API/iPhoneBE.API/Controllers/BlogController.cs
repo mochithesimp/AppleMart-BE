@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using iPhoneBE.Data.Entities;
+using iPhoneBE.Data.Helper;
 using iPhoneBE.Data.Models.BlogModel;
 using iPhoneBE.Data.ViewModels.BlogVM;
 using iPhoneBE.Service.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -44,6 +46,7 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")]
         public async Task<ActionResult<BlogViewModel>> Add([FromBody] CreateBlogModel createBlog)
         {
             if (!ModelState.IsValid)
@@ -68,6 +71,7 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateBlogModel updateBlog)
         {
             if (!ModelState.IsValid)
@@ -78,6 +82,7 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")]
         public async Task<IActionResult> Delete(int id)
         {
             var deletedBlog = await _blogServices.DeleteAsync(id);

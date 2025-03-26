@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using iPhoneBE.Data.Models.ProductImgModel;
 using iPhoneBE.Data.ViewModels.ProductItemVM;
 using iPhoneBE.Service.Services;
+using iPhoneBE.Data.Helper;
+using Microsoft.AspNetCore.Authorization;
 
 namespace iPhoneBE.API.Controllers
 {
@@ -40,6 +42,7 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")]
         public async Task<IActionResult> AddMultipleImages([FromBody] CreateProductImgModel model)
         {
             try

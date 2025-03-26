@@ -57,7 +57,7 @@ namespace iPhoneBE.API.Controllers
 
 
         [HttpPost()]
-        //[Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")]
+        [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")]
         public async Task<ActionResult<Category>> Add([FromBody] CreateCategoryModel Createcategory)
         {
             if (!ModelState.IsValid)
@@ -77,6 +77,7 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryModel updateCategory)
         {
             if (!ModelState.IsValid)
@@ -89,6 +90,7 @@ namespace iPhoneBE.API.Controllers
 
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var deletedCategory = await _categoryServices.DeleteAsync(id);

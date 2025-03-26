@@ -4,6 +4,7 @@ using iPhoneBE.Data.Models.OrderModel;
 using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Service.Interfaces;
 using iPhoneBE.Service.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -12,6 +13,7 @@ namespace iPhoneBE.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")] 
     public class AdminController : ControllerBase
     {
         private readonly IAdminServices _adminServices;

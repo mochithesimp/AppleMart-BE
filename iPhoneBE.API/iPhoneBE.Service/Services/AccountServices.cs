@@ -43,11 +43,12 @@ namespace iPhoneBE.Service.Services
         {
 
             var existingUser = await _userManager.FindByEmailAsync(model.Email);
-            if (existingUser == null) return null;
+            if (existingUser == null) throw new UnauthorizedAccessException("Invalid email or password");
 
             var isCorrect = await _userManager.CheckPasswordAsync(existingUser, model.Password);
-            if (!isCorrect) return null;
+            if (!isCorrect) throw new UnauthorizedAccessException("Invalid email or password");
 
+            if (existingUser.IsDeleted == true) throw new UnauthorizedAccessException("You have been banned");
 
             var accessToken = await CreateAccessToken(existingUser);
             var refreshToken = await CreateRefreshToken(existingUser);
