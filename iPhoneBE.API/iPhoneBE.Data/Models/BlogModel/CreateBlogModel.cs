@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using iPhoneBE.Data.Models.BlogImageModel;
+using System.Text.Json.Serialization;
 
 namespace iPhoneBE.Data.Models.BlogModel
 {
@@ -17,7 +18,8 @@ namespace iPhoneBE.Data.Models.BlogModel
         [Required(ErrorMessage = "Product ID is required.")]
         public int ProductId { get; set; }
 
-        public bool IsDeleted { get; set; } = false;
+        [JsonIgnore]
+        public bool IsDeleted { get; private set; } = false;
 
         public List<CreateBlogImageModel> BlogImages { get; set; } = new List<CreateBlogImageModel>();
     }

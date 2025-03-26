@@ -68,32 +68,42 @@ namespace iPhoneBE.Service.Services
                 blog.View = 0;
                 blog.Like = 0;
 
+                var blogImages = blog.BlogImages?.ToList();
+                blog.BlogImages = null;
+
                 var result = await _unitOfWork.BlogRepository.AddAsync(blog);
+                await _unitOfWork.SaveChangesAsync();
 
                 bool IsInvalid(string value) => string.IsNullOrWhiteSpace(value) || value == "string";
 
-                if (blog.BlogImages != null && blog.BlogImages.Any() && blog.BlogImages.ToString() != "string")
+                if (blogImages != null && blogImages.Any())
                 {
-                    var validImages = blog.BlogImages
+                    var validImages = blogImages
                         .Where(img => !IsInvalid(img.ImageUrl))
                         .ToList();
 
                     foreach (var image in validImages)
                     {
-                        image.BlogId = result.BlogID;
-                        await _unitOfWork.BlogImageRepository.AddAsync(image);
+                        var blogImage = new BlogImage
+                        {
+                            BlogId = result.BlogID,
+                            ImageUrl = image.ImageUrl,
+                            IsDeleted = false
+                        };
+                        await _unitOfWork.BlogImageRepository.AddAsync(blogImage);
                     }
+
+                    await _unitOfWork.SaveChangesAsync();
                 }
 
-                await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
-                return result;
+                return await GetByIdAsync(result.BlogID);
             }
-            catch
+            catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw;
+                throw new Exception($"Failed to save blog: {ex.Message}", ex);
             }
         }
 
