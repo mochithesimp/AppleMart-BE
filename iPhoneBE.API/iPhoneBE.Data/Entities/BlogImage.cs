@@ -15,7 +15,7 @@ namespace iPhoneBE.Data.Entities
         [Key]
         public int BlogImageID { get; set; }
         public string ImageUrl { get; set; }
-        public bool IsDeleted { get; set; }
+        public bool IsDeleted { get; set; } = false;
 
         [ForeignKey("BlogId")]
         public int BlogId { get; set; }

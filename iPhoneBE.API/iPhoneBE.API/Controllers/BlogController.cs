@@ -44,12 +44,18 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<BlogViewModel>> Add([FromForm] CreateBlogModel createBlog)
+        public async Task<ActionResult<BlogViewModel>> Add([FromBody] CreateBlogModel createBlog)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
+                return BadRequest(new { errors });
+            }
 
             var blog = _mapper.Map<Blog>(createBlog);
+
 
             if (blog == null)
                 return BadRequest("Invalid blog data.");
