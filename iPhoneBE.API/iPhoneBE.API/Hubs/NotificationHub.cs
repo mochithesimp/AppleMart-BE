@@ -209,7 +209,6 @@ namespace iPhoneBE.API.Hubs
             {
                 _logger.LogInformation($"Sending order notification from {customerName} for order {orderId}");
 
-                // Find all admins and staff
                 var adminUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Admin);
                 var staffUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Staff);
 
@@ -217,7 +216,6 @@ namespace iPhoneBE.API.Hubs
 
                 var adminAndStaffUsers = adminUsers.Union(staffUsers).ToList();
 
-                // Create and send notifications to each admin/staff
                 foreach (var user in adminAndStaffUsers)
                 {
                     var header = "New Order Placed";
@@ -246,7 +244,6 @@ namespace iPhoneBE.API.Hubs
             {
                 _logger.LogInformation($"Sending order cancellation notification from {customerName} for order {orderId}");
 
-                // Find all admins and staff
                 var adminUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Admin);
                 var staffUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Staff);
 
@@ -254,7 +251,6 @@ namespace iPhoneBE.API.Hubs
 
                 var adminAndStaffUsers = adminUsers.Union(staffUsers).ToList();
 
-                // Create and send notifications to each admin/staff
                 foreach (var user in adminAndStaffUsers)
                 {
                     var header = "Order Cancelled";
@@ -283,14 +279,12 @@ namespace iPhoneBE.API.Hubs
             {
                 _logger.LogInformation($"Sending direct notification to user {userId} with header: {header}");
 
-                // Validate that the user exists
                 var user = await _userManager.FindByIdAsync(userId);
                 if (user == null)
                 {
                     throw new HubException($"User with ID {userId} not found");
                 }
 
-                // Create and send the notification
                 var notification = await _notificationService.CreateNotification(userId, header, content);
 
                 await Clients.Group($"User_{userId}").SendAsync("ReceiveNotification", notification);
