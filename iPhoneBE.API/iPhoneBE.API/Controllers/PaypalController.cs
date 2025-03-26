@@ -3,6 +3,7 @@ using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Models.PaypalModel;
 using iPhoneBE.Data.ViewModels.PaypalVM;
 using iPhoneBE.Service.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace iPhoneBE.API.Controllers
@@ -81,6 +82,29 @@ namespace iPhoneBE.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("transaction/{id}/refund")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<PaypalTransactionViewModel>> ProcessRefund(int id)
+        {
+            try
+            {
+                var transaction = await _paypalTransactionServices.ProcessRefundAsync(id);
+                return Ok(_mapper.Map<PaypalTransactionViewModel>(transaction));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to process refund", details = ex.Message });
             }
         }
     }
