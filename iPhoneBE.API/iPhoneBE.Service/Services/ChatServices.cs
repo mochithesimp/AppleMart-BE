@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Linq.Expressions;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.ViewModels.ChatVM;
+using Microsoft.AspNetCore.Identity;
 
 namespace iPhoneBE.Service.Services
 {
@@ -20,13 +21,15 @@ namespace iPhoneBE.Service.Services
         private readonly IMapper _mapper;
         private readonly Dictionary<string, bool> _onlineUsers;
         private readonly INotificationServices _notificationServices;
+        private readonly UserManager<User> _userManager;
 
-        public ChatServices(IUnitOfWork unitOfWork, IMapper mapper, INotificationServices notificationServices)
+        public ChatServices(IUnitOfWork unitOfWork, IMapper mapper, INotificationServices notificationServices, UserManager<User> userManager)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _onlineUsers = new Dictionary<string, bool>();
             _notificationServices = notificationServices;
+            _userManager = userManager;
         }
 
         public async Task<List<ChatRoomViewModel>> GetUserChatRooms(string userId)
@@ -221,9 +224,15 @@ namespace iPhoneBE.Service.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                var otherUser = await _unitOfWork.UserRepository.GetSingleByConditionAsynce(u => u.Id == userId2);
+                if (otherUser == null)
+                {
+                    throw new KeyNotFoundException($"User with ID {userId2} not found.");
+                }
+
                 var chatRoom = new ChatRoom
                 {
-                    RoomName = "Private Chat",
+                    RoomName = $"Private Chat with {otherUser.UserName}",
                     IsGroup = false,
                     CreatedDate = DateTime.UtcNow,
                     ChatParticipants = new List<ChatParticipant>
@@ -334,16 +343,25 @@ namespace iPhoneBE.Service.Services
         public async Task<List<ChatParticipantViewModel>> GetOnlineUsers()
         {
             var users = await _unitOfWork.UserRepository.GetAllAsync();
+            var nonAdminUsers = new List<ChatParticipantViewModel>();
 
-            return users.Select(u => new ChatParticipantViewModel
+            foreach (var user in users)
             {
-                ID = 0,
-                UserID = u.Id,
-                UserName = u.UserName,
-                IsOnline = _onlineUsers.ContainsKey(u.Id) && _onlineUsers[u.Id]
-            }).ToList();
-        }
+                var roles = await _userManager.GetRolesAsync(user);
+                if (!roles.Contains("Admin"))
+                {
+                    nonAdminUsers.Add(new ChatParticipantViewModel
+                    {
+                        ID = 0,
+                        UserID = user.Id,
+                        UserName = user.UserName,
+                        IsOnline = _onlineUsers.ContainsKey(user.Id) && _onlineUsers[user.Id]
+                    });
+                }
+            }
 
+            return nonAdminUsers;
+        }
 
         public async Task UpdateUserOnlineStatus(string userId, bool isOnline)
         {
