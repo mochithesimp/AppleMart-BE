@@ -21,12 +21,24 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductItemAttributeViewModel>>> GetAll()
+        public async Task<ActionResult<IEnumerable<ProductItemAttributeViewModel>>> GetAll([FromQuery] ProductItemAttributeFilterModel filter)
         {
             try
             {
-                var productItemAttributes = await _productItemAttributeServices.GetAllAsync();
-                return Ok(_mapper.Map<List<ProductItemAttributeViewModel>>(productItemAttributes));
+                if (filter == null)
+                {
+                    filter = new ProductItemAttributeFilterModel();
+                }
+
+                var productItemAttributes = await _productItemAttributeServices.GetAllAsync(filter);
+                return Ok(new
+                {
+                    Items = _mapper.Map<List<ProductItemAttributeViewModel>>(productItemAttributes.Items),
+                    TotalItems = productItemAttributes.TotalItems,
+                    PageNumber = productItemAttributes.PageNumber,
+                    PageSize = productItemAttributes.PageSize,
+                    TotalPages = productItemAttributes.TotalPages
+                });
             }
             catch (Exception ex)
             {
