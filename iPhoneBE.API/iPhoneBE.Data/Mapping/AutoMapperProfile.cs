@@ -12,6 +12,7 @@ using iPhoneBE.Data.Models.ProductImgModel;
 using iPhoneBE.Data.Models.ProductItemAttributeModel;
 using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Data.Models.ProductModel;
+using iPhoneBE.Data.Models.ReviewModel;
 using iPhoneBE.Data.Models.UserModel;
 using iPhoneBE.Data.ViewModels.AttributeVM;
 using iPhoneBE.Data.ViewModels.BlogVM;
@@ -24,6 +25,7 @@ using iPhoneBE.Data.ViewModels.ProductImgVM;
 using iPhoneBE.Data.ViewModels.ProductItemAttributeVM;
 using iPhoneBE.Data.ViewModels.ProductItemVM;
 using iPhoneBE.Data.ViewModels.ProductVM;
+using iPhoneBE.Data.ViewModels.ReviewVM;
 using iPhoneBE.Data.ViewModels.UserVM;
 
 namespace iPhoneBE.Data.Mapping
@@ -43,6 +45,14 @@ namespace iPhoneBE.Data.Mapping
             CreateMap<ProductItemAttribute, ProductItemAttributeViewModel>().ReverseMap();
             CreateMap<ProductItemAttribute, CreateProductItemAttributeModel>().ReverseMap();
             CreateMap<ProductItemAttribute, UpdateProductItemAttributeModel>().ReverseMap();
+
+            // Review mappings
+            CreateMap<Review, ReviewViewModel>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name))
+                .ForMember(dest => dest.ShipperName, opt => opt.MapFrom(src => src.Shipper != null ? src.Shipper.Name : null));
+
+            CreateMap<CreateReviewModel, Review>()
+                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false));
 
             CreateMap<Product, ProductViewModel>().ReverseMap();
             CreateMap<Product, CreateProductModel>().ReverseMap();
