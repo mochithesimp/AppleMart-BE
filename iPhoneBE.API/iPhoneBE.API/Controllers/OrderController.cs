@@ -81,7 +81,6 @@ namespace iPhoneBE.API.Controllers
             var order = await _orderServices.AddAsync(model);
             var orderViewModel = _mapper.Map<OrderViewModel>(order);
 
-            // Send notification to admin and staff users from the server side
             try
             {
                 var customerName = "Unknown";
@@ -95,7 +94,6 @@ namespace iPhoneBE.API.Controllers
                     }
                 }
 
-                // Find all admins and staff
                 var adminUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Admin);
                 var staffUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Staff);
 
@@ -120,7 +118,6 @@ namespace iPhoneBE.API.Controllers
             }
             catch (Exception ex)
             {
-                // Log but don't fail the order if notification fails
                 Console.WriteLine($"Error sending order notification: {ex.Message}");
             }
 
@@ -157,21 +154,24 @@ namespace iPhoneBE.API.Controllers
 
             bool result = await _orderServices.UpdateOrderStatusAsync(orderId, model.NewStatus, user, model.ShipperId);
 
-            // Send notifications based on order status changes
             if (result)
             {
+                var responseDict = new Dictionary<string, object>
+                {
+                    { "message", "Order status updated successfully." },
+                    { "userId", string.Empty }
+                };
+
                 try
                 {
-                    // Get the order to get user information
                     var order = await _orderServices.GetByIdAsync(orderId);
                     var customerUser = await _userManager.FindByIdAsync(order.UserID);
                     var customerName = customerUser?.UserName ?? customerUser?.Email ?? "Unknown Customer";
 
-                    // Send appropriate notifications based on the new status
+                    responseDict["userId"] = order.UserID;
+
                     if (model.NewStatus == OrderStatusHelper.Cancelled)
                     {
-                        // Already handled in the existing code
-                        // Notify admins and staff about cancellation
                         var adminUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Admin);
                         var staffUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Staff);
 
@@ -194,7 +194,6 @@ namespace iPhoneBE.API.Controllers
                             );
                         }
 
-                        // Also notify the customer
                         if (customerUser != null)
                         {
                             var header = "Order Cancelled";
@@ -216,7 +215,6 @@ namespace iPhoneBE.API.Controllers
                     }
                     else if (model.NewStatus == OrderStatusHelper.Processing)
                     {
-                        // Notify the customer that their order has been confirmed
                         if (customerUser != null)
                         {
                             var header = "Order Confirmed";
@@ -238,11 +236,22 @@ namespace iPhoneBE.API.Controllers
                     }
                     else if (model.NewStatus == OrderStatusHelper.Shipped)
                     {
-                        // Notify the customer that their order has been shipped
+                        var shipperUser = await _userManager.FindByIdAsync(model.ShipperId);
+                        var shipperName = shipperUser?.UserName ?? "Unknown";
+                        var shipperPhone = shipperUser?.PhoneNumber ?? "N/A";
+
+                        responseDict["shipperName"] = shipperName;
+                        responseDict["shipperPhone"] = shipperPhone;
+
                         if (customerUser != null)
                         {
                             var header = "Order Shipped";
                             var content = $"Dear customer, your Order (ID: {orderId}) has been shipped and is on its way to you.";
+
+                            if (shipperUser != null)
+                            {
+                                content = $"Dear customer, your Order (ID: {orderId}) has been assigned to shipper {shipperName} (Phone: {shipperPhone}). Your package is on its way to you!";
+                            }
 
                             var notification = await _notificationServices.CreateNotification(order.UserID, header, content);
 
@@ -258,17 +267,110 @@ namespace iPhoneBE.API.Controllers
                             );
                         }
                     }
+                    else if (model.NewStatus == OrderStatusHelper.Delivered)
+                    {
+                        var shipperUser = await _userManager.FindByIdAsync(model.ShipperId);
+                        var shipperName = shipperUser?.UserName ?? "Unknown";
+                        var shipperPhone = shipperUser?.PhoneNumber ?? "N/A";
+
+                        responseDict["shipperName"] = shipperName;
+                        responseDict["shipperPhone"] = shipperPhone;
+
+                        if (customerUser != null)
+                        {
+                            var header = "Order Delivered";
+                            var content = $"Dear customer, your Order (ID: {orderId}) has been delivered. Please accept it in your Orders page if everything is in good condition.";
+
+                            if (shipperUser != null)
+                            {
+                                content = $"Dear customer, your Order (ID: {orderId}) has been delivered by {shipperName}. Please accept it in your Orders page if everything is in good condition.";
+                            }
+
+                            var notification = await _notificationServices.CreateNotification(order.UserID, header, content);
+
+                            await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
+                                "ReceiveNotification",
+                                notification
+                            );
+
+                            var unreadCount = await _notificationServices.GetUnreadCount(order.UserID);
+                            await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
+                                "UpdateUnreadCount",
+                                unreadCount
+                            );
+                        }
+                    }
+                    else if (model.NewStatus == OrderStatusHelper.Completed)
+                    {
+                        if (!string.IsNullOrEmpty(order.ShipperID))
+                        {
+                            var shipperUser = await _userManager.FindByIdAsync(order.ShipperID);
+                            if (shipperUser != null)
+                            {
+                                var shipperName = shipperUser.UserName ?? "Unknown";
+                                responseDict["shipperName"] = shipperName;
+                                responseDict["shipperPhone"] = shipperUser.PhoneNumber ?? "N/A";
+                            }
+                        }
+
+                        responseDict["shipperId"] = order.ShipperID;
+
+                        var adminUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Admin);
+                        var staffUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Staff);
+
+                        foreach (var adminStaffUser in adminUsers.Union(staffUsers))
+                        {
+                            var header = "Order Completed";
+                            var content = $"Order #{orderId} for customer {customerName} has been confirmed as received. Delivery completed successfully.";
+
+                            var notification = await _notificationServices.CreateNotification(adminStaffUser.Id, header, content);
+
+                            await _notificationHub.Clients.Group($"User_{adminStaffUser.Id}").SendAsync(
+                                "ReceiveNotification",
+                                notification
+                            );
+
+                            var unreadCount = await _notificationServices.GetUnreadCount(adminStaffUser.Id);
+                            await _notificationHub.Clients.Group($"User_{adminStaffUser.Id}").SendAsync(
+                                "UpdateUnreadCount",
+                                unreadCount
+                            );
+                        }
+
+                        if (!string.IsNullOrEmpty(order.ShipperID))
+                        {
+                            var shipperUser = await _userManager.FindByIdAsync(order.ShipperID);
+
+                            if (shipperUser != null)
+                            {
+                                var header = "Order Completed";
+                                var content = $"Dear Shipper {shipperUser.UserName}, customer {customerName} has confirmed the receipt of Order #{orderId}. Thank you for your service!";
+
+                                var notification = await _notificationServices.CreateNotification(order.ShipperID, header, content);
+
+                                await _notificationHub.Clients.Group($"User_{order.ShipperID}").SendAsync(
+                                    "ReceiveNotification",
+                                    notification
+                                );
+
+                                var unreadCount = await _notificationServices.GetUnreadCount(order.ShipperID);
+                                await _notificationHub.Clients.Group($"User_{order.ShipperID}").SendAsync(
+                                    "UpdateUnreadCount",
+                                    unreadCount
+                                );
+                            }
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // Log but don't fail the order update if notification fails
                     Console.WriteLine($"Error sending order status notification: {ex.Message}");
                 }
+
+                return Ok(responseDict);
             }
 
-            return result
-                ? Ok(new { message = "Order status updated successfully." })
-                : BadRequest(new { message = "Failed to update order status." });
+            return BadRequest(new { message = "Failed to update order status." });
         }
 
     }
