@@ -14,6 +14,11 @@ namespace iPhoneBE.Service
     {
         public static IServiceCollection AddServices(this IServiceCollection service)
         {
+            // Add HttpClient and PayPalService
+            service.AddHttpClient();
+            service.AddScoped<PayPalService>();
+
+            // Existing service registrations
             service.AddScoped<ICategoryServices, CategoryServices>();
             service.AddScoped<IAccountServices, AccountServices>();
             service.AddScoped<IUserServices, UserServices>();
