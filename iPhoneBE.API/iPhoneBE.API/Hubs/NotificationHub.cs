@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Authorization;
 using iPhoneBE.Service.Interfaces;
 using iPhoneBE.Data.Entities;
 using System.Collections.Concurrent;
+using iPhoneBE.Data.Helper;
+using Microsoft.AspNetCore.Identity;
+using iPhoneBE.Data.Model;
 
 namespace iPhoneBE.API.Hubs
 {
@@ -12,14 +15,17 @@ namespace iPhoneBE.API.Hubs
     {
         private readonly INotificationServices _notificationService;
         private readonly ILogger<NotificationHub> _logger;
+        private readonly UserManager<User> _userManager;
         private static readonly ConcurrentDictionary<string, HashSet<string>> _userConnections = new();
 
         public NotificationHub(
             INotificationServices notificationService,
-            ILogger<NotificationHub> logger)
+            ILogger<NotificationHub> logger,
+            UserManager<User> userManager)
         {
             _notificationService = notificationService;
             _logger = logger;
+            _userManager = userManager;
         }
 
         public async Task LoadNotifications()
@@ -195,6 +201,112 @@ namespace iPhoneBE.API.Hubs
             var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             _logger.LogInformation($"Echo received from user {userId}: {message}");
             await Clients.Caller.SendAsync("EchoResponse", $"Server received: {message}");
+        }
+
+        public async Task SendNewOrderNotification(string customerName, string orderId)
+        {
+            try
+            {
+                _logger.LogInformation($"Sending order notification from {customerName} for order {orderId}");
+
+                // Find all admins and staff
+                var adminUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Admin);
+                var staffUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Staff);
+
+                _logger.LogInformation($"Found {adminUsers.Count} admins and {staffUsers.Count} staff to notify");
+
+                var adminAndStaffUsers = adminUsers.Union(staffUsers).ToList();
+
+                // Create and send notifications to each admin/staff
+                foreach (var user in adminAndStaffUsers)
+                {
+                    var header = "New Order Placed";
+                    var content = $"Customer {customerName} has placed a new order (ID: {orderId})";
+
+                    var notification = await _notificationService.CreateNotification(user.Id, header, content);
+
+                    await Clients.Group($"User_{user.Id}").SendAsync("ReceiveNotification", notification);
+
+                    var unreadCount = await _notificationService.GetUnreadCount(user.Id);
+                    await Clients.Group($"User_{user.Id}").SendAsync("UpdateUnreadCount", unreadCount);
+
+                    _logger.LogInformation($"Sent order notification to {user.UserName} (ID: {user.Id})");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending order notification for order {orderId}");
+                throw new HubException($"Failed to send order notification: {ex.Message}");
+            }
+        }
+
+        public async Task SendOrderCancellationNotification(string customerName, string orderId)
+        {
+            try
+            {
+                _logger.LogInformation($"Sending order cancellation notification from {customerName} for order {orderId}");
+
+                // Find all admins and staff
+                var adminUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Admin);
+                var staffUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Staff);
+
+                _logger.LogInformation($"Found {adminUsers.Count} admins and {staffUsers.Count} staff to notify about cancellation");
+
+                var adminAndStaffUsers = adminUsers.Union(staffUsers).ToList();
+
+                // Create and send notifications to each admin/staff
+                foreach (var user in adminAndStaffUsers)
+                {
+                    var header = "Order Cancelled";
+                    var content = $"Customer {customerName} has cancelled order (ID: {orderId})";
+
+                    var notification = await _notificationService.CreateNotification(user.Id, header, content);
+
+                    await Clients.Group($"User_{user.Id}").SendAsync("ReceiveNotification", notification);
+
+                    var unreadCount = await _notificationService.GetUnreadCount(user.Id);
+                    await Clients.Group($"User_{user.Id}").SendAsync("UpdateUnreadCount", unreadCount);
+
+                    _logger.LogInformation($"Sent order cancellation notification to {user.UserName} (ID: {user.Id})");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending order cancellation notification for order {orderId}");
+                throw new HubException($"Failed to send order cancellation notification: {ex.Message}");
+            }
+        }
+
+        public async Task SendDirectNotification(string userId, string header, string content)
+        {
+            try
+            {
+                _logger.LogInformation($"Sending direct notification to user {userId} with header: {header}");
+
+                // Validate that the user exists
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    throw new HubException($"User with ID {userId} not found");
+                }
+
+                // Create and send the notification
+                var notification = await _notificationService.CreateNotification(userId, header, content);
+
+                await Clients.Group($"User_{userId}").SendAsync("ReceiveNotification", notification);
+
+                var unreadCount = await _notificationService.GetUnreadCount(userId);
+                await Clients.Group($"User_{userId}").SendAsync("UpdateUnreadCount", unreadCount);
+
+                _logger.LogInformation($"Successfully sent direct notification to user {userId}");
+
+                return;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending direct notification to user {userId}");
+                throw new HubException($"Failed to send direct notification: {ex.Message}");
+            }
         }
 
         private static HashSet<string> GetUserConnections(string userId)
