@@ -11,5 +11,6 @@ namespace iPhoneBE.Service.Interfaces
         Task<IEnumerable<UserViewModel>> GetAllAsync(string role);
         Task<(User user, string role)> GetUserWithRoleAsync(string id);
         Task<UserViewModel> UpdateAsync(string id, UserModel updatedUser);
+        Task<UserViewModel> ChangeUserRoleAsync(string userId, string newRole);
     }
 }

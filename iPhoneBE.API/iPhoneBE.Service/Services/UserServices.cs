@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using iPhoneBE.Data.Helper;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.UserModel;
@@ -144,6 +145,49 @@ namespace iPhoneBE.Service.Services
 
                 var userViewModel = _mapper.Map<UserViewModel>(user);
                 userViewModel.Role = userRoles.FirstOrDefault() ?? "No Role";
+
+                return userViewModel;
+            }
+            catch
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
+        public async Task<UserViewModel> ChangeUserRoleAsync(string userId, string newRole)
+        {
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                    throw new KeyNotFoundException($"User with ID {userId} not found.");
+
+                var currentRoles = await _userManager.GetRolesAsync(user);
+
+                if (currentRoles.Contains(RolesHelper.Admin))
+                    throw new InvalidOperationException("Cannot change Admin role.");
+
+                if (newRole == RolesHelper.Admin)
+                    throw new InvalidOperationException("Cannot assign Admin role.");
+
+                if (!new[] { RolesHelper.Staff, RolesHelper.Shipper, RolesHelper.Customer }.Contains(newRole))
+                    throw new InvalidOperationException("Invalid role. Must be Staff, Shipper, or Customer.");
+
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if (!removeResult.Succeeded)
+                    throw new InvalidOperationException("Failed to remove current role.");
+
+                var addResult = await _userManager.AddToRoleAsync(user, newRole);
+                if (!addResult.Succeeded)
+                    throw new InvalidOperationException("Failed to add new role.");
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                var userViewModel = _mapper.Map<UserViewModel>(user);
+                userViewModel.Role = newRole;
 
                 return userViewModel;
             }

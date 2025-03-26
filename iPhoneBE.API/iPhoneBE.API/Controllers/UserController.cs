@@ -71,6 +71,32 @@ namespace iPhoneBE.API.Controllers
             return Ok(deletedUser);
         }
 
+        [HttpPut("{id}/role")]
+        [Authorize(Roles = RolesHelper.Admin)]
+        public async Task<IActionResult> ChangeUserRole(string id, [FromBody] ChangeRoleModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var updatedUser = await _userServices.ChangeUserRoleAsync(id, model.NewRole);
+                return Ok(updatedUser);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while changing the user's role.", details = ex.Message });
+            }
+        }
+
         [HttpPut("{orderId}/status")]
         public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromQuery] UpdateOrderStatusModel model)
         {
@@ -102,10 +128,10 @@ namespace iPhoneBE.API.Controllers
             {
                 return BadRequest(new { message = $"Invalid status for customer. Allowed values: {string.Join(", ", validCustomerStatuses)}" });
             }
-                bool result = await _orderServices.UpdateOrderStatusAsync(orderId, model.NewStatus, user);
-                return result
-                    ? Ok(new { message = "Order status updated successfully." })
-                    : BadRequest(new { message = "Failed to update order status." });
+            bool result = await _orderServices.UpdateOrderStatusAsync(orderId, model.NewStatus, user);
+            return result
+                ? Ok(new { message = "Order status updated successfully." })
+                : BadRequest(new { message = "Failed to update order status." });
         }
     }
 }
