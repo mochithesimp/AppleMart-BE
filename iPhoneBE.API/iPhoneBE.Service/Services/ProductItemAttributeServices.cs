@@ -2,7 +2,9 @@ using AutoMapper;
 using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Models.ProductItemAttributeModel;
+using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Service.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace iPhoneBE.Service.Services
 {
@@ -17,13 +19,34 @@ namespace iPhoneBE.Service.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<ProductItemAttribute>> GetAllAsync()
+        public async Task<PagedResult<ProductItemAttribute>> GetAllAsync(ProductItemAttributeFilterModel filter)
         {
-            var result = await _unitOfWork.ProductItemAttributeRepository.GetAllAsync();
+            var query = _unitOfWork.ProductItemAttributeRepository.GetAllQueryable()
+                .Include(pia => pia.Attribute)
+                .Where(r => r.IsDeleted == false);
 
-            result = result?.Where(r => r.IsDeleted == false) ?? new List<ProductItemAttribute>();
+            if (!string.IsNullOrWhiteSpace(filter.SearchAttributeName))
+            {
+                query = query.Where(pia => pia.Attribute.AttributeName.Contains(filter.SearchAttributeName));
+            }
 
-            return result;
+            var totalItems = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)filter.PageSize);
+            filter.ValidatePageNumber(totalPages);
+
+            var items = await query
+                .Skip((filter.PageNumber - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
+
+            return new PagedResult<ProductItemAttribute>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                PageNumber = filter.PageNumber,
+                PageSize = filter.PageSize,
+                TotalPages = totalPages
+            };
         }
 
         public async Task<ProductItemAttribute> GetByIdAsync(int id)
