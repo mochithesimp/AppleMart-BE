@@ -166,7 +166,7 @@ namespace iPhoneBE.API.Controllers
 
             string encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-            string resetPasswordUrlFull = $"{resetPasswordUrl}?Email={email}?token={encodedToken}";
+            string resetPasswordUrlFull = $"{resetPasswordUrl}?email={email}&token={encodedToken}";
 
             string emailBody = $"Please reset your password by clicking here: <a href='{resetPasswordUrlFull}'>click here</a><p style='word-break: break-all;'><small>{token}</small></p>?";
 
