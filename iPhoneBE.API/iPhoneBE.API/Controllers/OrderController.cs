@@ -126,7 +126,7 @@ namespace iPhoneBE.API.Controllers
 
         [HttpPut("{orderId}/status")]
         [Authorize]
-        public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromQuery] UpdateOrderStatusModel model)
+        public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromQuery] UpdateOrderStatusModel model, [FromQuery] bool isCancelledByCustomer = false)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
@@ -202,21 +202,42 @@ namespace iPhoneBE.API.Controllers
 
                         if (customerUser != null)
                         {
-                            var header = "Order Cancelled";
-                            var content = $"Dear customer, your Order (ID: {orderId}) has been cancelled by our moderators.";
+                            if (!isCancelledByCustomer)
+                            {
+                                var header = "Order Cancelled";
+                                var content = $"Dear customer, your Order (ID: {orderId}) has been cancelled by our moderators.";
 
-                            var notification = await _notificationServices.CreateNotification(order.UserID, header, content);
+                                var notification = await _notificationServices.CreateNotification(order.UserID, header, content);
 
-                            await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
-                                "ReceiveNotification",
-                                notification
-                            );
+                                await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
+                                    "ReceiveNotification",
+                                    notification
+                                );
 
-                            var unreadCount = await _notificationServices.GetUnreadCount(order.UserID);
-                            await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
-                                "UpdateUnreadCount",
-                                unreadCount
-                            );
+                                var unreadCount = await _notificationServices.GetUnreadCount(order.UserID);
+                                await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
+                                    "UpdateUnreadCount",
+                                    unreadCount
+                                );
+                            }
+                            else
+                            {
+                                var header = "Order Cancelled";
+                                var content = $"Your Order (ID: {orderId}) has been cancelled successfully.";
+
+                                var notification = await _notificationServices.CreateNotification(order.UserID, header, content);
+
+                                await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
+                                    "ReceiveNotification",
+                                    notification
+                                );
+
+                                var unreadCount = await _notificationServices.GetUnreadCount(order.UserID);
+                                await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
+                                    "UpdateUnreadCount",
+                                    unreadCount
+                                );
+                            }
                         }
                     }
                     else if (model.NewStatus == OrderStatusHelper.Processing)

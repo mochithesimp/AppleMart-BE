@@ -250,6 +250,7 @@ namespace iPhoneBE.Service.Services
                 { OrderStatusHelper.Pending, new List<string> { OrderStatusHelper.Processing, OrderStatusHelper.Cancelled } },
                 { OrderStatusHelper.Paid, new List<string> { OrderStatusHelper.Processing, OrderStatusHelper.Cancelled } },
                 { OrderStatusHelper.Processing, new List<string> { OrderStatusHelper.Shipped } },
+                { OrderStatusHelper.Shipped, new List<string> { OrderStatusHelper.Delivered } },
                 { OrderStatusHelper.Delivered, new List<string> { OrderStatusHelper.Completed, OrderStatusHelper.RefundRequested } },
                 { OrderStatusHelper.RefundRequested, new List<string> { OrderStatusHelper.Refunded } }
             };
