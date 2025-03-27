@@ -20,6 +20,22 @@ namespace iPhoneBE.API.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet("showall")]
+        public async Task<ActionResult<IEnumerable<ProductViewModel>>> ShowAll()
+        {
+            try
+            {
+                var products = await _productServices.GetAllWithoutFilter();
+                var mappedItems = _mapper.Map<List<ProductViewModel>>(products);
+                return Ok(mappedItems);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { message = ex.Message });
+            }
+        }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductViewModel>>> GetAll([FromQuery] ProductFilterModel filter)
         {

@@ -16,5 +16,6 @@ namespace iPhoneBE.Data.ViewModels.ProductVM
         public string? Description { get; set; }
         public bool IsDeleted { get; set; }
         public int DisplayIndex { get; set; }
+        public string CategoryName { get; set; }
     }
 }

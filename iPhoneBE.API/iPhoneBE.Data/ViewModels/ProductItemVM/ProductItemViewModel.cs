@@ -7,6 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using iPhoneBE.Data.Entities;
+using iPhoneBE.Data.ViewModels.ProductVM;
+using iPhoneBE.Data.ViewModels.ProductItemAttributeVM;
+using iPhoneBE.Data.ViewModels.ProductImgVM;
 
 namespace iPhoneBE.Data.ViewModels.ProductItemVM
 {
@@ -28,8 +31,8 @@ namespace iPhoneBE.Data.ViewModels.ProductItemVM
 
         public bool IsDeleted { get; set; }
 
-        public virtual Product Product { get; set; }
-        public virtual ICollection<ProductImg> ProductImgs { get; set; }
-        public virtual ICollection<ProductItemAttribute> ProductItemAttributes { get; set; }
+        public ProductViewModel Product { get; set; }
+        public ICollection<ProductImgViewModel> ProductImgs { get; set; }
+        public ICollection<ProductItemAttributeViewModel> ProductItemAttributes { get; set; }
     }
 }

@@ -6,6 +6,7 @@ namespace iPhoneBE.Service.Interfaces
 {
     public interface IProductServices
     {
+        Task<List<Product>> GetAllWithoutFilter();
         Task<PagedResult<Product>> GetAllAsync(ProductFilterModel filter);
         Task<Product> GetByIdAsync(int id);
         Task<Product> AddAsync(Product product);
