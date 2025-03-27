@@ -303,6 +303,41 @@ namespace iPhoneBE.API.Hubs
             }
         }
 
+        public async Task SendRefundRequestNotification(string customerName, string orderId)
+        {
+            try
+            {
+                _logger.LogInformation($"Sending refund request notification from {customerName} for order {orderId}");
+
+                var adminUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Admin);
+                var staffUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Staff);
+
+                _logger.LogInformation($"Found {adminUsers.Count} admins and {staffUsers.Count} staff to notify about refund request");
+
+                var adminAndStaffUsers = adminUsers.Union(staffUsers).ToList();
+
+                foreach (var user in adminAndStaffUsers)
+                {
+                    var header = "Refund Request";
+                    var content = $"Customer {customerName} has requested a refund for order (ID: {orderId})";
+
+                    var notification = await _notificationService.CreateNotification(user.Id, header, content);
+
+                    await Clients.Group($"User_{user.Id}").SendAsync("ReceiveNotification", notification);
+
+                    var unreadCount = await _notificationService.GetUnreadCount(user.Id);
+                    await Clients.Group($"User_{user.Id}").SendAsync("UpdateUnreadCount", unreadCount);
+
+                    _logger.LogInformation($"Sent refund request notification to {user.UserName} (ID: {user.Id})");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending refund request notification for order {orderId}");
+                throw new HubException($"Failed to send refund request notification: {ex.Message}");
+            }
+        }
+
         private static HashSet<string> GetUserConnections(string userId)
         {
             return _userConnections.TryGetValue(userId, out var connections) ? connections : new HashSet<string>();
