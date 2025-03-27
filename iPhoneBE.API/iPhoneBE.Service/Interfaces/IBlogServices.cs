@@ -7,7 +7,7 @@ namespace iPhoneBE.Service.Interfaces
     {
         Task<Blog> AddAsync(Blog blog);
         Task<Blog> DeleteAsync(int id);
-        Task<IEnumerable<Blog>> GetAllAsync();
+        Task<IEnumerable<Blog>> GetAllAsync(string searchTitle = null);
         Task<Blog> GetByIdAsync(int id);
         Task<Blog> UpdateAsync(int id, UpdateBlogModel newBlog);
     }

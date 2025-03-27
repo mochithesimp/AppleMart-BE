@@ -22,7 +22,7 @@ namespace iPhoneBE.Service.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<Blog>> GetAllAsync()
+        public async Task<IEnumerable<Blog>> GetAllAsync(string searchTitle = null)
         {
             var result = await _unitOfWork.BlogRepository.GetAllAsync(
                 predicate: null,
@@ -30,7 +30,7 @@ namespace iPhoneBE.Service.Services
             );
 
             return result?
-                .Where(b => !b.IsDeleted)
+                .Where(b => !b.IsDeleted && (string.IsNullOrEmpty(searchTitle) || b.Title.Contains(searchTitle, StringComparison.OrdinalIgnoreCase)))
                 .Select(b =>
                 {
                     b.BlogImages = b.BlogImages.Where(bi => !bi.IsDeleted).ToList();

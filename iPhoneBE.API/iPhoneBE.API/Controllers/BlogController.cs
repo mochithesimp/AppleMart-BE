@@ -24,11 +24,11 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BlogViewModel>>> GetAll()
+        public async Task<ActionResult<IEnumerable<BlogViewModel>>> GetAll([FromQuery] string search = null)
         {
             try
             {
-                var blogs = await _blogServices.GetAllAsync();
+                var blogs = await _blogServices.GetAllAsync(search);
                 return Ok(_mapper.Map<List<BlogViewModel>>(blogs));
             }
             catch (Exception ex)
