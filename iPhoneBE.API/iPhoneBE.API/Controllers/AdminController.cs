@@ -99,6 +99,7 @@ namespace iPhoneBE.API.Controllers
             var validStaffStatuses = new List<string>
                 {
                     OrderStatusHelper.Processing,
+                    OrderStatusHelper.Cancelled,
                     OrderStatusHelper.Shipped,
                     OrderStatusHelper.Completed,
                     OrderStatusHelper.Refunded
