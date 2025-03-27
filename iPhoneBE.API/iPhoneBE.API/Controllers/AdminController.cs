@@ -13,7 +13,7 @@ namespace iPhoneBE.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")] 
+    [Authorize(Roles = $"{RolesHelper.Staff}, {RolesHelper.Admin}")]
     public class AdminController : ControllerBase
     {
         private readonly IAdminServices _adminServices;
@@ -35,7 +35,7 @@ namespace iPhoneBE.API.Controllers
             return result;
         }
 
-        
+
 
         [HttpGet("get-total-revenue")]
         public async Task<IActionResult> GetTotalRevenueAsync([FromQuery] TimeModel model)

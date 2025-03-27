@@ -92,8 +92,39 @@ namespace iPhoneBE.Service.Services
             return userList;
         }
 
+        public async Task<IEnumerable<ShipperViewModel>> GetAllShippersWithPendingOrdersAsync()
+        {
+            var shippers = await GetShippersAsync();
+            var shipperViewModels = new List<ShipperViewModel>();
 
+            foreach (var shipper in shippers)
+            {
+                var pendingOrders = await _unitOfWork.OrderRepository
+                    .GetAllAsync(o =>
+                        o.ShipperID == shipper.Id &&
+                        o.OrderStatus != OrderStatusHelper.Completed &&
+                        o.OrderStatus != OrderStatusHelper.Cancelled &&
+                        o.OrderStatus != OrderStatusHelper.Refunded &&
+                        !o.IsDeleted);
 
+                var userRoles = await _userManager.GetRolesAsync(shipper);
+                var shipperViewModel = new ShipperViewModel
+                {
+                    Id = shipper.Id,
+                    Name = shipper.Name,
+                    Email = shipper.Email,
+                    Address = shipper.Address,
+                    PhoneNumber = shipper.PhoneNumber,
+                    Avatar = shipper.Avatar,
+                    Role = userRoles.FirstOrDefault() ?? "No Role",
+                    PendingOrdersCount = pendingOrders.Count()
+                };
+
+                shipperViewModels.Add(shipperViewModel);
+            }
+
+            return shipperViewModels.OrderBy(s => s.PendingOrdersCount);
+        }
 
         public async Task<(User user, string role)> GetUserWithRoleAsync(string id)
         {
@@ -108,7 +139,6 @@ namespace iPhoneBE.Service.Services
 
             return (user, role);
         }
-
 
         public async Task<User> FindByEmail(string email)
         {
@@ -192,7 +222,6 @@ namespace iPhoneBE.Service.Services
                 throw;
             }
         }
-
 
         public async Task<UserViewModel> ChangeUserRoleAsync(string userId, string newRole)
         {

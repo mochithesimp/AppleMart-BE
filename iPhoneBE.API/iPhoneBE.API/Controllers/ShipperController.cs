@@ -11,7 +11,6 @@ namespace iPhoneBE.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = RolesHelper.Shipper)]
     public class ShipperController : ControllerBase
     {
         private readonly IUserServices _userServices;
@@ -24,6 +23,7 @@ namespace iPhoneBE.API.Controllers
         }
 
         [HttpGet("orders")]
+        [Authorize(Roles = RolesHelper.Shipper)]
         public async Task<IActionResult> GetShipperOrders([FromQuery] string? status, [FromQuery] TimeModel model)
         {
             if (!ModelState.IsValid)
@@ -37,13 +37,11 @@ namespace iPhoneBE.API.Controllers
             var userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ??
                            throw new UnauthorizedAccessException("User role is missing in the token.");
 
-            // Verify that the current user is a Shipper
             if (userRole != "Shipper")
                 return Forbid("Only Shippers can access this endpoint.");
 
             try
             {
-                // Pass null for userId since we're using the currentUserId for Shippers
                 var result = await _orderServices.GetOrdersAsync(null, status, model, userRole, currentUserId);
                 return Ok(result);
             }
@@ -53,12 +51,12 @@ namespace iPhoneBE.API.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
                 return StatusCode(500, "An error occurred while processing your request.");
             }
         }
 
         [HttpPut("{orderId}/status")]
+        [Authorize(Roles = RolesHelper.Shipper)]
         public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromQuery] UpdateOrderStatusModel model)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -77,7 +75,6 @@ namespace iPhoneBE.API.Controllers
                 return Unauthorized(new { message = "User not shipper" });
             }
 
-            // Validate status for shipper operations
             var validShipperStatuses = new List<string>
                     {
                         OrderStatusHelper.Delivered
@@ -92,6 +89,28 @@ namespace iPhoneBE.API.Controllers
             return result
                 ? Ok(new { message = "Order status updated successfully." })
                 : BadRequest(new { message = "Failed to update order status." });
+        }
+
+        [HttpGet("all")]
+        [Authorize(Roles = RolesHelper.Admin + "," + RolesHelper.Staff)]
+        public async Task<IActionResult> GetAllShippersWithPendingOrders()
+        {
+            try
+            {
+                var userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+                if (userRole != RolesHelper.Admin && userRole != RolesHelper.Staff)
+                {
+                    return Forbid("Only Admin or Staff can access this endpoint.");
+                }
+
+                var shippers = await _userServices.GetAllShippersWithPendingOrdersAsync();
+                var sortedShippers = shippers.OrderBy(s => s.PendingOrdersCount);
+                return Ok(sortedShippers);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
     }
 }
