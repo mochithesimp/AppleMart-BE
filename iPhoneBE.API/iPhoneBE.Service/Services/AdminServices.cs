@@ -136,22 +136,44 @@ namespace iPhoneBE.Service.Services
 
         public async Task<object> GetTotalProductItemsAsync(CategoryProductFilterModel filter)
         {
-            var total = 0;
-
-            var totalQuantityData = await _unitOfWork.ProductItemRepository.GetAllQueryable()
+            // Get all product items with details
+            var productItemsQuery = _unitOfWork.ProductItemRepository.GetAllQueryable()
                 .ApplyBaseQuery()
-                .GetTotalQuantityByCategoryAndProduct(filter.CategoryId, filter.ProductId)
-                .ToListAsync();
+                .Where(pi => !pi.IsDeleted);
 
-            if (totalQuantityData != null)
+            // Apply filters if provided
+            if (filter.CategoryId.HasValue)
             {
-                total = totalQuantityData.Sum(t => t.TotalQuantity);
+                productItemsQuery = productItemsQuery.FilterByCategory(filter.CategoryId);
             }
+
+            if (filter.ProductId.HasValue)
+            {
+                productItemsQuery = productItemsQuery.FilterByProduct(filter.ProductId);
+            }
+
+            // Get total item count
+            var totalItems = await productItemsQuery.CountAsync();
+
+            // Get individual product item counts
+            var productItemDetails = await productItemsQuery
+                .Select(pi => new
+                {
+                    ProductItemId = pi.ProductItemID,
+                    ProductItemName = pi.Name,
+                    ProductId = pi.ProductID,
+                    ProductName = pi.Product.Name,
+                    CategoryId = pi.Product.CategoryID,
+                    CategoryName = pi.Product.Category.Name,
+                    Quantity = pi.Quantity,
+                    Price = pi.Price
+                })
+                .ToListAsync();
 
             return new
             {
-                total = total,
-                totalQuantityData = totalQuantityData
+                TotalCount = totalItems,
+                ProductItems = productItemDetails
             };
         }
 
