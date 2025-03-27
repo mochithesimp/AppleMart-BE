@@ -11,5 +11,14 @@ namespace iPhoneBE.Service.Interfaces
         Task<IEnumerable<PaypalTransaction>> GetTransactionsByOrderIdAsync(int orderId);
         Task<PaypalTransaction> UpdateTransactionStatusAsync(int id, string status);
         Task<PaypalTransaction> ProcessRefundAsync(int transactionId);
+        Task<RefundResult> ProcessDirectRefundAsync(string captureId, decimal amount, string currency = "USD");
+    }
+
+    public class RefundResult
+    {
+        public string RefundId { get; set; }
+        public string Status { get; set; }
+        public decimal Amount { get; set; }
+        public string Currency { get; set; }
     }
 }

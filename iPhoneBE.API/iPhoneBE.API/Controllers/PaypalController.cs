@@ -107,5 +107,43 @@ namespace iPhoneBE.API.Controllers
                 return StatusCode(500, new { message = "Failed to process refund", details = ex.Message });
             }
         }
+
+        [HttpPost("refund-by-capture/{captureId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> RefundByCapture(string captureId, [FromBody] RefundRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(captureId))
+                {
+                    return BadRequest(new { message = "Capture ID cannot be empty" });
+                }
+
+                var refundResult = await _paypalTransactionServices.ProcessDirectRefundAsync(captureId, request.Amount, request.Currency);
+
+                return Ok(new
+                {
+                    message = "Refund processed successfully",
+                    refundId = refundResult.RefundId,
+                    status = refundResult.Status,
+                    amount = refundResult.Amount,
+                    currency = refundResult.Currency
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to process refund", details = ex.Message });
+            }
+        }
+    }
+
+    public class RefundRequest
+    {
+        public decimal Amount { get; set; }
+        public string Currency { get; set; } = "USD";
     }
 }
