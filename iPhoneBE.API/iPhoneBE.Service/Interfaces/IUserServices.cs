@@ -10,6 +10,7 @@ namespace iPhoneBE.Service.Interfaces
         Task<User> GetByIdAsync(string id);
         Task<IEnumerable<UserViewModel>> GetAllAsync(string role);
         Task<IEnumerable<User>> GetShippersAsync();
+        Task<IEnumerable<ShipperViewModel>> GetAllShippersWithPendingOrdersAsync();
         Task<(User user, string role)> GetUserWithRoleAsync(string id);
         Task<UserViewModel> UpdateAsync(string id, UserModel updatedUser);
         Task<UserViewModel> ChangeUserRoleAsync(string userId, string newRole);

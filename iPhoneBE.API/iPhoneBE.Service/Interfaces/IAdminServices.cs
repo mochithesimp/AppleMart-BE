@@ -1,7 +1,7 @@
-﻿
-using iPhoneBE.Data.Models.AdminModel;
+﻿using iPhoneBE.Data.Models.AdminModel;
 using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Data.ViewModels.ProductItemVM;
+using iPhoneBE.Data.ViewModels.UserVM;
 
 namespace iPhoneBE.Service.Interfaces
 {
@@ -12,5 +12,6 @@ namespace iPhoneBE.Service.Interfaces
         Task<object> GetTotalProductItemsAsync(CategoryProductFilterModel filter);
         Task<object> GetTotalRevenueAsync(TimeModel model);
         Task<int> GetTotalUserAsync();
+        Task<IEnumerable<ShipperViewModel>> GetAllShippersWithPendingOrdersAsync();
     }
 }

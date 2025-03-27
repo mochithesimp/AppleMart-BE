@@ -1,10 +1,10 @@
-﻿
-using iPhoneBE.Data.Helper;
+﻿using iPhoneBE.Data.Helper;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.AdminModel;
 using iPhoneBE.Data.Models.ProductItemModel;
 using iPhoneBE.Data.ViewModels.ProductItemVM;
+using iPhoneBE.Data.ViewModels.UserVM;
 using iPhoneBE.Service.Extensions;
 using iPhoneBE.Service.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -16,11 +16,13 @@ namespace iPhoneBE.Service.Services
     {
         private readonly UserManager<User> _userManager;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IUserServices _userServices;
 
-        public AdminServices(UserManager<User> userManager, IUnitOfWork unitOfWork)
+        public AdminServices(UserManager<User> userManager, IUnitOfWork unitOfWork, IUserServices userServices)
         {
             _userManager = userManager;
             _unitOfWork = unitOfWork;
+            _userServices = userServices;
         }
 
         public async Task<int> GetTotalUserAsync()
@@ -146,12 +148,16 @@ namespace iPhoneBE.Service.Services
                 total = totalQuantityData.Sum(t => t.TotalQuantity);
             }
 
-            return new {
+            return new
+            {
                 total = total,
                 totalQuantityData = totalQuantityData
             };
         }
 
-
+        public async Task<IEnumerable<ShipperViewModel>> GetAllShippersWithPendingOrdersAsync()
+        {
+            return await _userServices.GetAllShippersWithPendingOrdersAsync();
+        }
     }
 }
