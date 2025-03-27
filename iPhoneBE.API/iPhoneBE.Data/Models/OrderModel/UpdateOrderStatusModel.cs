@@ -14,5 +14,7 @@ namespace iPhoneBE.Data.Models.OrderModel
 
         // Optional shipper ID for when staff assigns a shipper
         public string? ShipperId { get; set; }
+
+        public string? RefundReason { get; set; }
     }
 }
