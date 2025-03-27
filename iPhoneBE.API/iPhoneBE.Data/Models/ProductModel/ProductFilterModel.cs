@@ -6,7 +6,7 @@ namespace iPhoneBE.Data.Models.ProductModel
     {
         public string? SearchName { get; set; }
         public int PageNumber { get; set; } = 1;
-        public int PageSize { get; set; } = 10;
+        public int PageSize { get; set; } = 8;
 
         public void ValidatePageNumber(int totalPages)
         {
