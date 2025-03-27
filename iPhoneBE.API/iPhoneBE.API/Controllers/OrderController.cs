@@ -377,6 +377,11 @@ namespace iPhoneBE.API.Controllers
                             var header = "Refund Request";
                             var content = $"Customer {customerName} has requested a refund for order (ID: {orderId})";
 
+                            if (!string.IsNullOrEmpty(model.RefundReason))
+                            {
+                                content += $"\nReason: {model.RefundReason}";
+                            }
+
                             var notification = await _notificationServices.CreateNotification(adminStaffUser.Id, header, content);
 
                             await _notificationHub.Clients.Group($"User_{adminStaffUser.Id}").SendAsync(
@@ -396,6 +401,11 @@ namespace iPhoneBE.API.Controllers
                             var header = "Refund Request Submitted";
                             var content = $"Your refund request for Order (ID: {orderId}) has been submitted. Our team will review it shortly.";
 
+                            if (!string.IsNullOrEmpty(model.RefundReason))
+                            {
+                                content += $"\nYour reason: {model.RefundReason}";
+                            }
+
                             var notification = await _notificationServices.CreateNotification(order.UserID, header, content);
 
                             await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
@@ -408,6 +418,105 @@ namespace iPhoneBE.API.Controllers
                                 "UpdateUnreadCount",
                                 unreadCount
                             );
+                        }
+
+                        if (!string.IsNullOrEmpty(order.ShipperID))
+                        {
+                            var shipperUser = await _userManager.FindByIdAsync(order.ShipperID);
+                            if (shipperUser != null)
+                            {
+                                var header = "Refund Request for Your Delivery";
+                                var content = $"A refund has been requested for Order (ID: {orderId}) that you delivered to {customerName}.";
+
+                                if (!string.IsNullOrEmpty(model.RefundReason))
+                                {
+                                    content += $"\nCustomer's reason: {model.RefundReason}";
+                                }
+
+                                var notification = await _notificationServices.CreateNotification(order.ShipperID, header, content);
+
+                                await _notificationHub.Clients.Group($"User_{order.ShipperID}").SendAsync(
+                                    "ReceiveNotification",
+                                    notification
+                                );
+
+                                var unreadCount = await _notificationServices.GetUnreadCount(order.ShipperID);
+                                await _notificationHub.Clients.Group($"User_{order.ShipperID}").SendAsync(
+                                    "UpdateUnreadCount",
+                                    unreadCount
+                                );
+                            }
+                        }
+                    }
+                    else if (model.NewStatus == OrderStatusHelper.Refunded)
+                    {
+                        var adminUser = await _userManager.FindByIdAsync(userId);
+                        var adminName = adminUser?.UserName ?? "Admin";
+
+                        if (order.PaymentMethod == "Cash")
+                        {
+                            if (!string.IsNullOrEmpty(order.ShipperID))
+                            {
+                                var shipperUser = await _userManager.FindByIdAsync(order.ShipperID);
+                                if (shipperUser != null)
+                                {
+                                    var header = "Refund Approved for Your Delivery";
+                                    var content = $"A refund request for Order (ID: {orderId}) that you delivered to {customerName} has been approved by Moderator {adminName}.";
+
+                                    var notification = await _notificationServices.CreateNotification(order.ShipperID, header, content);
+
+                                    await _notificationHub.Clients.Group($"User_{order.ShipperID}").SendAsync(
+                                        "ReceiveNotification",
+                                        notification
+                                    );
+
+                                    var unreadCount = await _notificationServices.GetUnreadCount(order.ShipperID);
+                                    await _notificationHub.Clients.Group($"User_{order.ShipperID}").SendAsync(
+                                        "UpdateUnreadCount",
+                                        unreadCount
+                                    );
+                                }
+                            }
+
+                            if (customerUser != null)
+                            {
+                                var header = "Refund Request Approved";
+                                var content = $"Your refund request for Order (ID: {orderId}) has been approved by Moderator {adminName}. Please contact our support team to process your cash refund.";
+
+                                var notification = await _notificationServices.CreateNotification(order.UserID, header, content);
+
+                                await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
+                                    "ReceiveNotification",
+                                    notification
+                                );
+
+                                var unreadCount = await _notificationServices.GetUnreadCount(order.UserID);
+                                await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
+                                    "UpdateUnreadCount",
+                                    unreadCount
+                                );
+                            }
+                        }
+                        else if (order.PaymentMethod == "PayPal")
+                        {
+                            if (customerUser != null)
+                            {
+                                var header = "Refund Request Approved";
+                                var content = $"Your refund request for Order (ID: {orderId}) has been approved by Moderator {adminName}. The refund amount of ${order.Total} has been processed and will be credited back to your PayPal account.";
+
+                                var notification = await _notificationServices.CreateNotification(order.UserID, header, content);
+
+                                await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
+                                    "ReceiveNotification",
+                                    notification
+                                );
+
+                                var unreadCount = await _notificationServices.GetUnreadCount(order.UserID);
+                                await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
+                                    "UpdateUnreadCount",
+                                    unreadCount
+                                );
+                            }
                         }
                     }
                 }
