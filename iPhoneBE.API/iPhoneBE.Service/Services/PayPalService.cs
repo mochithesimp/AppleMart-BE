@@ -9,6 +9,7 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace iPhoneBE.Service.Services
 {
@@ -18,13 +19,15 @@ namespace iPhoneBE.Service.Services
         private readonly string _clientSecret;
         private readonly string _mode;
         private readonly HttpClient _httpClient;
+        private readonly ILogger<PayPalService> _logger;
 
-        public PayPalService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
+        public PayPalService(IConfiguration configuration, IHttpClientFactory httpClientFactory, ILogger<PayPalService> logger)
         {
             _clientId = configuration["PayPal:ClientId"];
             _clientSecret = configuration["PayPal:ClientSecret"];
             _mode = configuration["PayPal:Mode"];
             _httpClient = httpClientFactory.CreateClient();
+            _logger = logger;
         }
 
         private async Task<string> GetAccessTokenAsync()
@@ -50,7 +53,7 @@ namespace iPhoneBE.Service.Services
         {
             try
             {
-                Console.WriteLine($"Starting PayPal refund process for capture ID: {captureId}, amount: {amount} {currency}");
+                _logger.LogInformation($"Starting PayPal refund process for capture ID: {captureId}, amount: {amount} {currency}");
 
                 if (string.IsNullOrEmpty(captureId))
                 {
@@ -69,7 +72,7 @@ namespace iPhoneBE.Service.Services
                     $"{(_mode == "sandbox" ? "https://api.sandbox.paypal.com" : "https://api.paypal.com")}/v2/payments/captures/{captureId}"
                 );
                 var captureContent = await captureResponse.Content.ReadAsStringAsync();
-                Console.WriteLine($"Capture details response: {captureContent}");
+                _logger.LogInformation($"Capture details response: {captureContent}");
 
                 if (!captureResponse.IsSuccessStatusCode)
                 {
@@ -91,7 +94,7 @@ namespace iPhoneBE.Service.Services
                     note_to_payer = "Refund for order"
                 };
 
-                Console.WriteLine($"Sending refund request to PayPal: {JsonSerializer.Serialize(refundRequest)}");
+                _logger.LogInformation($"Sending refund request to PayPal: {JsonSerializer.Serialize(refundRequest)}");
 
                 var response = await _httpClient.PostAsJsonAsync(
                     $"{(_mode == "sandbox" ? "https://api.sandbox.paypal.com" : "https://api.paypal.com")}/v2/payments/captures/{captureId}/refund",
@@ -99,7 +102,7 @@ namespace iPhoneBE.Service.Services
                 );
 
                 var responseContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"PayPal response: {responseContent}");
+                _logger.LogInformation($"PayPal response: {responseContent}");
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -130,7 +133,7 @@ namespace iPhoneBE.Service.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"PayPal refund error: {ex.Message}");
+                _logger.LogError($"PayPal refund error: {ex.Message}");
                 throw new Exception($"PayPal refund failed: {ex.Message}", ex);
             }
         }

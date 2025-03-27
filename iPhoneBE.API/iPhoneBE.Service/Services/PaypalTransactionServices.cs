@@ -131,7 +131,7 @@ namespace iPhoneBE.Service.Services
                         OrderId = transaction.OrderId,
                         PaypalPaymentId = refund.id,
                         Status = "REFUNDED",
-                        Amount = -transaction.Amount, 
+                        Amount = -transaction.Amount,
                         Currency = transaction.Currency,
                         CreatedDate = DateTime.UtcNow,
                         IsDeleted = false
@@ -154,6 +154,42 @@ namespace iPhoneBE.Service.Services
                 await _unitOfWork.RollbackTransactionAsync();
                 Console.WriteLine($"Refund process error: {ex.Message}");
                 throw;
+            }
+        }
+
+        public async Task<RefundResult> ProcessDirectRefundAsync(string captureId, decimal amount, string currency = "USD")
+        {
+            if (string.IsNullOrEmpty(captureId))
+            {
+                throw new ArgumentException("Capture ID cannot be empty");
+            }
+
+            try
+            {
+                var refund = await _payPalService.ProcessRefundAsync(
+                    captureId,
+                    amount,
+                    currency
+                );
+
+                if (refund == null)
+                {
+                    throw new Exception("PayPal direct refund returned null response");
+                }
+
+                var result = new RefundResult
+                {
+                    RefundId = refund.id,
+                    Status = "COMPLETED",
+                    Amount = amount,
+                    Currency = currency
+                };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"PayPal direct refund failed: {ex.Message}", ex);
             }
         }
     }
