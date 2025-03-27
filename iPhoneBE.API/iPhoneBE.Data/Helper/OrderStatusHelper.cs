@@ -14,8 +14,8 @@ namespace iPhoneBE.Data.Helper
         public const string Shipped = "Shipped";
         public const string Delivered = "Delivered";
         public const string Completed = "Completed";
-        public const string Cancelled = "Cancelled"; 
-        public const string RefundRequested = "RefundRequested "; 
-        public const string Refunded = "Refunded"; 
+        public const string Cancelled = "Cancelled";
+        public const string RefundRequested = "RefundRequested";
+        public const string Refunded = "Refunded";
     }
 }

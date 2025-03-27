@@ -142,17 +142,23 @@ namespace iPhoneBE.API.Controllers
 
             var validStatuses = new List<string>
                 {
-                    OrderStatusHelper.Pending, OrderStatusHelper.Paid, OrderStatusHelper.Processing,
-                    OrderStatusHelper.Shipped, OrderStatusHelper.Delivered, OrderStatusHelper.Completed,
-                    OrderStatusHelper.Cancelled, OrderStatusHelper.RefundRequested, OrderStatusHelper.Refunded
+                    OrderStatusHelper.Pending,
+                    OrderStatusHelper.Paid,
+                    OrderStatusHelper.Processing,
+                    OrderStatusHelper.Shipped,
+                    OrderStatusHelper.Delivered,
+                    OrderStatusHelper.Completed,
+                    OrderStatusHelper.Cancelled,
+                    OrderStatusHelper.RefundRequested,
+                    OrderStatusHelper.Refunded
                 };
 
-            if (!validStatuses.Contains(model.NewStatus))
+            if (!validStatuses.Contains(model.NewStatus.Trim()))
             {
                 return BadRequest(new { message = $"Invalid status '{model.NewStatus}'. Allowed values: {string.Join(", ", validStatuses)}" });
             }
 
-            bool result = await _orderServices.UpdateOrderStatusAsync(orderId, model.NewStatus, user, model.ShipperId);
+            bool result = await _orderServices.UpdateOrderStatusAsync(orderId, model.NewStatus.Trim(), user, model.ShipperId);
 
             if (result)
             {
@@ -359,6 +365,49 @@ namespace iPhoneBE.API.Controllers
                                     unreadCount
                                 );
                             }
+                        }
+                    }
+                    else if (model.NewStatus == OrderStatusHelper.RefundRequested)
+                    {
+                        var adminUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Admin);
+                        var staffUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Staff);
+
+                        foreach (var adminStaffUser in adminUsers.Union(staffUsers))
+                        {
+                            var header = "Refund Request";
+                            var content = $"Customer {customerName} has requested a refund for order (ID: {orderId})";
+
+                            var notification = await _notificationServices.CreateNotification(adminStaffUser.Id, header, content);
+
+                            await _notificationHub.Clients.Group($"User_{adminStaffUser.Id}").SendAsync(
+                                "ReceiveNotification",
+                                notification
+                            );
+
+                            var unreadCount = await _notificationServices.GetUnreadCount(adminStaffUser.Id);
+                            await _notificationHub.Clients.Group($"User_{adminStaffUser.Id}").SendAsync(
+                                "UpdateUnreadCount",
+                                unreadCount
+                            );
+                        }
+
+                        if (customerUser != null)
+                        {
+                            var header = "Refund Request Submitted";
+                            var content = $"Your refund request for Order (ID: {orderId}) has been submitted. Our team will review it shortly.";
+
+                            var notification = await _notificationServices.CreateNotification(order.UserID, header, content);
+
+                            await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
+                                "ReceiveNotification",
+                                notification
+                            );
+
+                            var unreadCount = await _notificationServices.GetUnreadCount(order.UserID);
+                            await _notificationHub.Clients.Group($"User_{order.UserID}").SendAsync(
+                                "UpdateUnreadCount",
+                                unreadCount
+                            );
                         }
                     }
                 }
