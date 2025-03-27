@@ -247,8 +247,8 @@ namespace iPhoneBE.Service.Services
         {
             var validTransitions = new Dictionary<string, List<string>>
             {
-                { OrderStatusHelper.Pending, new List<string> { OrderStatusHelper.Processing } },
-                { OrderStatusHelper.Paid, new List<string> { OrderStatusHelper.Processing } },
+                { OrderStatusHelper.Pending, new List<string> { OrderStatusHelper.Processing, OrderStatusHelper.Cancelled } },
+                { OrderStatusHelper.Paid, new List<string> { OrderStatusHelper.Processing, OrderStatusHelper.Cancelled } },
                 { OrderStatusHelper.Processing, new List<string> { OrderStatusHelper.Shipped } },
                 { OrderStatusHelper.Delivered, new List<string> { OrderStatusHelper.Completed, OrderStatusHelper.RefundRequested } },
                 { OrderStatusHelper.RefundRequested, new List<string> { OrderStatusHelper.Refunded } }
@@ -259,7 +259,12 @@ namespace iPhoneBE.Service.Services
                 throw new InvalidOperationException($"Invalid status transition from '{order.OrderStatus}' to '{newStatus}'.");
             }
 
-            if (order.OrderStatus == OrderStatusHelper.Processing && newStatus == OrderStatusHelper.Shipped)
+            if (newStatus == OrderStatusHelper.Cancelled && order.OrderStatus == OrderStatusHelper.Pending)
+            {
+                order.OrderStatus = OrderStatusHelper.Cancelled;
+                await RestoreProductStock(order.OrderID);
+            }
+            else if (order.OrderStatus == OrderStatusHelper.Processing && newStatus == OrderStatusHelper.Shipped)
             {
                 if (string.IsNullOrEmpty(shipperId))
                 {
