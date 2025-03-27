@@ -99,5 +99,21 @@ namespace iPhoneBE.API.Controllers
 
             return Ok(_mapper.Map<ProductItemViewModel>(deletedProductItem));
         }
+
+        [HttpGet("showall")]
+        public async Task<ActionResult<IEnumerable<ProductItemViewModel>>> ShowAll()
+        {
+            try
+            {
+                var productItems = await _productItemServices.GetAllWithoutFilter();
+                var mappedItems = _mapper.Map<List<ProductItemViewModel>>(productItems);
+                return Ok(mappedItems);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { message = ex.Message });
+            }
+        }
     }
 }

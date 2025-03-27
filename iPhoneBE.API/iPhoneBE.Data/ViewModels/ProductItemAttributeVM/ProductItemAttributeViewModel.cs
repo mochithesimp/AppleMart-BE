@@ -7,5 +7,6 @@ namespace iPhoneBE.Data.ViewModels.ProductItemAttributeVM
         public int AttributeID { get; set; }
         public string Value { get; set; }
         public bool IsDeleted { get; set; }
+        public string AttributeName { get; set; }
     }
 }

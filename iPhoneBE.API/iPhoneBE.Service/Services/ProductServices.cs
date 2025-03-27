@@ -19,6 +19,46 @@ namespace iPhoneBE.Service.Services
             _mapper = mapper;
         }
 
+        public async Task<List<Product>> GetAllWithoutFilter()
+        {
+            var products = await _unitOfWork.ProductRepository.GetAllQueryable()
+                .Where(r => r.IsDeleted == false)
+                .Select(p => new Product
+                {
+                    ProductID = p.ProductID,
+                    CategoryID = p.CategoryID,
+                    Name = p.Name,
+                    Description = p.Description,
+                    IsDeleted = p.IsDeleted,
+                    DisplayIndex = p.DisplayIndex,
+                    Category = p.Category,
+                    ProductItems = p.ProductItems.Where(pi => !pi.IsDeleted)
+                        .Select(pi => new ProductItem
+                        {
+                            ProductItemID = pi.ProductItemID,
+                            ProductID = pi.ProductID,
+                            Name = pi.Name,
+                            Description = pi.Description,
+                            Quantity = pi.Quantity,
+                            DisplayIndex = pi.DisplayIndex,
+                            Price = pi.Price,
+                            IsDeleted = pi.IsDeleted,
+                            ProductImgs = pi.ProductImgs.Where(img => !img.IsDeleted)
+                                .Select(img => new ProductImg
+                                {
+                                    ProductImgID = img.ProductImgID,
+                                    ProductItemID = img.ProductItemID,
+                                    ImageUrl = img.ImageUrl,
+                                    IsDeleted = img.IsDeleted
+                                }).ToList()
+                        }).ToList()
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return products;
+        }
+
         public async Task<PagedResult<Product>> GetAllAsync(ProductFilterModel filter)
         {
             var query = _unitOfWork.ProductRepository.GetAllQueryable()

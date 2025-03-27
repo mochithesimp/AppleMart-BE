@@ -42,7 +42,8 @@ namespace iPhoneBE.Data.Mapping
             CreateMap<Entities.Attribute, CreateAttributeModel>().ReverseMap();
             CreateMap<Entities.Attribute, UpdateAttributeModel>().ReverseMap();
 
-            CreateMap<ProductItemAttribute, ProductItemAttributeViewModel>().ReverseMap();
+            CreateMap<ProductItemAttribute, ProductItemAttributeViewModel>()
+                .ForMember(dest => dest.AttributeName, opt => opt.MapFrom(src => src.Attribute != null ? src.Attribute.AttributeName : string.Empty));
             CreateMap<ProductItemAttribute, CreateProductItemAttributeModel>().ReverseMap();
             CreateMap<ProductItemAttribute, UpdateProductItemAttributeModel>().ReverseMap();
 
@@ -54,8 +55,9 @@ namespace iPhoneBE.Data.Mapping
             CreateMap<CreateReviewModel, Review>()
                 .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false));
 
-            CreateMap<Product, ProductViewModel>().ReverseMap();
-            CreateMap<Product, CreateProductModel>().ReverseMap();
+            CreateMap<Product, ProductViewModel>()
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : string.Empty));
+            CreateMap<CreateProductModel, Product>();
             CreateMap<Product, UpdateProductModel>().ReverseMap();
 
             CreateMap<ProductItem, ProductItemViewModel>()
@@ -97,7 +99,7 @@ namespace iPhoneBE.Data.Mapping
             .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false))
             .ReverseMap();
 
-            CreateMap<ProductImg, ProductImgViewModel>().ReverseMap();
+            CreateMap<ProductImg, iPhoneBE.Data.ViewModels.ProductImgVM.ProductImgViewModel>().ReverseMap();
             CreateMap<CreateProductImgModel, ProductImg>()
                 .ForMember(dest => dest.ProductImgID, opt => opt.Ignore())
                 .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false));

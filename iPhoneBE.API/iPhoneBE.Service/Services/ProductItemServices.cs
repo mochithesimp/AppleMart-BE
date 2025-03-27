@@ -1,4 +1,5 @@
 using AutoMapper;
+using iPhoneBE.Data.Entities;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.ProductItemModel;
@@ -18,6 +19,58 @@ namespace iPhoneBE.Service.Services
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+        }
+
+        public async Task<List<ProductItem>> GetAllWithoutFilter()
+        {
+            var productItems = await _unitOfWork.ProductItemRepository.GetAllQueryable()
+                .Where(r => r.IsDeleted == false)
+                .Select(pi => new ProductItem
+                {
+                    ProductItemID = pi.ProductItemID,
+                    ProductID = pi.ProductID,
+                    Name = pi.Name,
+                    Description = pi.Description,
+                    Quantity = pi.Quantity,
+                    DisplayIndex = pi.DisplayIndex,
+                    Price = pi.Price,
+                    IsDeleted = pi.IsDeleted,
+                    Product = new Product
+                    {
+                        ProductID = pi.Product.ProductID,
+                        CategoryID = pi.Product.CategoryID,
+                        Name = pi.Product.Name,
+                        Description = pi.Product.Description,
+                        IsDeleted = pi.Product.IsDeleted,
+                        DisplayIndex = pi.Product.DisplayIndex,
+                        Category = pi.Product.Category
+                    },
+                    ProductImgs = pi.ProductImgs.Where(img => !img.IsDeleted)
+                        .Select(img => new ProductImg
+                        {
+                            ProductImgID = img.ProductImgID,
+                            ProductItemID = img.ProductItemID,
+                            ImageUrl = img.ImageUrl,
+                            IsDeleted = img.IsDeleted
+                        }).ToList(),
+                    ProductItemAttributes = pi.ProductItemAttributes
+                        .Select(attr => new ProductItemAttribute
+                        {
+                            ProductItemAttributeID = attr.ProductItemAttributeID,
+                            ProductItemID = attr.ProductItemID,
+                            AttributeID = attr.AttributeID,
+                            Value = attr.Value,
+                            Attribute = new iPhoneBE.Data.Entities.Attribute
+                            {
+                                AttributeID = attr.Attribute.AttributeID,
+                                AttributeName = attr.Attribute.AttributeName
+                            }
+                        }).ToList()
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return productItems;
         }
 
         public async Task<PagedResult<ProductItem>> GetAllAsync(ProductItemFilterModel filter)
