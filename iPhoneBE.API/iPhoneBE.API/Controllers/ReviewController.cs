@@ -138,6 +138,8 @@ namespace iPhoneBE.API.Controllers
             var productItems = productItemsResult.Items;
 
             var allRatings = await _reviewServices.GetAllProductRatingsAsync();
+            var allReviews = await _reviewServices.GetAllProductReviewsAsync();
+            var reviewsByProduct = allReviews.GroupBy(r => r.ProductItemID).ToDictionary(g => g.Key, g => g.ToList());
 
             var result = new List<ProductRatingViewModel>();
 
@@ -145,6 +147,7 @@ namespace iPhoneBE.API.Controllers
             {
                 double avgRating = 0;
                 int totalReviewers = 0;
+                List<ReviewViewModel> productReviews = new List<ReviewViewModel>();
 
                 if (allRatings.TryGetValue(product.ProductItemID, out var stats))
                 {
@@ -152,12 +155,18 @@ namespace iPhoneBE.API.Controllers
                     totalReviewers = stats.TotalReviewers;
                 }
 
+                if (reviewsByProduct.TryGetValue(product.ProductItemID, out var reviews))
+                {
+                    productReviews = _mapper.Map<List<ReviewViewModel>>(reviews);
+                }
+
                 result.Add(new ProductRatingViewModel
                 {
                     ProductItemID = product.ProductItemID,
                     ProductName = product.Name,
                     AverageRating = avgRating,
-                    TotalReviewers = totalReviewers
+                    TotalReviewers = totalReviewers,
+                    Reviews = productReviews
                 });
             }
 
