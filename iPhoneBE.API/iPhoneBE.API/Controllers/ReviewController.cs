@@ -42,6 +42,47 @@ namespace iPhoneBE.API.Controllers
             return Ok(_mapper.Map<ReviewViewModel>(review));
         }
 
+        [HttpPost("product")]
+        public async Task<ActionResult<ReviewViewModel>> AddProductReview([FromBody] CreateProductReviewModel createReview)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var review = new Review
+            {
+                UserID = createReview.UserID,
+                OrderDetailID = createReview.OrderDetailID,
+                ProductItemID = createReview.ProductItemID,
+                ProductRating = createReview.Rating,
+                ProductComment = createReview.Comment
+            };
+
+            review = await _reviewServices.AddAsync(review);
+
+            return Ok(_mapper.Map<ReviewViewModel>(review));
+        }
+
+        [HttpPost("shipper")]
+        public async Task<ActionResult<ReviewViewModel>> AddShipperReview([FromBody] CreateShipperReviewModel createReview)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var review = new Review
+            {
+                UserID = createReview.UserID,
+                OrderDetailID = createReview.OrderDetailID,
+                ProductItemID = createReview.ProductItemID,
+                ShipperID = createReview.ShipperID,
+                ShipperRating = createReview.Rating,
+                ShipperComment = createReview.Comment
+            };
+
+            review = await _reviewServices.AddAsync(review);
+
+            return Ok(_mapper.Map<ReviewViewModel>(review));
+        }
+
         [HttpGet("product/{productItemId}/details")]
         public async Task<ActionResult<ProductRatingViewModel>> GetProductDetails(int productItemId)
         {
@@ -153,6 +194,39 @@ namespace iPhoneBE.API.Controllers
             }
 
             return Ok(result);
+        }
+
+        [HttpGet("user/{userId}/product-rating-status")]
+        public async Task<ActionResult<Dictionary<int, bool>>> GetUserProductRatingStatus(
+            string userId,
+            [FromQuery] List<int> orderDetailIds)
+        {
+            if (orderDetailIds == null || !orderDetailIds.Any())
+                return BadRequest("Order detail IDs are required.");
+
+            var user = await _userServices.GetByIdAsync(userId);
+            if (user == null)
+                return NotFound($"User with ID {userId} not found.");
+
+            var ratingStatus = await _reviewServices.GetUserProductRatingStatusAsync(userId, orderDetailIds);
+
+            return Ok(ratingStatus);
+        }
+
+        [HttpGet("user/{userId}/shipper/{shipperId}/order/{orderId}/has-rated")]
+        public async Task<ActionResult<bool>> HasUserRatedShipper(string userId, string shipperId, int orderId)
+        {
+            var user = await _userServices.GetByIdAsync(userId);
+            if (user == null)
+                return NotFound($"User with ID {userId} not found.");
+
+            var shipper = await _userServices.GetByIdAsync(shipperId);
+            if (shipper == null)
+                return NotFound($"Shipper with ID {shipperId} not found.");
+
+            var hasRated = await _reviewServices.HasUserRatedShipperAsync(userId, shipperId, orderId);
+
+            return Ok(hasRated);
         }
     }
 }
