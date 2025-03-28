@@ -1,5 +1,6 @@
 using AutoMapper;
 using iPhoneBE.Data.Entities;
+using iPhoneBE.Data.Helper;
 using iPhoneBE.Data.Interfaces;
 using iPhoneBE.Data.Model;
 using iPhoneBE.Data.Models.ProductItemModel;
@@ -280,6 +281,35 @@ namespace iPhoneBE.Service.Services
                 await _unitOfWork.RollbackTransactionAsync();
                 throw;
             }
+        }
+
+        public async Task<object> GetTotalSoldForProductItemAsync(int productItemId)
+        {
+            // Get the product item to verify it exists
+            var productItem = await _unitOfWork.ProductItemRepository
+                .GetAllQueryable()
+                .Where(pi => pi.ProductItemID == productItemId && !pi.IsDeleted)
+                .FirstOrDefaultAsync();
+
+            if (productItem == null)
+            {
+                throw new KeyNotFoundException($"ProductItem with ID {productItemId} not found or has been deleted.");
+            }
+
+            // Query to count total sold quantity in completed orders only
+            var totalSold = await _unitOfWork.OrderRepository
+                .GetAllQueryable()
+                .Where(o => o.OrderStatus == OrderStatusHelper.Completed) // Only count completed orders
+                .SelectMany(o => o.OrderDetails)
+                .Where(od => od.ProductItemID == productItemId)
+                .SumAsync(od => od.Quantity);
+
+            return new
+            {
+                ProductItemId = productItemId,
+                ProductItemName = productItem.Name,
+                TotalSold = totalSold
+            };
         }
     }
 }
