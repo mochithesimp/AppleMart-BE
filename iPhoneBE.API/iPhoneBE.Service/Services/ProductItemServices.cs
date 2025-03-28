@@ -85,6 +85,8 @@ namespace iPhoneBE.Service.Services
                 .FilterByColors(filter.Colors)
                 .FilterByRAM(filter.RAMSizes)
                 .FilterByROM(filter.ROMSizes)
+                .FilterByCPU(filter.CPUs)
+                .FilterByStorage(filter.Storages)
                 .ApplySorting(filter.PriceSort);
 
             return await query.ToPagedResultAsync(filter);
