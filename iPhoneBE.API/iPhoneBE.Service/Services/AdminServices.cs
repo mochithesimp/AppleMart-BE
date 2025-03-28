@@ -105,7 +105,6 @@ namespace iPhoneBE.Service.Services
         public async Task<object> GetTopCustomersAsync(TimeModel model, int? topN)
         {
             var query = _unitOfWork.OrderRepository.GetAllQueryable()
-                //.Where(o => o.OrderStatus == "Completed") // Chỉ lấy đơn hàng đã hoàn thành
                 .FilterByYear(model.Year)
                 .FilterByQuarter(model.Quarter, model.Year)
                 .FilterByMonth(model.Month, model.Year)
@@ -123,6 +122,27 @@ namespace iPhoneBE.Service.Services
                 .Take(topN ?? int.MaxValue) // Nếu không truyền topN, lấy tất cả
                 .ToListAsync();
 
+            var userIds = topCustomers.Select(c => c.UserID).ToList();
+
+            var users = await _userManager.Users
+                .Where(u => userIds.Contains(u.Id))
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Name,
+                    u.Email
+                })
+                .ToListAsync();
+
+            var topCustomersWithDetails = topCustomers.Select(c => new
+            {
+                c.UserID,
+                CustomerName = users.FirstOrDefault(u => u.Id == c.UserID)?.Name ?? "Unknown",
+                CustomerEmail = users.FirstOrDefault(u => u.Id == c.UserID)?.Email,
+                c.TotalSpent,
+                c.OrderCount
+            }).ToList();
+
             return new
             {
                 IsFiltered = model.Year.HasValue || model.Quarter.HasValue || model.Month.HasValue || model.Day.HasValue,
@@ -130,7 +150,7 @@ namespace iPhoneBE.Service.Services
                 Quarter = model.Quarter,
                 Month = model.Month,
                 Day = model.Day,
-                TopCustomers = topCustomers
+                TopCustomers = topCustomersWithDetails
             };
         }
 
