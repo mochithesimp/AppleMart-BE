@@ -11,5 +11,6 @@ namespace iPhoneBE.Service.Interfaces
         Task<ProductItem> AddAsync(ProductItem productItem);
         Task<ProductItem> UpdateAsync(int id, UpdateProductItemModel newProductItem);
         Task<ProductItem> DeleteAsync(int id);
+        Task<object> GetTotalSoldForProductItemAsync(int productItemId);
     }
 }

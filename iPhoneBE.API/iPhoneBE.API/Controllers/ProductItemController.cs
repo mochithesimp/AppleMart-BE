@@ -115,5 +115,24 @@ namespace iPhoneBE.API.Controllers
                     new { message = ex.Message });
             }
         }
+
+        [HttpGet("{id}/total-sold")]
+        public async Task<ActionResult> GetTotalSold(int id)
+        {
+            try
+            {
+                var result = await _productItemServices.GetTotalSoldForProductItemAsync(id);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { message = ex.Message });
+            }
+        }
     }
 }
