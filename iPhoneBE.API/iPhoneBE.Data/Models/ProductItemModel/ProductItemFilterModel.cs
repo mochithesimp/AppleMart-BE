@@ -11,6 +11,8 @@ namespace iPhoneBE.Data.Models.ProductItemModel
         public List<string>? Colors { get; set; }
         public List<string>? RAMSizes { get; set; }
         public List<string>? ROMSizes { get; set; }
+        public List<string>? CPUs { get; set; }
+        public List<string>? Storages { get; set; }
         public int? CategoryId { get; set; }
         //public string? CategoryName { get; set; }
 

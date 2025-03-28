@@ -101,6 +101,24 @@ namespace iPhoneBE.Service.Extensions
                 : query;
         }
 
+        public static IQueryable<ProductItem> FilterByCPU(this IQueryable<ProductItem> query, List<string>? cpus)
+        {
+            return cpus?.Any() == true
+                ? query.Where(p => p.ProductItemAttributes
+                    .Any(pia => pia.Attribute.AttributeName == "CPU" &&
+                               cpus.Contains(pia.Value)))
+                : query;
+        }
+
+        public static IQueryable<ProductItem> FilterByStorage(this IQueryable<ProductItem> query, List<string>? storages)
+        {
+            return storages?.Any() == true
+                ? query.Where(p => p.ProductItemAttributes
+                    .Any(pia => pia.Attribute.AttributeName == "Storage" &&
+                               storages.Contains(pia.Value)))
+                : query;
+        }
+
         public static IQueryable<ProductItem> ApplySorting(this IQueryable<ProductItem> query, string? priceSort)
         {
             if (!string.IsNullOrEmpty(priceSort))
