@@ -292,9 +292,7 @@ namespace iPhoneBE.API.Hubs
                 var unreadCount = await _notificationService.GetUnreadCount(userId);
                 await Clients.Group($"User_{userId}").SendAsync("UpdateUnreadCount", unreadCount);
 
-                _logger.LogInformation($"Successfully sent direct notification to user {userId}");
-
-                return;
+                _logger.LogInformation($"Successfully sent direct notification to user {user.Email}");
             }
             catch (Exception ex)
             {
@@ -335,6 +333,122 @@ namespace iPhoneBE.API.Hubs
             {
                 _logger.LogError(ex, $"Error sending refund request notification for order {orderId}");
                 throw new HubException($"Failed to send refund request notification: {ex.Message}");
+            }
+        }
+
+        public async Task SendProductRatingNotification(string customerName, int rating, int productItemId)
+        {
+            try
+            {
+                _logger.LogInformation($"Sending product rating notification from {customerName} for product {productItemId} with rating {rating}");
+
+                var staffUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Staff);
+                _logger.LogInformation($"Found {staffUsers.Count} staff to notify about product rating");
+
+                foreach (var user in staffUsers)
+                {
+                    var header = "New Product Rating";
+                    var content = $"User {customerName} has rated Product Item #{productItemId} with {rating} stars.";
+
+                    var notification = await _notificationService.CreateNotification(user.Id, header, content);
+
+                    await Clients.Group($"User_{user.Id}").SendAsync("ReceiveNotification", notification);
+
+                    var unreadCount = await _notificationService.GetUnreadCount(user.Id);
+                    await Clients.Group($"User_{user.Id}").SendAsync("UpdateUnreadCount", unreadCount);
+
+                    _logger.LogInformation($"Sent product rating notification to {user.UserName} (Email: {user.Email})");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending product rating notification for product {productItemId}");
+                throw new HubException($"Failed to send product rating notification: {ex.Message}");
+            }
+        }
+
+        public async Task SendProductRatingNotificationWithName(string customerName, int rating, int productItemId, string productName)
+        {
+            try
+            {
+                _logger.LogInformation($"Sending product rating notification from {customerName} for product {productName} (ID: {productItemId}) with rating {rating}");
+
+                var staffUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Staff);
+                _logger.LogInformation($"Found {staffUsers.Count} staff to notify about product rating");
+
+                foreach (var user in staffUsers)
+                {
+                    var header = "New Product Rating";
+                    var content = $"User {customerName} has rated {productName} with {rating} stars.";
+
+                    var notification = await _notificationService.CreateNotification(user.Id, header, content);
+
+                    await Clients.Group($"User_{user.Id}").SendAsync("ReceiveNotification", notification);
+
+                    var unreadCount = await _notificationService.GetUnreadCount(user.Id);
+                    await Clients.Group($"User_{user.Id}").SendAsync("UpdateUnreadCount", unreadCount);
+
+                    _logger.LogInformation($"Sent product rating notification to {user.UserName} (Email: {user.Email})");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending product rating notification for product {productName} (ID: {productItemId})");
+                throw new HubException($"Failed to send product rating notification: {ex.Message}");
+            }
+        }
+
+        public async Task SendUserRatingNotification(string userId, string userEmail, int rating, int productItemId, string productName, bool isShipperRating = false)
+        {
+            try
+            {
+                _logger.LogInformation($"Sending {(isShipperRating ? "shipper" : "product")} rating notification from user {userEmail}");
+
+                if (isShipperRating)
+                {
+                    var user = await _userManager.FindByIdAsync(userId);
+                    if (user == null)
+                    {
+                        throw new HubException($"User with ID {userId} not found");
+                    }
+
+                    var header = "New Rating Received";
+                    var content = $"A User has rated you {rating} stars on your delivery service for order with {productItemId}.";
+
+                    var notification = await _notificationService.CreateNotification(userId, header, content);
+                    await Clients.Group($"User_{userId}").SendAsync("ReceiveNotification", notification);
+
+                    var unreadCount = await _notificationService.GetUnreadCount(userId);
+                    await Clients.Group($"User_{userId}").SendAsync("UpdateUnreadCount", unreadCount);
+
+                    _logger.LogInformation($"Sent shipper rating notification to {user.UserName} (Email: {user.Email})");
+                }
+                else
+                {
+                    var staffUsers = await _userManager.GetUsersInRoleAsync(RolesHelper.Staff);
+                    _logger.LogInformation($"Found {staffUsers.Count} staff to notify about product rating");
+
+                    foreach (var user in staffUsers)
+                    {
+                        var header = "New Product Rating";
+                        var content = string.IsNullOrEmpty(productName)
+                            ? $"User with email {userEmail} has rated Product Item #{productItemId} with {rating} stars."
+                            : $"User with email {userEmail} has rated {productName} (Product ID: {productItemId}) with {rating} stars.";
+
+                        var notification = await _notificationService.CreateNotification(user.Id, header, content);
+                        await Clients.Group($"User_{user.Id}").SendAsync("ReceiveNotification", notification);
+
+                        var unreadCount = await _notificationService.GetUnreadCount(user.Id);
+                        await Clients.Group($"User_{user.Id}").SendAsync("UpdateUnreadCount", unreadCount);
+
+                        _logger.LogInformation($"Sent product rating notification to {user.UserName} (Email: {user.Email})");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending rating notification");
+                throw new HubException($"Failed to send rating notification: {ex.Message}");
             }
         }
 
