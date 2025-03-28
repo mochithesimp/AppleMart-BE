@@ -16,5 +16,8 @@ namespace iPhoneBE.Service.Interfaces
         Task<IEnumerable<Review>> GetAllShipperReviewsAsync();
         Task<IDictionary<int, (double AverageRating, int TotalReviewers)>> GetAllProductRatingsAsync();
         Task<IDictionary<string, (double AverageRating, int TotalReviewers)>> GetAllShipperRatingsAsync();
+        Task<bool> HasUserRatedProductAsync(string userId, int productItemId, int orderDetailId);
+        Task<bool> HasUserRatedShipperAsync(string userId, string shipperId, int orderId);
+        Task<Dictionary<int, bool>> GetUserProductRatingStatusAsync(string userId, IEnumerable<int> orderDetailIds);
     }
 }

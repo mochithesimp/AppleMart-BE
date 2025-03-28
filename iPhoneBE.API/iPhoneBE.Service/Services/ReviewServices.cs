@@ -36,31 +36,90 @@ namespace iPhoneBE.Service.Services
                 if (orderDetail == null)
                     throw new KeyNotFoundException($"OrderDetail with ID {review.OrderDetailID} not found.");
 
-                if (!review.ProductRating.HasValue)
-                    throw new ArgumentException("Product rating is required.");
+                var existingProductReview = await _unitOfWork.ReviewRepository.GetSingleByConditionAsynce(
+                    r => r.OrderDetailID == review.OrderDetailID &&
+                         r.ProductItemID == review.ProductItemID &&
+                         r.UserID == review.UserID &&
+                         !r.IsDeleted);
 
-                if (review.ShipperID != null)
+                if (existingProductReview != null && review.ProductRating.HasValue)
+                {
+                    existingProductReview.ProductRating = review.ProductRating;
+                    existingProductReview.ProductComment = review.ProductComment;
+                    existingProductReview.Date = DateTime.Now;
+                    bool updateResult = await _unitOfWork.ReviewRepository.Update(existingProductReview);
+                    await _unitOfWork.SaveChangesAsync();
+                    await _unitOfWork.CommitTransactionAsync();
+                    return existingProductReview;
+                }
+
+                if (review.ShipperID != null && review.ShipperRating.HasValue)
                 {
                     var shipper = await _unitOfWork.UserRepository.GetSingleByConditionAsynce(u => u.Id == review.ShipperID);
                     if (shipper == null)
                         throw new KeyNotFoundException($"Shipper with ID {review.ShipperID} not found.");
 
-                    if (!review.ShipperRating.HasValue)
-                        throw new ArgumentException("Shipper rating is required when a shipper is specified.");
-                }
-                else
-                {
-                    review.ShipperRating = null;
-                    review.ShipperComment = null;
+                    int orderId = orderDetail.OrderID;
+
+                    var orderDetails = await _unitOfWork.OrderDetailRepository.GetAllAsync(od => od.OrderID == orderId);
+
+                    if (orderDetails == null || !orderDetails.Any())
+                        throw new KeyNotFoundException($"Order details not found for order ID {orderId}");
+
+                    var orderDetailIds = orderDetails.Select(od => od.OrderDetailID);
+                    var existingShipperReviews = await _unitOfWork.ReviewRepository.GetAllAsync(
+                        r => orderDetailIds.Contains(r.OrderDetailID) &&
+                             r.ShipperID == review.ShipperID &&
+                             r.UserID == review.UserID &&
+                             r.ShipperRating.HasValue &&
+                             !r.IsDeleted);
+
+                    if (existingShipperReviews != null && existingShipperReviews.Any())
+                    {
+                        var latestShipperReview = existingShipperReviews.OrderByDescending(r => r.Date).FirstOrDefault();
+                        latestShipperReview.ShipperRating = review.ShipperRating;
+                        latestShipperReview.ShipperComment = review.ShipperComment;
+                        latestShipperReview.Date = DateTime.Now;
+
+                        bool updateResult = await _unitOfWork.ReviewRepository.Update(latestShipperReview);
+                        await _unitOfWork.SaveChangesAsync();
+                        await _unitOfWork.CommitTransactionAsync();
+
+                        return latestShipperReview;
+                    }
+
+                    if (review.ProductRating.HasValue)
+                    {
+                        // 
+                    }
+                    else
+                    {
+                        var shipperOnlyReview = new Review
+                        {
+                            UserID = review.UserID,
+                            OrderDetailID = orderDetails.First().OrderDetailID,
+                            ProductItemID = orderDetails.First().ProductItemID,
+                            ShipperID = review.ShipperID,
+                            ShipperRating = review.ShipperRating,
+                            ShipperComment = review.ShipperComment,
+                            Date = DateTime.Now
+                        };
+
+                        var result = await _unitOfWork.ReviewRepository.AddAsync(shipperOnlyReview);
+                        await _unitOfWork.SaveChangesAsync();
+                        await _unitOfWork.CommitTransactionAsync();
+
+                        return result;
+                    }
                 }
 
                 review.Date = DateTime.Now;
-                var result = await _unitOfWork.ReviewRepository.AddAsync(review);
+                var newReview = await _unitOfWork.ReviewRepository.AddAsync(review);
 
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
-                return result;
+                return newReview;
             }
             catch
             {
@@ -201,6 +260,56 @@ namespace iPhoneBE.Service.Services
                         TotalReviewers: g.Count()
                     )
                 );
+
+            return result;
+        }
+
+        public async Task<bool> HasUserRatedProductAsync(string userId, int productItemId, int orderDetailId)
+        {
+            var review = await _unitOfWork.ReviewRepository.GetSingleByConditionAsynce(
+                r => r.UserID == userId &&
+                    r.ProductItemID == productItemId &&
+                    r.OrderDetailID == orderDetailId &&
+                    r.ProductRating.HasValue &&
+                    !r.IsDeleted);
+
+            return review != null;
+        }
+
+        public async Task<bool> HasUserRatedShipperAsync(string userId, string shipperId, int orderId)
+        {
+            var orderDetails = await _unitOfWork.OrderDetailRepository.GetAllAsync(od => od.OrderID == orderId);
+
+            if (orderDetails == null || !orderDetails.Any())
+                return false;
+
+            var orderDetailIds = orderDetails.Select(od => od.OrderDetailID);
+
+            var review = await _unitOfWork.ReviewRepository.GetSingleByConditionAsynce(
+                r => r.UserID == userId &&
+                    r.ShipperID == shipperId &&
+                    orderDetailIds.Contains(r.OrderDetailID) &&
+                    r.ShipperRating.HasValue &&
+                    !r.IsDeleted);
+
+            return review != null;
+        }
+
+        public async Task<Dictionary<int, bool>> GetUserProductRatingStatusAsync(string userId, IEnumerable<int> orderDetailIds)
+        {
+            if (orderDetailIds == null || !orderDetailIds.Any())
+                return new Dictionary<int, bool>();
+
+            var reviews = await _unitOfWork.ReviewRepository.GetAllAsync(
+                r => r.UserID == userId &&
+                    orderDetailIds.Contains(r.OrderDetailID) &&
+                    r.ProductRating.HasValue &&
+                    !r.IsDeleted);
+
+            var result = orderDetailIds.ToDictionary(
+                id => id,
+                id => reviews.Any(r => r.OrderDetailID == id)
+            );
 
             return result;
         }
