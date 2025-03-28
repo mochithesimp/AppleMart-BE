@@ -166,7 +166,8 @@ namespace iPhoneBE.API
                         "http://localhost:3000",
                         "http://localhost:3001",
                         "https://iphone-fe-five.vercel.app",
-                        "https://apple-mart-fe-customer-opksxkvgp-apple-mart-project.vercel.app"
+                        "https://apple-mart-fe-customer-opksxkvgp-apple-mart-project.vercel.app",
+                        "https://applemart-fe-admin2.vercel.app/"
                     )
                     .AllowAnyHeader()
                     .AllowAnyMethod()
