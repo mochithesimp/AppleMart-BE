@@ -452,6 +452,37 @@ namespace iPhoneBE.API.Hubs
             }
         }
 
+        public async Task SendOrderAssignmentNotification(string shipperId, int orderId)
+        {
+            try
+            {
+                _logger.LogInformation($"Sending order assignment notification to shipper {shipperId} for order {orderId}");
+
+                var user = await _userManager.FindByIdAsync(shipperId);
+                if (user == null)
+                {
+                    throw new HubException($"Shipper with ID {shipperId} not found");
+                }
+
+                var header = "New Order Assignment";
+                var content = $"Order #{orderId} has been assigned to you. Please deliver it as soon as possible.";
+
+                var notification = await _notificationService.CreateNotification(shipperId, header, content);
+
+                await Clients.Group($"User_{shipperId}").SendAsync("ReceiveNotification", notification);
+
+                var unreadCount = await _notificationService.GetUnreadCount(shipperId);
+                await Clients.Group($"User_{shipperId}").SendAsync("UpdateUnreadCount", unreadCount);
+
+                _logger.LogInformation($"Successfully sent order assignment notification to shipper {user.Email} (ID: {shipperId})");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending order assignment notification to shipper {shipperId}");
+                throw new HubException($"Failed to send order assignment notification: {ex.Message}");
+            }
+        }
+
         private static HashSet<string> GetUserConnections(string userId)
         {
             return _userConnections.TryGetValue(userId, out var connections) ? connections : new HashSet<string>();
